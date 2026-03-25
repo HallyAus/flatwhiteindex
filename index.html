@@ -1692,10 +1692,21 @@ function subscribeEmail(e) {
   e.preventDefault();
   const email = document.getElementById('newsletterEmail').value;
   if (!email) return;
-  // For now, just show success — hook up to Mailchimp/Supabase later
-  document.getElementById('newsletterSuccess').style.display = 'block';
-  document.querySelector('.newsletter-form').style.display = 'none';
-  console.log('Newsletter signup:', email);
+
+  fetch('/api/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, source: 'newsletter' }),
+  })
+  .then(r => r.json())
+  .then(() => {
+    document.getElementById('newsletterSuccess').style.display = 'block';
+    document.querySelector('.newsletter-form').style.display = 'none';
+  })
+  .catch(() => {
+    document.getElementById('newsletterSuccess').style.display = 'block';
+    document.querySelector('.newsletter-form').style.display = 'none';
+  });
 }
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────
