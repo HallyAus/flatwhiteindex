@@ -9,6 +9,19 @@ app.use(express.json());
 
 // Serve dashboard and static files
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// Cache static assets aggressively, HTML briefly
+app.use((req, res, next) => {
+  if (req.path.match(/\.(js|css|svg|png|jpg|woff2?)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=86400, immutable'); // 1 day
+  } else if (req.path.endsWith('.json')) {
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min
+  } else if (req.path.endsWith('.html') || req.path === '/') {
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min
+  }
+  next();
+});
+
 app.use(express.static(__dirname));
 
 const PRICE_PATTERNS = [

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flat White Index — Melbourne (Coming Soon)</title>
+<meta name="description" content="The Flat White Index is expanding to Melbourne. We'll be calling every independent café to map coffee prices across Melbourne's suburbs.">
+<link rel="canonical" href="https://flatwhiteindex.com.au/melbourne.html">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%232C1A0E'/><path d='M5 8h14l-2 12H7L5 8z' fill='%23F7F3ED' opacity='0.9'/><path d='M19 10h2a3 3 0 0 1 0 6h-2' stroke='%23F7F3ED' stroke-width='1.5' fill='none'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F3ED;
+    --espresso: #2C1A0E;
+    --roast: #6B3A1F;
+    --milk: #EDE8E0;
+    --foam: #FAF8F4;
+    --bronze: #B5763A;
+    --bronze-light: #D4A26A;
+    --mid: #8B7355;
+    --text-muted: #7A6248;
+    --border: rgba(107, 58, 31, 0.18);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--espresso);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .container {
+    max-width: 560px;
+    text-align: center;
+    padding: 3rem 2rem;
+  }
+
+  .cup { font-size: 4rem; margin-bottom: 1.5rem; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+  }
+
+  .city {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--bronze);
+    margin-bottom: 1.5rem;
+  }
+
+  p {
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--mid);
+    margin-bottom: 1.5rem;
+  }
+
+  .notify-form {
+    display: flex;
+    gap: 0.5rem;
+    max-width: 400px;
+    margin: 0 auto 2rem;
+  }
+
+  .notify-form input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border);
+    background: var(--foam);
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--espresso);
+  }
+
+  .notify-form input:focus {
+    outline: none;
+    border-color: var(--bronze);
+  }
+
+  .notify-form button {
+    padding: 0.75rem 1.5rem;
+    background: var(--espresso);
+    color: var(--cream);
+    border: none;
+    border-radius: 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+
+  .notify-form button:hover { background: var(--roast); }
+
+  .success {
+    display: none;
+    color: #3A7D44;
+    font-weight: 500;
+    margin-bottom: 1.5rem;
+  }
+
+  .back-link {
+    font-size: 0.85rem;
+    color: var(--bronze);
+    text-decoration: none;
+  }
+
+  .back-link:hover { text-decoration: underline; }
+
+  .footer-muted {
+    margin-top: 2rem;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+  }
+
+  .footer-muted a {
+    color: var(--bronze);
+    text-decoration: none;
+  }
+
+  @media (max-width: 480px) {
+    .notify-form { flex-direction: column; }
+    h1 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="cup">☕</div>
+  <h1>Flat White Index</h1>
+  <div class="city">Melbourne — Coming Soon</div>
+  <p>We're expanding south. Melbourne has over 3,000 independent cafes and arguably the best coffee culture in Australia. We'll be calling every one of them.</p>
+  <p>Want to know when Melbourne goes live?</p>
+  <form class="notify-form" onsubmit="notifyMe(event)">
+    <input type="email" placeholder="your@email.com" required>
+    <button type="submit">Notify me</button>
+  </form>
+  <div class="success" id="melbSuccess">You're on the list. We'll email you when Melbourne launches.</div>
+  <a href="/" class="back-link">← View Sydney prices</a>
+  <div class="footer-muted">
+    Part of <a href="https://agenticconsciousness.com.au" target="_blank">Agentic Consciousness</a>
+  </div>
+</div>
+<script>
+function notifyMe(e) {
+  e.preventDefault();
+  document.querySelector('.notify-form').style.display = 'none';
+  document.getElementById('melbSuccess').style.display = 'block';
+}
+</script>
+</body>
+</html>
