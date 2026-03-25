@@ -1,0 +1,31 @@
+# Environment
+.env
+.env.local
+.env.production
+secrets/
+
+# Private memory (sensitive info — never commit)
+.claude/rules/memory-private.md
+
+# Beads database (synced via JSONL, not the db)
+.beads/beads.db
+.beads/dolt/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Dependencies
+node_modules/
+
+# Build
+dist/
+
+# Bland.ai / ngrok
+*.ngrok-free.app

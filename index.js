@@ -1,0 +1,61 @@
+import "dotenv/config";
+import { fetchSydneyCafes } from "./cafes.js";
+import { dispatchCalls } from "./caller.js";
+import { upsertCafes } from "./db.js";
+
+const BATCH_SIZE = parseInt(process.argv.find(a => a.startsWith("--batch-size="))?.split("=")[1] || "10");
+const DRY_RUN = process.argv.includes("--dry-run");
+const SUBURB_FILTER = process.argv.find(a => a.startsWith("--suburb="))?.split("=")[1];
+
+const SYDNEY_BOUNDS = {
+  northeast: { lat: -33.578, lng: 151.343 },
+  southwest: { lat: -34.118, lng: 150.502 },
+};
+
+const EXCLUDED_CHAINS = [
+  "starbucks", "mccafe", "gloria jean", "hudsons", "zarraffa",
+  "the coffee club", "boost juice", "donut king", "michel's",
+];
+
+async function main() {
+  console.log(`\n☕  Flat White Index — Sydney Caller`);
+  console.log(`   Mode: ${DRY_RUN ? "DRY RUN (no calls)" : "LIVE"}`);
+  console.log(`   Batch size: ${BATCH_SIZE}`);
+  console.log(`   Suburb filter: ${SUBURB_FILTER || "all Sydney"}\n`);
+
+  console.log("📍 Fetching Sydney cafés from Google Places...");
+  const cafes = await fetchSydneyCafes(SYDNEY_BOUNDS, SUBURB_FILTER);
+
+  const filtered = cafes.filter(c => {
+    if (!c.phone) return false;
+    const nameLower = c.name.toLowerCase();
+    return !EXCLUDED_CHAINS.some(chain => nameLower.includes(chain));
+  });
+
+  console.log(`   Found ${cafes.length} cafés → ${filtered.length} eligible (have phone, not a chain)\n`);
+
+  console.log("💾 Upserting cafés to Supabase...");
+  await upsertCafes(filtered);
+
+  if (DRY_RUN) {
+    console.log("\n🔍 Dry run — first 5 cafés that would be called:");
+    filtered.slice(0, 5).forEach(c => {
+      console.log(`   ${c.name} | ${c.suburb} | ${c.phone}`);
+    });
+    console.log("\n✅ Dry run complete. Remove --dry-run to make live calls.");
+    return;
+  }
+
+  const callableCafes = filtered.filter(c => !c.alreadyCalled);
+  console.log(`📞 Dispatching calls to ${callableCafes.length} cafés in batches of ${BATCH_SIZE}...\n`);
+
+  await dispatchCalls(callableCafes, BATCH_SIZE);
+
+  console.log("\n✅ All batches dispatched. Results will arrive via webhook.");
+  console.log("   Monitor: supabase dashboard → price_calls table");
+}
+
+main().catch(err => {
+  console.error("Fatal error:", err);
+  process.exit(1);
+});

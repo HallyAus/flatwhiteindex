@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flat White Index — Sydney</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream: #F7F3ED;
+    --espresso: #2C1A0E;
+    --roast: #6B3A1F;
+    --milk: #EDE8E0;
+    --foam: #FAF8F4;
+    --bronze: #B5763A;
+    --bronze-light: #D4A26A;
+    --green: #3A7D44;
+    --green-light: #E8F3EA;
+    --red-price: #C0392B;
+    --red-light: #FDEDEB;
+    --mid: #8B7355;
+    --text-muted: #9C8872;
+    --border: rgba(107, 58, 31, 0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--espresso);
+    min-height: 100vh;
+  }
+
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.025'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+
+  .page { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 4rem; }
+
+  /* HEADER */
+  header {
+    padding: 3rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: flex-end; justify-content: space-between;
+    flex-wrap: wrap; gap: 1rem;
+  }
+
+  .logo-area { display: flex; align-items: center; gap: 1rem; }
+
+  .cup-icon {
+    width: 52px; height: 52px;
+    background: var(--espresso);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .cup-icon svg { width: 28px; height: 28px; }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem; font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--espresso);
+  }
+
+  .tagline {
+    font-size: 0.8rem; font-weight: 300;
+    color: var(--mid);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--espresso);
+    color: var(--cream);
+    font-size: 0.7rem; font-weight: 500;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 12px; border-radius: 20px;
+  }
+
+  .pulse {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #4CAF50;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  /* STATS ROW */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .stat-card {
+    background: var(--foam);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.25rem 1.25rem 1rem;
+    transition: transform 0.2s;
+  }
+
+  .stat-card:hover { transform: translateY(-2px); }
+
+  .stat-label {
+    font-size: 0.68rem; font-weight: 500;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+  }
+
+  .stat-value {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.9rem; font-weight: 600;
+    color: var(--espresso);
+    line-height: 1;
+  }
+
+  .stat-value.good { color: var(--green); }
+  .stat-value.warn { color: var(--red-price); }
+
+  .stat-sub {
+    font-size: 0.72rem; color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* MAIN GRID */
+  .main-grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1.5rem;
+    padding-top: 2rem;
+  }
+
+  @media (max-width: 780px) { .main-grid { grid-template-columns: 1fr; } }
+
+  /* MAP PANEL */
+  .panel {
+    background: var(--foam);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .panel-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+
+  .panel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 600;
+  }
+
+  .filter-pills {
+    display: flex; gap: 6px; flex-wrap: wrap;
+  }
+
+  .pill {
+    font-size: 0.72rem; font-weight: 500;
+    padding: 4px 10px; border-radius: 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--mid);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .pill:hover, .pill.active {
+    background: var(--espresso);
+    color: var(--cream);
+    border-color: var(--espresso);
+  }
+
+  /* MAP */
+  .map-container { position: relative; height: 420px; background: #E8E0D5; overflow: hidden; }
+
+  .map-svg { width: 100%; height: 100%; }
+
+  .suburb-zone {
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .suburb-zone:hover { opacity: 0.85; }
+  .suburb-zone.selected { stroke: var(--espresso) !important; stroke-width: 2; }
+
+  .map-legend {
+    position: absolute; bottom: 12px; left: 12px;
+    background: rgba(247,243,237,0.95);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-size: 0.7rem;
+  }
+
+  .legend-title {
+    font-weight: 500; color: var(--mid);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-bottom: 6px; font-size: 0.62rem;
+  }
+
+  .legend-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 3px; color: var(--espresso);
+  }
+
+  .legend-dot {
+    width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
+  }
+
+  /* TOOLTIP */
+  .map-tooltip {
+    position: absolute; pointer-events: none;
+    background: var(--espresso); color: var(--cream);
+    padding: 8px 12px; border-radius: 8px;
+    font-size: 0.78rem; white-space: nowrap;
+    opacity: 0; transition: opacity 0.15s;
+    z-index: 10;
+  }
+  .map-tooltip.visible { opacity: 1; }
+  .map-tooltip strong { font-weight: 500; display: block; margin-bottom: 2px; }
+
+  /* SIDEBAR */
+  .suburb-list {
+    max-height: 520px;
+    overflow-y: auto;
+  }
+
+  .suburb-list::-webkit-scrollbar { width: 4px; }
+  .suburb-list::-webkit-scrollbar-track { background: transparent; }
+  .suburb-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+  .suburb-row {
+    display: flex; align-items: center;
+    padding: 0.85rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.15s;
+    gap: 0.75rem;
+  }
+
+  .suburb-row:hover { background: var(--milk); }
+  .suburb-row:last-child { border-bottom: none; }
+  .suburb-row.highlighted { background: #FDF6EE; }
+
+  .suburb-rank {
+    font-size: 0.7rem; color: var(--text-muted);
+    width: 18px; flex-shrink: 0; text-align: right;
+  }
+
+  .suburb-name { flex: 1; font-size: 0.88rem; font-weight: 400; }
+
+  .suburb-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 600;
+  }
+
+  .price-good { color: var(--green); }
+  .price-warn { color: var(--red-price); }
+  .price-mid { color: var(--bronze); }
+
+  .price-bar-bg {
+    position: absolute; right: 0; top: 0; bottom: 0;
+    background: rgba(181, 118, 58, 0.06);
+    transition: width 0.4s ease;
+  }
+
+  .suburb-row { position: relative; }
+
+  .sample-badge {
+    font-size: 0.62rem; color: var(--text-muted);
+    background: var(--milk);
+    border-radius: 4px; padding: 2px 6px;
+    flex-shrink: 0;
+  }
+
+  /* BOTTOM SECTION */
+  .bottom-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    padding-top: 1.5rem;
+  }
+
+  @media (max-width: 640px) { .bottom-grid { grid-template-columns: 1fr; } }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 600;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* PRICE DISTRIBUTION */
+  .dist-chart { padding: 1.25rem; }
+
+  .dist-bar-row {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 10px;
+  }
+
+  .dist-label {
+    font-size: 0.78rem; font-weight: 500;
+    width: 44px; flex-shrink: 0;
+    color: var(--espresso);
+  }
+
+  .dist-track {
+    flex: 1; height: 20px;
+    background: var(--milk);
+    border-radius: 4px; overflow: hidden;
+  }
+
+  .dist-fill {
+    height: 100%; border-radius: 4px;
+    background: var(--bronze);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+  }
+
+  .dist-count {
+    font-size: 0.7rem; color: var(--text-muted);
+    width: 32px; flex-shrink: 0; text-align: right;
+  }
+
+  /* CHEAPEST FINDS */
+  .finds-list { padding: 0.5rem 0; }
+
+  .find-row {
+    display: flex; align-items: center;
+    padding: 0.7rem 1.25rem;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--border);
+    transition: background 0.15s;
+    cursor: default;
+  }
+
+  .find-row:last-child { border-bottom: none; }
+  .find-row:hover { background: var(--milk); }
+
+  .find-gem {
+    font-size: 0.75rem; color: var(--bronze);
+    flex-shrink: 0;
+  }
+
+  .find-name {
+    flex: 1; font-size: 0.85rem; font-weight: 400;
+  }
+  .find-suburb { font-size: 0.75rem; color: var(--text-muted); }
+
+  .find-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem; font-weight: 600;
+    color: var(--green);
+    flex-shrink: 0;
+  }
+
+  /* PROGRESS TRACKER */
+  .progress-bar-outer {
+    height: 6px; background: var(--milk);
+    border-radius: 4px; overflow: hidden;
+    margin: 0.5rem 1.25rem 0.25rem;
+  }
+
+  .progress-bar-inner {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, var(--bronze-light), var(--bronze));
+    transition: width 1s ease;
+  }
+
+  .progress-label {
+    font-size: 0.72rem; color: var(--text-muted);
+    padding: 0 1.25rem 1rem;
+  }
+
+  /* CONTRIBUTE */
+  .contribute-strip {
+    margin-top: 1.5rem;
+    background: var(--espresso);
+    border-radius: 16px;
+    padding: 1.5rem 1.75rem;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 1rem; flex-wrap: wrap;
+  }
+
+  .contribute-text h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem; color: var(--cream);
+    margin-bottom: 4px;
+  }
+
+  .contribute-text p {
+    font-size: 0.8rem; color: rgba(247,243,237,0.6);
+  }
+
+  .contribute-btn {
+    background: var(--bronze);
+    color: var(--cream);
+    border: none; border-radius: 10px;
+    padding: 0.65rem 1.4rem;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem; font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.2s;
+  }
+
+  .contribute-btn:hover { background: var(--bronze-light); }
+
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(44,26,14,0.7);
+    z-index: 100; align-items: center; justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+
+  .modal {
+    background: var(--foam);
+    border-radius: 18px;
+    padding: 2rem;
+    max-width: 420px; width: 90%;
+    animation: slideUp 0.25s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  .modal h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem; margin-bottom: 1rem;
+  }
+
+  .modal label {
+    font-size: 0.8rem; font-weight: 500;
+    color: var(--mid); display: block;
+    margin-bottom: 4px; margin-top: 12px;
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+
+  .modal input, .modal select {
+    width: 100%; padding: 10px 12px;
+    border: 1px solid var(--border);
+    background: white;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--espresso);
+  }
+
+  .modal-actions {
+    display: flex; gap: 10px; margin-top: 1.5rem;
+  }
+
+  .btn-secondary {
+    flex: 1; padding: 0.6rem; border: 1px solid var(--border);
+    background: transparent; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer; color: var(--mid);
+  }
+
+  .btn-primary {
+    flex: 2; padding: 0.6rem;
+    background: var(--espresso); color: var(--cream);
+    border: none; border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500; cursor: pointer;
+  }
+
+  .success-msg {
+    display: none; text-align: center;
+    padding: 1rem; color: var(--green);
+    font-weight: 500;
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<div class="page">
+  <!-- HEADER -->
+  <header>
+    <div class="logo-area">
+      <div class="cup-icon">
+        <svg viewBox="0 0 28 28" fill="none">
+          <path d="M5 8h14l-2 12H7L5 8z" fill="#F7F3ED" opacity="0.9"/>
+          <path d="M19 10h2a3 3 0 0 1 0 6h-2" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+          <path d="M8 8C8 6 9 4 12 4s4 2 4 4" stroke="#F7F3ED" stroke-width="1.2" fill="none" opacity="0.5"/>
+          <path d="M5 21h14" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Flat White Index</h1>
+        <div class="tagline">Sydney's live coffee price guide · 2026</div>
+      </div>
+    </div>
+    <div class="live-badge">
+      <div class="pulse"></div>
+      Live data
+    </div>
+  </header>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-label">Sydney average</div>
+      <div class="stat-value">$5.80</div>
+      <div class="stat-sub">flat white, small</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Cheapest suburb</div>
+      <div class="stat-value good">$4.50</div>
+      <div class="stat-sub">Marrickville</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Most expensive</div>
+      <div class="stat-value warn">$7.20</div>
+      <div class="stat-sub">Darling Harbour</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Cafés called</div>
+      <div class="stat-value" id="cafesCalled">847</div>
+      <div class="stat-sub">of ~2,100 in Sydney</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Prices collected</div>
+      <div class="stat-value">512</div>
+      <div class="stat-sub">60% answer rate</div>
+    </div>
+  </div>
+
+  <!-- MAIN GRID -->
+  <div class="main-grid">
+    <!-- MAP PANEL -->
+    <div>
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">Price map by suburb</div>
+          <div class="filter-pills">
+            <button class="pill active" onclick="setFilter(this,'small')">Small</button>
+            <button class="pill" onclick="setFilter(this,'large')">Large</button>
+          </div>
+        </div>
+        <div class="map-container" id="mapContainer">
+          <svg class="map-svg" viewBox="0 0 600 420" id="mapSvg">
+            <!-- Simplified Sydney suburb shapes as approximate polygons -->
+            <!-- Inner city cluster -->
+            <g class="suburb-zone" data-suburb="CBD" data-price="6.80" data-count="42" onclick="selectSuburb(this)">
+              <polygon points="290,175 320,165 335,185 330,210 295,215 278,200" fill="#C0392B" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Surry Hills" data-price="6.20" data-count="31" onclick="selectSuburb(this)">
+              <polygon points="295,215 330,210 338,240 300,248" fill="#D4855A" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Newtown" data-price="5.40" data-count="28" onclick="selectSuburb(this)">
+              <polygon points="240,250 278,242 285,270 248,278" fill="#B5763A" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Marrickville" data-price="4.80" data-count="19" onclick="selectSuburb(this)">
+              <polygon points="225,280 262,272 268,300 230,308" fill="#3A7D44" opacity="0.7" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Glebe" data-price="5.60" data-count="14" onclick="selectSuburb(this)">
+              <polygon points="245,218 278,210 282,242 248,248" fill="#C08040" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Balmain" data-price="5.90" data-count="22" onclick="selectSuburb(this)">
+              <polygon points="195,195 235,190 242,218 205,225" fill="#C87840" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Paddington" data-price="6.50" data-count="26" onclick="selectSuburb(this)">
+              <polygon points="330,210 365,202 372,232 336,240" fill="#C04A35" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Darlinghurst" data-price="6.30" data-count="18" onclick="selectSuburb(this)">
+              <polygon points="320,185 350,178 360,205 330,210" fill="#C8583A" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Redfern" data-price="5.30" data-count="17" onclick="selectSuburb(this)">
+              <polygon points="300,248 335,242 340,268 305,275" fill="#9A8040" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Chippendale" data-price="5.70" data-count="12" onclick="selectSuburb(this)">
+              <polygon points="278,242 300,238 305,265 283,268" fill="#B87838" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Pyrmont" data-price="6.40" data-count="15" onclick="selectSuburb(this)">
+              <polygon points="250,175 285,170 290,198 255,205" fill="#C05040" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Leichhardt" data-price="5.20" data-count="20" onclick="selectSuburb(this)">
+              <polygon points="200,242 238,235 242,265 204,272" fill="#6A9A38" opacity="0.7" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Erskineville" data-price="5.00" data-count="11" onclick="selectSuburb(this)">
+              <polygon points="262,272 290,268 295,295 266,302" fill="#4A8E40" opacity="0.7" stroke="white" stroke-width="0.5"/>
+            </g>
+            <!-- North area -->
+            <g class="suburb-zone" data-suburb="Kirribilli" data-price="6.80" data-count="9" onclick="selectSuburb(this)">
+              <polygon points="310,118 340,112 345,138 315,142" fill="#C03828" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Neutral Bay" data-price="6.60" data-count="13" onclick="selectSuburb(this)">
+              <polygon points="340,100 370,95 375,125 345,130" fill="#C84030" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Mosman" data-price="7.00" data-count="16" onclick="selectSuburb(this)">
+              <polygon points="295,70 335,65 342,98 302,105" fill="#B03020" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Crows Nest" data-price="6.10" data-count="18" onclick="selectSuburb(this)">
+              <polygon points="355,120 390,115 395,145 360,150" fill="#D06040" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <!-- East area -->
+            <g class="suburb-zone" data-suburb="Bondi" data-price="6.90" data-count="34" onclick="selectSuburb(this)">
+              <polygon points="400,195 435,188 440,218 405,225" fill="#B82818" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Bondi Junction" data-price="6.50" data-count="22" onclick="selectSuburb(this)">
+              <polygon points="375,182 405,175 410,202 378,208" fill="#C04535" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Double Bay" data-price="7.20" data-count="11" onclick="selectSuburb(this)">
+              <polygon points="378,155 410,148 415,178 382,185" fill="#A01E10" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <!-- West area -->
+            <g class="suburb-zone" data-suburb="Strathfield" data-price="4.80" data-count="14" onclick="selectSuburb(this)">
+              <polygon points="118,252 158,246 162,275 122,282" fill="#3A7D44" opacity="0.7" stroke="white" stroke-width="0.5"/>
+            </g>
+            <g class="suburb-zone" data-suburb="Ashfield" data-price="4.60" data-count="12" onclick="selectSuburb(this)">
+              <polygon points="148,275 185,270 188,298 152,305" fill="#2E7040" opacity="0.7" stroke="white" stroke-width="0.5"/>
+            </g>
+            <!-- Darling Harbour -->
+            <g class="suburb-zone" data-suburb="Darling Harbour" data-price="7.20" data-count="8" onclick="selectSuburb(this)">
+              <polygon points="255,165 288,160 292,185 258,190" fill="#981808" opacity="0.75" stroke="white" stroke-width="0.5"/>
+            </g>
+            <!-- Water areas -->
+            <ellipse cx="300" cy="140" rx="35" ry="25" fill="#C5D9E8" opacity="0.7"/>
+            <text x="300" y="144" text-anchor="middle" font-size="7" fill="#5A7A8A" font-family="DM Sans">Sydney Harbour</text>
+            <!-- Suburb labels -->
+            <text x="302" y="196" text-anchor="middle" font-size="7.5" fill="white" font-weight="500" pointer-events="none">CBD</text>
+            <text x="315" y="228" text-anchor="middle" font-size="6.5" fill="white" pointer-events="none">Surry Hills</text>
+            <text x="262" y="262" text-anchor="middle" font-size="6.5" fill="white" pointer-events="none">Newtown</text>
+            <text x="246" y="296" text-anchor="middle" font-size="6.5" fill="white" pointer-events="none">Marrickville</text>
+            <text x="352" y="220" text-anchor="middle" font-size="6.5" fill="white" pointer-events="none">Paddington</text>
+            <text x="418" y="208" text-anchor="middle" font-size="6.5" fill="white" pointer-events="none">Bondi</text>
+            <text x="395" y="168" text-anchor="middle" font-size="6" fill="white" pointer-events="none">Double Bay</text>
+            <text x="317" y="130" text-anchor="middle" font-size="6" fill="white" pointer-events="none">Kirribilli</text>
+            <text x="315" y="88" text-anchor="middle" font-size="6.5" fill="white" pointer-events="none">Mosman</text>
+          </svg>
+
+          <div class="map-legend">
+            <div class="legend-title">Avg. flat white price</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#3A7D44"></div> Under $5.00</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#B5763A"></div> $5.00 – $5.99</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#C05040"></div> $6.00 – $6.49</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#C0392B"></div> $6.50 – $6.99</div>
+            <div class="legend-row"><div class="legend-dot" style="background:#981808"></div> $7.00+</div>
+          </div>
+
+          <div class="map-tooltip" id="tooltip"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SIDEBAR: SUBURB LIST -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">By suburb</div>
+        <div id="selectedInfo" style="font-size:0.75rem; color:var(--mid);">tap map to filter</div>
+      </div>
+      <div class="suburb-list" id="suburbList">
+        <!-- populated by JS -->
+      </div>
+
+      <div style="padding: 0.5rem 1.25rem 0;">
+        <div class="progress-bar-outer">
+          <div class="progress-bar-inner" style="width: 40%"></div>
+        </div>
+        <div class="progress-label">847 of ~2,100 cafés called · Phase 1 in progress</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- BOTTOM GRID -->
+  <div class="bottom-grid">
+    <!-- PRICE DISTRIBUTION -->
+    <div class="panel">
+      <div class="section-title">Price distribution</div>
+      <div class="dist-chart" id="distChart">
+        <!-- populated by JS -->
+      </div>
+    </div>
+
+    <!-- CHEAPEST GEMS -->
+    <div class="panel">
+      <div class="section-title">Cheapest finds ✦</div>
+      <div class="finds-list" id="findsList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- CONTRIBUTE -->
+  <div class="contribute-strip">
+    <div class="contribute-text">
+      <h3>Know a café we haven't called?</h3>
+      <p>Contribute your local price and help build the most complete flat white index in Sydney.</p>
+    </div>
+    <button class="contribute-btn" onclick="openModal()">Add a price →</button>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <h3>Add a price</h3>
+    <label>Café name</label>
+    <input type="text" id="cafeName" placeholder="e.g. Single O, Surry Hills">
+    <label>Suburb</label>
+    <input type="text" id="cafeSuburb" placeholder="e.g. Surry Hills">
+    <label>Flat white price (small)</label>
+    <input type="number" id="cafePrice" placeholder="5.50" step="0.10" min="3" max="15">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitPrice()">Submit price</button>
+    </div>
+    <div class="success-msg" id="successMsg">✓ Thanks! Price added to the index.</div>
+  </div>
+</div>
+
+<script>
+const suburbData = [
+  { name: "Darling Harbour", price: 7.20, count: 8 },
+  { name: "Double Bay", price: 7.20, count: 11 },
+  { name: "Mosman", price: 7.00, count: 16 },
+  { name: "Bondi", price: 6.90, count: 34 },
+  { name: "Kirribilli", price: 6.80, count: 9 },
+  { name: "CBD", price: 6.80, count: 42 },
+  { name: "Neutral Bay", price: 6.60, count: 13 },
+  { name: "Bondi Junction", price: 6.50, count: 22 },
+  { name: "Paddington", price: 6.50, count: 26 },
+  { name: "Darlinghurst", price: 6.30, count: 18 },
+  { name: "Surry Hills", price: 6.20, count: 31 },
+  { name: "Crows Nest", price: 6.10, count: 18 },
+  { name: "Pyrmont", price: 6.40, count: 15 },
+  { name: "Balmain", price: 5.90, count: 22 },
+  { name: "Chippendale", price: 5.70, count: 12 },
+  { name: "Glebe", price: 5.60, count: 14 },
+  { name: "Newtown", price: 5.40, count: 28 },
+  { name: "Redfern", price: 5.30, count: 17 },
+  { name: "Leichhardt", price: 5.20, count: 20 },
+  { name: "Erskineville", price: 5.00, count: 11 },
+  { name: "Marrickville", price: 4.80, count: 19 },
+  { name: "Strathfield", price: 4.80, count: 14 },
+  { name: "Ashfield", price: 4.60, count: 12 },
+].sort((a, b) => a.price - b.price);
+
+const gems = [
+  { name: "Cornerstone Espresso", suburb: "Ashfield", price: 4.00 },
+  { name: "Golden Age Coffee", suburb: "Marrickville", price: 4.20 },
+  { name: "Brother Espresso", suburb: "Strathfield", price: 4.20 },
+  { name: "Husk Coffee", suburb: "Leichhardt", price: 4.50 },
+  { name: "Five Senses", suburb: "Erskineville", price: 4.50 },
+  { name: "District Coffee", suburb: "Newtown", price: 4.60 },
+];
+
+const distData = [
+  { label: "$4–4.99", count: 38, max: 80 },
+  { label: "$5–5.49", count: 72, max: 80 },
+  { label: "$5.50", count: 80, max: 80 },
+  { label: "$5.51–5.99", count: 65, max: 80 },
+  { label: "$6–6.49", count: 54, max: 80 },
+  { label: "$6.50–6.99", count: 41, max: 80 },
+  { label: "$7+", count: 18, max: 80 },
+];
+
+function priceColor(p) {
+  if (p < 5.00) return 'price-good';
+  if (p < 6.00) return 'price-mid';
+  return 'price-warn';
+}
+
+function renderSuburbList(data) {
+  const list = document.getElementById('suburbList');
+  list.innerHTML = data.map((s, i) => `
+    <div class="suburb-row" id="row-${s.name.replace(/\s/g,'-')}">
+      <div class="price-bar-bg" style="width:${((s.price - 4) / 3.5 * 100).toFixed(0)}%"></div>
+      <span class="suburb-rank">${i + 1}</span>
+      <span class="suburb-name">${s.name}</span>
+      <span class="sample-badge">${s.count} cafés</span>
+      <span class="suburb-price ${priceColor(s.price)}">$${s.price.toFixed(2)}</span>
+    </div>
+  `).join('');
+}
+
+function renderDist() {
+  const chart = document.getElementById('distChart');
+  chart.innerHTML = distData.map(d => `
+    <div class="dist-bar-row">
+      <div class="dist-label">${d.label}</div>
+      <div class="dist-track">
+        <div class="dist-fill" style="width:${(d.count / d.max * 100).toFixed(0)}%"></div>
+      </div>
+      <div class="dist-count">${d.count}</div>
+    </div>
+  `).join('');
+}
+
+function renderGems() {
+  const list = document.getElementById('findsList');
+  list.innerHTML = gems.map(g => `
+    <div class="find-row">
+      <div class="find-gem">✦</div>
+      <div>
+        <div class="find-name">${g.name}</div>
+        <div class="find-suburb">${g.suburb}</div>
+      </div>
+      <div class="find-price">$${g.price.toFixed(2)}</div>
+    </div>
+  `).join('');
+}
+
+function setFilter(btn, type) {
+  document.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function selectSuburb(el) {
+  document.querySelectorAll('.suburb-zone').forEach(z => z.classList.remove('selected'));
+  el.classList.add('selected');
+  const name = el.dataset.suburb;
+  const price = parseFloat(el.dataset.price);
+  document.getElementById('selectedInfo').textContent = `${name} · avg $${price.toFixed(2)}`;
+  const rowId = 'row-' + name.replace(/\s/g, '-');
+  const row = document.getElementById(rowId);
+  if (row) {
+    document.querySelectorAll('.suburb-row').forEach(r => r.classList.remove('highlighted'));
+    row.classList.add('highlighted');
+    row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+}
+
+function setupTooltip() {
+  const container = document.getElementById('mapContainer');
+  const tooltip = document.getElementById('tooltip');
+
+  document.querySelectorAll('.suburb-zone').forEach(zone => {
+    zone.addEventListener('mousemove', (e) => {
+      const rect = container.getBoundingClientRect();
+      tooltip.style.left = (e.clientX - rect.left + 12) + 'px';
+      tooltip.style.top = (e.clientY - rect.top - 40) + 'px';
+      tooltip.innerHTML = `<strong>${zone.dataset.suburb}</strong>avg $${parseFloat(zone.dataset.price).toFixed(2)} · ${zone.dataset.count} cafés`;
+      tooltip.classList.add('visible');
+    });
+    zone.addEventListener('mouseleave', () => {
+      tooltip.classList.remove('visible');
+    });
+  });
+}
+
+function openModal() {
+  document.getElementById('modal').classList.add('open');
+  document.getElementById('successMsg').style.display = 'none';
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+}
+
+function submitPrice() {
+  const name = document.getElementById('cafeName').value;
+  const suburb = document.getElementById('cafeSuburb').value;
+  const price = document.getElementById('cafePrice').value;
+  if (!name || !suburb || !price) return;
+  document.getElementById('successMsg').style.display = 'block';
+  setTimeout(closeModal, 1800);
+}
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+renderSuburbList(suburbData);
+renderDist();
+renderGems();
+setupTooltip();
+
+let n = 847;
+setInterval(() => {
+  n += Math.floor(Math.random() * 3);
+  document.getElementById('cafesCalled').textContent = n.toLocaleString();
+}, 8000);
+</script>
+</body>
+</html>
