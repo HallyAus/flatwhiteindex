@@ -61,4 +61,16 @@ describe("extractPrices", () => {
     assert.strictEqual(result.price_small, 4.00);
     assert.strictEqual(result.price_large, 5.00);
   });
+
+  it("extractPrices handles transcript with only out-of-range prices", () => {
+    const result = extractPrices("It costs $1 for a tiny one and $50 for a huge one");
+    assert.strictEqual(result.price_small, null);
+    assert.strictEqual(result.price_large, null);
+    assert.strictEqual(result.needs_review, true);
+  });
+
+  it("extractPrices handles transcript with mixed valid/invalid prices", () => {
+    const result = extractPrices("Maybe $2 or actually $4.50 for a small");
+    assert.strictEqual(result.price_small, 4.50);
+  });
 });

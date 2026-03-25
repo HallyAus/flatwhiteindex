@@ -61,6 +61,13 @@ export function extractPrices(transcript) {
   };
 }
 
+function validatePayload(payload) {
+  if (!payload || typeof payload !== "object") return false;
+  if (!payload.call_id || typeof payload.call_id !== "string") return false;
+  if (!payload.metadata?.cafe_id) return false;
+  return true;
+}
+
 function inferStatus(payload) {
   if (payload.answered_by === "voicemail") return "voicemail";
   if (!payload.completed) return "no_answer";
@@ -79,12 +86,13 @@ function inferStatus(payload) {
 app.post("/webhook/call-complete", async (req, res) => {
   try {
     const payload = req.body;
+
+    if (!validatePayload(payload)) {
+      return res.status(400).json({ error: "Invalid payload structure" });
+    }
+
     const cafeId = payload.metadata?.cafe_id;
     const blandCallId = payload.call_id;
-
-    if (!cafeId || !blandCallId) {
-      return res.status(400).json({ error: "Missing cafe_id or call_id" });
-    }
 
     const transcript = (payload.transcripts || []).map(t => t.text).join(" ");
     const status = inferStatus(payload);
