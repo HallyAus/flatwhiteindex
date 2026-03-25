@@ -120,25 +120,12 @@
   .logo-area { display: flex; align-items: center; gap: 1rem; }
 
   .cup-icon {
-    width: 52px; height: 52px;
-    background: var(--espresso);
-    border-radius: 14px;
+    width: 72px; height: 72px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(44, 26, 14, 0.25);
-    position: relative;
-    overflow: hidden;
   }
 
-  .cup-icon::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%);
-    border-radius: 14px;
-  }
-
-  .cup-icon svg { width: 30px; height: 30px; position: relative; z-index: 1; }
+  .cup-icon svg { width: 72px; height: 72px; }
 
   h1 {
     font-family: 'Playfair Display', serif;
@@ -644,6 +631,102 @@
     flex-shrink: 0;
   }
 
+  .find-trophy {
+    font-size: 1.1rem;
+  }
+
+  /* SALARY CALCULATOR */
+  .salary-calc {
+    margin-top: 1.5rem;
+    background: var(--foam);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 1.5rem;
+    box-shadow: 0 1px 3px rgba(44, 26, 14, 0.06);
+  }
+
+  .salary-calc h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .salary-calc-desc {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .salary-input-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  .salary-input-row label {
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: var(--mid);
+  }
+
+  .salary-input-row input {
+    width: 140px;
+    padding: 0.6rem 0.8rem;
+    border: 1px solid var(--border);
+    background: white;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    color: var(--espresso);
+  }
+
+  .salary-input-row input:focus {
+    outline: none;
+    border-color: var(--ocean);
+  }
+
+  .salary-result {
+    margin-top: 1rem;
+    display: none;
+  }
+
+  .salary-result-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--milk);
+    border-radius: 10px;
+    margin-bottom: 0.5rem;
+  }
+
+  .salary-minutes {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--espresso);
+    line-height: 1;
+  }
+
+  .salary-minutes-label {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+  }
+
+  .salary-comparison {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    line-height: 1.6;
+    padding: 0 0.25rem;
+  }
+
+  @media (max-width: 540px) {
+    .salary-input-row { flex-direction: column; align-items: stretch; }
+    .salary-input-row input { width: 100%; }
+  }
+
   /* PROGRESS TRACKER */
   .progress-bar-outer {
     height: 6px; background: var(--milk);
@@ -1101,36 +1184,41 @@
   <header>
     <div class="logo-area">
       <div class="cup-icon" aria-hidden="true">
-        <svg viewBox="0 0 52 52" fill="none">
-          <!-- Wave -->
-          <path d="M2 38 C8 32, 16 44, 24 36 S40 28, 50 36" stroke="#F7F3ED" stroke-width="1.8" fill="none" opacity="0.35">
-            <animate attributeName="d" values="M2 38 C8 32, 16 44, 24 36 S40 28, 50 36;M2 38 C8 34, 16 42, 24 38 S40 30, 50 34;M2 38 C8 32, 16 44, 24 36 S40 28, 50 36" dur="3s" repeatCount="indefinite"/>
+        <svg viewBox="0 0 72 72" fill="none">
+          <!-- Waves -->
+          <path d="M0 52 C10 44, 22 58, 34 50 S56 40, 72 50" stroke="#2E6B8A" stroke-width="2.5" fill="none" opacity="0.3">
+            <animate attributeName="d" values="M0 52 C10 44, 22 58, 34 50 S56 40, 72 50;M0 52 C10 48, 22 54, 34 52 S56 44, 72 48;M0 52 C10 44, 22 58, 34 50 S56 40, 72 50" dur="3s" repeatCount="indefinite"/>
           </path>
-          <path d="M2 42 C8 36, 16 48, 24 40 S40 32, 50 40" stroke="#F7F3ED" stroke-width="1.2" fill="none" opacity="0.2">
-            <animate attributeName="d" values="M2 42 C8 36, 16 48, 24 40 S40 32, 50 40;M2 42 C8 38, 16 46, 24 42 S40 34, 50 38;M2 42 C8 36, 16 48, 24 40 S40 32, 50 40" dur="2.5s" repeatCount="indefinite"/>
+          <path d="M0 58 C10 50, 22 62, 34 54 S56 46, 72 54" stroke="#2E6B8A" stroke-width="1.8" fill="none" opacity="0.18">
+            <animate attributeName="d" values="M0 58 C10 50, 22 62, 34 54 S56 46, 72 54;M0 58 C10 52, 22 60, 34 56 S56 48, 72 52;M0 58 C10 50, 22 62, 34 54 S56 46, 72 54" dur="2.5s" repeatCount="indefinite"/>
           </path>
-          <!-- Spray/splash -->
-          <circle cx="14" cy="28" r="1" fill="#F7F3ED" opacity="0.3">
-            <animate attributeName="cy" values="28;26;28" dur="2s" repeatCount="indefinite"/>
+          <!-- Spray -->
+          <circle cx="18" cy="40" r="1.5" fill="#2E6B8A" opacity="0.2">
+            <animate attributeName="cy" values="40;37;40" dur="2s" repeatCount="indefinite"/>
           </circle>
-          <circle cx="18" cy="26" r="0.7" fill="#F7F3ED" opacity="0.2">
-            <animate attributeName="cy" values="26;24;26" dur="1.8s" repeatCount="indefinite"/>
+          <circle cx="24" cy="37" r="1" fill="#2E6B8A" opacity="0.15">
+            <animate attributeName="cy" values="37;34;37" dur="1.8s" repeatCount="indefinite"/>
           </circle>
-          <!-- Coffee cup on the wave (tilted, surfing!) -->
-          <g transform="translate(20, 14) rotate(-12, 10, 12)">
+          <!-- Coffee cup surfing (tilted) -->
+          <g transform="translate(22, 12) rotate(-10, 14, 16)">
             <!-- Cup body -->
-            <path d="M2 6h18l-2 12a2 2 0 0 1-2 1.5H6a2 2 0 0 1-2-1.5L2 6z" fill="#F7F3ED" opacity="0.92"/>
+            <path d="M2 10h26l-3 17a2.5 2.5 0 0 1-2.5 2H7.5a2.5 2.5 0 0 1-2.5-2L2 10z" fill="#2C1A0E" opacity="0.9"/>
+            <!-- Coffee surface -->
+            <ellipse cx="15" cy="12" rx="11" ry="2.5" fill="#6B3A1F"/>
             <!-- Latte art -->
-            <circle cx="11" cy="10" r="3.2" fill="none" stroke="#D4A26A" stroke-width="0.7" opacity="0.5"/>
-            <circle cx="11" cy="10" r="1.4" fill="#D4A26A" opacity="0.3"/>
+            <circle cx="15" cy="12" r="4.5" fill="none" stroke="#D4A26A" stroke-width="1" opacity="0.6"/>
+            <circle cx="15" cy="12" r="2" fill="#D4A26A" opacity="0.35"/>
             <!-- Handle -->
-            <path d="M20 9h1.5a2.5 2.5 0 0 1 0 5H20" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round" fill="none" opacity="0.8"/>
+            <path d="M28 14h2a3.5 3.5 0 0 1 0 7h-2" stroke="#2C1A0E" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.85"/>
             <!-- Steam -->
-            <path d="M7 4c0-1.5 1-2.5 1-2.5" stroke="#F7F3ED" stroke-width="0.8" stroke-linecap="round" opacity="0.3">
-              <animate attributeName="d" values="M7 4c0-1.5 1-2.5 1-2.5;M7 4c0-1.5 -0.5-2.5 -0.5-2.5;M7 4c0-1.5 1-2.5 1-2.5" dur="2.5s" repeatCount="indefinite"/>
+            <path d="M9 6c0-2.5 2-4.5 2-4.5" stroke="#8B7355" stroke-width="1.2" stroke-linecap="round" opacity="0.35">
+              <animate attributeName="d" values="M9 6c0-2.5 2-4.5 2-4.5;M9 6c0-2.5 -1-4.5 -1-4.5;M9 6c0-2.5 2-4.5 2-4.5" dur="2.5s" repeatCount="indefinite"/>
             </path>
-            <path d="M12 3c0-1.2 0.8-2 0.8-2" stroke="#F7F3ED" stroke-width="0.8" stroke-linecap="round" opacity="0.25">
-              <animate attributeName="d" values="M12 3c0-1.2 0.8-2 0.8-2;M12 3c0-1.2 -0.5-2 -0.5-2;M12 3c0-1.2 0.8-2 0.8-2" dur="3s" repeatCount="indefinite"/>
+            <path d="M16 4c0-2 1.5-3.5 1.5-3.5" stroke="#8B7355" stroke-width="1.2" stroke-linecap="round" opacity="0.25">
+              <animate attributeName="d" values="M16 4c0-2 1.5-3.5 1.5-3.5;M16 4c0-2 -0.8-3.5 -0.8-3.5;M16 4c0-2 1.5-3.5 1.5-3.5" dur="3s" repeatCount="indefinite"/>
+            </path>
+            <path d="M22 5c0-1.8 1-3 1-3" stroke="#8B7355" stroke-width="1" stroke-linecap="round" opacity="0.2">
+              <animate attributeName="d" values="M22 5c0-1.8 1-3 1-3;M22 5c0-1.8 -0.5-3 -0.5-3;M22 5c0-1.8 1-3 1-3" dur="3.5s" repeatCount="indefinite"/>
             </path>
           </g>
         </svg>
@@ -1255,6 +1343,34 @@
       <div class="finds-list" id="findsList">
         <!-- populated by JS -->
       </div>
+    </div>
+  </section>
+
+  <!-- SALARY CALCULATOR -->
+  <section class="salary-calc">
+    <h2>How long do you work for a coffee?</h2>
+    <p class="salary-calc-desc">Enter your annual salary to see how many minutes of your workday a flat white costs.</p>
+    <div class="salary-input-row">
+      <label for="salaryInput">Annual salary (AUD)</label>
+      <input type="number" id="salaryInput" placeholder="85,000" step="1000" min="20000" max="500000">
+      <button class="newsletter-btn" onclick="calcSalary()" style="padding:0.6rem 1.2rem;">Calculate</button>
+    </div>
+    <div class="salary-result" id="salaryResult">
+      <div class="salary-result-card">
+        <div>
+          <div class="salary-minutes" id="salaryMinutes">—</div>
+          <div class="salary-minutes-label">minutes of work<br>per flat white</div>
+        </div>
+        <div>
+          <div class="salary-minutes" id="salaryPerWeek" style="font-size:1.4rem; color:var(--ocean);">—</div>
+          <div class="salary-minutes-label">per week<br>(1 coffee/day)</div>
+        </div>
+        <div>
+          <div class="salary-minutes" id="salaryPerYear" style="font-size:1.4rem; color:var(--bronze);">—</div>
+          <div class="salary-minutes-label">per year<br>(5 days/week)</div>
+        </div>
+      </div>
+      <div class="salary-comparison" id="salaryComparison"></div>
     </div>
   </section>
 
@@ -1653,6 +1769,12 @@ function renderDist(distData) {
 
 function renderGems(gems) {
   const list = document.getElementById('findsList');
+  const trophies = ['🥇', '🥈', '🥉'];
+  // Sort all gems by price to assign trophies
+  const allSorted = [...gems].sort((a, b) => a.price - b.price);
+  const rankMap = {};
+  allSorted.forEach((g, i) => { rankMap[g.name] = i; });
+
   // Group by suburb
   const grouped = {};
   gems.forEach(g => {
@@ -1664,9 +1786,11 @@ function renderGems(gems) {
   Object.entries(grouped).forEach(([suburb, cafes]) => {
     html += `<div class="finds-suburb-header">${suburb}</div>`;
     cafes.forEach(g => {
+      const rank = rankMap[g.name];
+      const icon = rank < 3 ? trophies[rank] : '✦';
       html += `
         <div class="find-row">
-          <div class="find-gem">✦</div>
+          <div class="find-gem ${rank < 3 ? 'find-trophy' : ''}">${icon}</div>
           <div>
             <div class="find-name">${g.name}</div>
             ${g.note ? '<div class="find-note">' + g.note + '</div>' : ''}
@@ -1872,6 +1996,34 @@ function shareSuburb(name, price) {
       setTimeout(() => btn.textContent = 'Share this suburb', 2000);
     });
   }
+}
+
+// ─── SALARY CALCULATOR ───────────────────────────────────────────────────────
+function calcSalary() {
+  const salary = parseFloat(document.getElementById('salaryInput').value);
+  if (!salary || salary < 20000) return;
+
+  const avgPrice = 5.80; // Sydney average
+  const hourlyRate = salary / (52 * 38); // 52 weeks, 38 hr work week (AU standard)
+  const minutesPerCoffee = (avgPrice / hourlyRate) * 60;
+  const weekCost = avgPrice * 5;
+  const yearCost = weekCost * 48; // ~48 working weeks
+
+  document.getElementById('salaryMinutes').textContent = Math.round(minutesPerCoffee);
+  document.getElementById('salaryPerWeek').textContent = '$' + weekCost.toFixed(0);
+  document.getElementById('salaryPerYear').textContent = '$' + yearCost.toFixed(0);
+
+  // Fun comparisons
+  const cheapestMinutes = (4.00 / hourlyRate) * 60;
+  const dearestMinutes = (7.20 / hourlyRate) * 60;
+  const yearSaving = (avgPrice - 4.00) * 5 * 48;
+
+  document.getElementById('salaryComparison').innerHTML =
+    `At your salary, a $4.00 Ashfield flat white costs <strong>${Math.round(cheapestMinutes)} minutes</strong> of work, ` +
+    `while a $7.20 Darling Harbour one costs <strong>${Math.round(dearestMinutes)} minutes</strong>.<br>` +
+    `Switching to the cheapest suburb would save you <strong>$${yearSaving.toFixed(0)}/year</strong>.`;
+
+  document.getElementById('salaryResult').style.display = 'block';
 }
 
 // ─── EMBED ────────────────────────────────────────────────────────────────────
