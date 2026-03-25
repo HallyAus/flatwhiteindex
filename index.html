@@ -88,6 +88,8 @@
     --mid: #8B7355;
     --text-muted: #7A6248;
     --border: rgba(107, 58, 31, 0.18);
+    --ocean: #2E6B8A;
+    --ocean-light: #E6F0F5;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -155,7 +157,7 @@
 
   .updated-badge {
     display: flex; align-items: center; gap: 6px;
-    background: var(--espresso);
+    background: var(--ocean);
     color: var(--cream);
     font-size: 0.7rem; font-weight: 500;
     letter-spacing: 0.06em;
@@ -178,7 +180,7 @@
   .hero-insight {
     margin-top: 1.25rem;
     background: var(--milk);
-    border-left: 3px solid var(--bronze);
+    border-left: 3px solid var(--ocean);
     padding: 1rem 1.5rem;
     display: flex;
     align-items: center;
@@ -191,7 +193,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 2.5rem;
     font-weight: 700;
-    color: var(--bronze);
+    color: var(--ocean);
     line-height: 1;
     flex-shrink: 0;
   }
@@ -206,10 +208,21 @@
   /* STATS ROW */
   .stats-row {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(5, 1fr);
     gap: 1rem;
     padding: 2rem 0;
     border-bottom: 1px solid var(--border);
+  }
+
+  @media (max-width: 900px) {
+    .stats-row { grid-template-columns: repeat(3, 1fr); }
+  }
+  @media (max-width: 540px) {
+    .stats-row { grid-template-columns: repeat(2, 1fr); }
+    .stat-card:last-child { grid-column: 1 / -1; }
+    h1 { font-size: 1.8rem; }
+    .hero-lede { font-size: 1rem; }
+    .insight-number { font-size: 2rem; }
   }
 
   .stat-card {
@@ -607,7 +620,22 @@
     flex: 1; font-size: 0.85rem; font-weight: 400;
   }
   .find-suburb { font-size: 0.75rem; color: var(--text-muted); }
-  .find-note { font-size: 0.68rem; color: var(--text-muted); font-style: italic; margin-top: 1px; }
+  .find-note { font-size: 0.68rem; color: var(--ocean); font-style: italic; margin-top: 1px; }
+
+  .finds-suburb-header {
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 0.6rem 1.25rem 0.25rem;
+    background: var(--milk);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .finds-suburb-header:first-child {
+    border-radius: 0;
+  }
 
   .find-price {
     font-family: 'Playfair Display', serif;
@@ -648,8 +676,9 @@
 
   .about-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.25rem;
+    margin-top: 1.25rem;
   }
 
   @media (max-width: 780px) { .about-grid { grid-template-columns: 1fr; } }
@@ -787,7 +816,7 @@
   }
 
   .footer-links a:hover {
-    color: var(--espresso);
+    color: var(--ocean);
   }
 
   .footer-bottom {
@@ -1234,16 +1263,20 @@
     <h2>How we built this</h2>
     <div class="about-grid">
       <div class="about-block">
-        <h3>The method</h3>
-        <p>Every price in the Flat White Index is verified by direct phone contact with the café. We don't scrape menus or rely on user reports. We call and ask: "How much is a small flat white?"</p>
+        <h3>AI voice agent</h3>
+        <p>An AI voice agent called "Mia" phones each café and asks: "How much is a small flat white?" She handles voicemail, cafés that don't do flat whites, and the occasional hostile barista. Each call takes about 45 seconds.</p>
+      </div>
+      <div class="about-block">
+        <h3>The tech stack</h3>
+        <p>Cafés are discovered via Google Places API. Calls are dispatched through <strong>Bland.ai</strong> in batches of 10 with 30-second delays. Results arrive via webhook, and prices are extracted from transcripts using pattern matching — "$4.50", "four fifty", "five eighty".</p>
       </div>
       <div class="about-block">
         <h3>The data</h3>
-        <p>847 cafés called across 23 Sydney suburbs. Prices collected between January and March 2026. Updated monthly. Sample sizes shown for every suburb — treat anything under 10 cafés with caution.</p>
+        <p>847 cafés called across 23 Sydney suburbs. January–March 2026. Updated monthly. Chains excluded (no Starbucks, McCafé, Gloria Jean's). Sample sizes shown per suburb — anything under 10 cafés, treat with caution.</p>
       </div>
       <div class="about-block">
         <h3>What's next</h3>
-        <p>Phase 2 covers the Eastern Suburbs, North Shore, and Inner West expansion. Our goal: every independent café in Greater Sydney, priced and mapped.</p>
+        <p>Phase 2 expands to Greater Sydney — Eastern Suburbs, North Shore, Northern Beaches. Phase 3 hits <a href="/melbourne.html">Melbourne</a>. Our goal: every independent café in Australia's major cities, priced and mapped. Got a suburb you want us to call? <a href="#" onclick="openReconModal(); return false;">Request it below.</a></p>
       </div>
     </div>
   </section>
@@ -1276,10 +1309,13 @@
   <!-- CONTRIBUTE -->
   <div class="contribute-strip">
     <div class="contribute-text">
-      <h3>Spotted a price we've missed?</h3>
-      <p>Every submission is verified before it goes live. Help build Sydney's most accurate coffee price index.</p>
+      <h3>Help us grow the index</h3>
+      <p>Submit a price from your local, or request a suburb for our AI agent Mia to call next.</p>
     </div>
-    <button class="contribute-btn" onclick="openModal()">Submit a price →</button>
+    <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
+      <button class="contribute-btn" onclick="openModal()">Submit a price</button>
+      <button class="contribute-btn" style="background:var(--ocean);" onclick="openReconModal()">Request a suburb</button>
+    </div>
   </div>
 </main>
 
@@ -1357,17 +1393,41 @@
 <div class="modal-overlay" id="modal">
   <div class="modal">
     <h3>Submit a price</h3>
-    <label>Café name</label>
-    <input type="text" id="cafeName" placeholder="e.g. Single O, Surry Hills">
-    <label>Suburb</label>
+    <label for="cafeName">Café name</label>
+    <input type="text" id="cafeName" placeholder="e.g. Single O">
+    <label for="cafeSuburb">Suburb</label>
     <input type="text" id="cafeSuburb" placeholder="e.g. Surry Hills">
-    <label>Flat white price (small)</label>
-    <input type="number" id="cafePrice" placeholder="5.50" step="0.10" min="3" max="15">
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
+      <div>
+        <label for="cafePriceSmall">Small flat white</label>
+        <input type="number" id="cafePriceSmall" placeholder="4.50" step="0.10" min="3" max="15">
+      </div>
+      <div>
+        <label for="cafePriceLarge">Large flat white</label>
+        <input type="number" id="cafePriceLarge" placeholder="5.50" step="0.10" min="3" max="15">
+      </div>
+    </div>
     <div class="modal-actions">
       <button class="btn-secondary" onclick="closeModal()">Cancel</button>
       <button class="btn-primary" onclick="submitPrice()">Submit price</button>
     </div>
     <div class="success-msg" id="successMsg">✓ Thanks! Price submitted for verification.</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="reconModal">
+  <div class="modal">
+    <h3>Request a suburb</h3>
+    <p style="font-size:0.85rem; color:var(--mid); margin-bottom:1rem;">Want Mia to call cafés in your suburb? Tell us where and we'll add it to the queue.</p>
+    <label for="reconSuburb">Suburb name</label>
+    <input type="text" id="reconSuburb" placeholder="e.g. Manly, Cronulla, Parramatta">
+    <label for="reconEmail">Your email (optional — we'll notify you when it's done)</label>
+    <input type="email" id="reconEmail" placeholder="your@email.com">
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeReconModal()">Cancel</button>
+      <button class="btn-primary" onclick="submitRecon()">Request suburb</button>
+    </div>
+    <div class="success-msg" id="reconSuccess">✓ Added to the queue! We'll get Mia calling there soon.</div>
   </div>
 </div>
 
@@ -1402,16 +1462,16 @@ const DEMO_SUBURBS = [
 ];
 
 const DEMO_GEMS = [
-  { name: "Cornerstone Espresso", suburb: "Ashfield",      price: 4.00, note: "Cheapest in Sydney" },
-  { name: "Golden Age Coffee",    suburb: "Marrickville",   price: 4.20, note: "Cash only" },
-  { name: "Brother Espresso",     suburb: "Strathfield",    price: 4.20, note: "Near the station" },
-  { name: "Husk Coffee",          suburb: "Leichhardt",     price: 4.50, note: "Single origin option" },
-  { name: "Five Senses",          suburb: "Erskineville",   price: 4.50, note: "Tiny but mighty" },
-  { name: "District Coffee",      suburb: "Newtown",        price: 4.60, note: "King St stalwart" },
-  { name: "Grind House",          suburb: "Redfern",        price: 4.60, note: "Opens 6am" },
-  { name: "The Local Press",      suburb: "Marrickville",   price: 4.70, note: "Great pastries too" },
-  { name: "Bean Counter",         suburb: "Glebe",          price: 4.80, note: "Glebe Point Rd" },
-  { name: "Paramount Coffee",     suburb: "Chippendale",    price: 4.80, note: "Roasts in-house" },
+  { name: "Cornerstone Espresso", suburb: "Ashfield", price: 4.00, note: "Cheapest in Sydney" },
+  { name: "The Grind Café", suburb: "Ashfield", price: 4.30, note: "" },
+  { name: "Golden Age Coffee", suburb: "Marrickville", price: 4.20, note: "Best value inner west" },
+  { name: "Two Chaps", suburb: "Marrickville", price: 4.40, note: "" },
+  { name: "Brother Espresso", suburb: "Strathfield", price: 4.20, note: "" },
+  { name: "Platform 5", suburb: "Strathfield", price: 4.50, note: "" },
+  { name: "Husk Coffee", suburb: "Leichhardt", price: 4.50, note: "" },
+  { name: "Bar Ristretto", suburb: "Leichhardt", price: 4.60, note: "" },
+  { name: "Five Senses", suburb: "Erskineville", price: 4.50, note: "" },
+  { name: "District Coffee", suburb: "Newtown", price: 4.60, note: "" },
 ];
 
 const DEMO_DIST = [
@@ -1593,17 +1653,29 @@ function renderDist(distData) {
 
 function renderGems(gems) {
   const list = document.getElementById('findsList');
-  list.innerHTML = gems.map((g, i) => `
-    <div class="find-row">
-      <span class="find-rank">${i + 1}</span>
-      <div>
-        <div class="find-name">${g.name}</div>
-        <div class="find-suburb">${g.suburb}</div>
-        ${g.note ? `<div class="find-note">${g.note}</div>` : ''}
-      </div>
-      <div class="find-price">$${g.price.toFixed(2)}</div>
-    </div>
-  `).join('');
+  // Group by suburb
+  const grouped = {};
+  gems.forEach(g => {
+    if (!grouped[g.suburb]) grouped[g.suburb] = [];
+    grouped[g.suburb].push(g);
+  });
+
+  let html = '';
+  Object.entries(grouped).forEach(([suburb, cafes]) => {
+    html += `<div class="finds-suburb-header">${suburb}</div>`;
+    cafes.forEach(g => {
+      html += `
+        <div class="find-row">
+          <div class="find-gem">✦</div>
+          <div>
+            <div class="find-name">${g.name}</div>
+            ${g.note ? '<div class="find-note">' + g.note + '</div>' : ''}
+          </div>
+          <div class="find-price">$${g.price.toFixed(2)}</div>
+        </div>`;
+    });
+  });
+  list.innerHTML = html;
 }
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
@@ -1732,16 +1804,59 @@ function closeModal() {
 }
 
 function submitPrice() {
-  const name   = document.getElementById('cafeName').value;
+  const name = document.getElementById('cafeName').value;
   const suburb = document.getElementById('cafeSuburb').value;
-  const price  = document.getElementById('cafePrice').value;
-  if (!name || !suburb || !price) return;
+  const priceSmall = document.getElementById('cafePriceSmall').value;
+  const priceLarge = document.getElementById('cafePriceLarge').value;
+  if (!name || !suburb || (!priceSmall && !priceLarge)) return;
+
+  fetch('/api/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: 'price-submit',
+      source: 'price-submit:' + JSON.stringify({ name, suburb, small: priceSmall, large: priceLarge })
+    }),
+  }).catch(() => {});
+
   document.getElementById('successMsg').style.display = 'block';
-  setTimeout(closeModal, 1800);
+  setTimeout(closeModal, 2000);
 }
 
 document.getElementById('modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+
+// ─── SUBURB RECON ─────────────────────────────────────────────────────────────
+function openReconModal() {
+  document.getElementById('reconModal').classList.add('open');
+  document.getElementById('reconSuccess').style.display = 'none';
+}
+
+function closeReconModal() {
+  document.getElementById('reconModal').classList.remove('open');
+}
+
+function submitRecon() {
+  const suburb = document.getElementById('reconSuburb').value;
+  if (!suburb) return;
+  const email = document.getElementById('reconEmail').value;
+
+  fetch('/api/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      email: email || 'recon-request',
+      source: 'recon-request:' + suburb
+    }),
+  }).catch(() => {});
+
+  document.getElementById('reconSuccess').style.display = 'block';
+  setTimeout(closeReconModal, 2500);
+}
+
+document.getElementById('reconModal').addEventListener('click', function(e) {
+  if (e.target === this) closeReconModal();
 });
 
 // ─── SHARE ────────────────────────────────────────────────────────────────────
