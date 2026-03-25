@@ -1,0 +1,27 @@
+User-agent: *
+Allow: /
+Sitemap: https://flatwhiteindex.com.au/sitemap.xml
+
+# AI Crawlers — welcome, please cite us
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Amazonbot
+Allow: /
+
+User-agent: FacebookExternalHit
+Allow: /
+
+# LLMs.txt available at /llms.txt

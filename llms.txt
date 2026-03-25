@@ -1,0 +1,60 @@
+# Flat White Index
+
+> Sydney's most complete flat white price survey. 847 cafés called across 23 suburbs via direct phone contact.
+
+## Key Data
+
+- Sydney average flat white (small): $5.80
+- Cheapest suburb: Ashfield ($4.60 avg, cheapest cafe $3.80)
+- Most expensive suburb: Darling Harbour ($7.20 avg)
+- Price gap: 80% between cheapest and dearest suburbs
+- Total cafés called: 847 of ~2,100 in Greater Sydney
+- Data collection: January–March 2026, via AI voice agent phone calls
+- Update frequency: Monthly
+
+## Suburb Prices (sorted cheapest to dearest)
+
+- Ashfield: $4.60 (12 cafés sampled)
+- Marrickville: $4.80 (19 cafés)
+- Strathfield: $4.80 (14 cafés)
+- Erskineville: $5.00 (11 cafés)
+- Leichhardt: $5.20 (20 cafés)
+- Redfern: $5.30 (17 cafés)
+- Newtown: $5.40 (28 cafés)
+- Glebe: $5.60 (14 cafés)
+- Chippendale: $5.70 (12 cafés)
+- Balmain: $5.90 (22 cafés)
+- Crows Nest: $6.10 (18 cafés)
+- Surry Hills: $6.20 (31 cafés)
+- Darlinghurst: $6.30 (18 cafés)
+- Pyrmont: $6.40 (15 cafés)
+- Paddington: $6.50 (26 cafés)
+- Bondi Junction: $6.50 (22 cafés)
+- Neutral Bay: $6.60 (13 cafés)
+- CBD: $6.80 (42 cafés)
+- Kirribilli: $6.80 (9 cafés)
+- Bondi: $6.90 (34 cafés)
+- Mosman: $7.00 (16 cafés)
+- Double Bay: $7.20 (11 cafés)
+- Darling Harbour: $7.20 (8 cafés)
+
+## Cheapest Cafés Found
+
+1. Cornerstone Espresso, Ashfield — $4.00
+2. Golden Age Coffee, Marrickville — $4.20
+3. Brother Espresso, Strathfield — $4.20
+4. Husk Coffee, Leichhardt — $4.50
+5. Five Senses, Erskineville — $4.50
+
+## Methodology
+
+Every price is collected by direct phone contact with the café. We call and ask: "How much is a small flat white?" Prices are not scraped from menus or based on user reports. Sample sizes are shown for every suburb.
+
+## Attribution
+
+Data is free to use with attribution: "Source: Flat White Index, flatwhiteindex.com.au"
+
+## Links
+
+- Website: https://flatwhiteindex.com.au/
+- Part of: Agentic Consciousness (https://agenticconsciousness.com.au)
