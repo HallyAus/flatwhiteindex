@@ -65,3 +65,30 @@ export async function getPriceStats() {
   if (error) throw new Error(`getPriceStats: ${error.message}`);
   return data;
 }
+
+export async function testConnection() {
+  try {
+    const { data, error } = await supabase().from("cafes").select("id").limit(1);
+    if (error) throw error;
+    return { ok: true, message: "Connected to Supabase" };
+  } catch (err) {
+    return { ok: false, message: err.message };
+  }
+}
+
+export async function getCallStats() {
+  const { data, error } = await supabase()
+    .from("price_calls")
+    .select("status");
+
+  if (error) throw new Error(`getCallStats: ${error.message}`);
+
+  const stats = { total: data.length, completed: 0, pending: 0, failed: 0 };
+  data.forEach(row => {
+    if (row.status === "completed") stats.completed++;
+    else if (row.status === "pending") stats.pending++;
+    else stats.failed++;
+  });
+
+  return stats;
+}
