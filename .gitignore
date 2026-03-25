@@ -1,15 +1,25 @@
-# Environment
+# Environment & secrets
 .env
-.env.local
-.env.production
+.env.*
 secrets/
+env.example
 
-# Private memory (sensitive info — never commit)
-.claude/rules/memory-private.md
+# Project management (private — not for public repo)
+.claude/
+memory/
+strategy/
+specs/
+docs/superpowers/
+docs/architecture/
+reference/
+CLAUDE.md
+.mcp.json
+setup.sh
+files.zip
+*.bak
 
-# Beads database (synced via JSONL, not the db)
-.beads/beads.db
-.beads/dolt/
+# Beads database
+.beads/
 
 # OS
 .DS_Store
@@ -30,9 +40,9 @@ dist/
 # Bland.ai / ngrok
 *.ngrok-free.app
 
-# Generated mock data (not committed)
+# Generated data (not committed)
 mock-data.json
 public/mock-data.json
 
-# Newsletter subscribers (local fallback — not committed)
+# Newsletter subscribers
 subscribers.json

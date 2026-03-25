@@ -1,5 +1,8 @@
 User-agent: *
 Allow: /
+Disallow: /webhook/
+Disallow: /api/
+Disallow: /health
 Sitemap: https://flatwhiteindex.com.au/sitemap.xml
 
 # AI Crawlers — welcome, please cite us
