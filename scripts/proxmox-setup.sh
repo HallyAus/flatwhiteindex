@@ -207,7 +207,7 @@ case "${1:-help}" in
     journalctl -u flatwhite-webhook -f
     ;;
   health)
-    curl -s http://localhost:3001/health | node -e "process.stdin.on('data',d=>console.log(JSON.stringify(JSON.parse(d),null,2)))"
+    curl -s http://localhost:3001/health | node -e "let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>console.log(JSON.stringify(JSON.parse(d),null,2)))"
     ;;
   env)
     nano /opt/flatwhiteindex/.env

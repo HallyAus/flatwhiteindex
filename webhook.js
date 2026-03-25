@@ -4,6 +4,12 @@ import { saveCallResult } from "./db.js";
 const app = express();
 app.use(express.json());
 
+// Serve dashboard and static files
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+const __dirname = dirname(fileURLToPath(import.meta.url));
+app.use(express.static(__dirname));
+
 const PRICE_PATTERNS = [
   /\$\s*(\d+(?:\.\d{1,2})?)/g,
   /(\d+)\s*dollars?\s*(?:and\s*)?(\d+)?\s*cents?/gi,
@@ -146,6 +152,7 @@ if (isMainModule) {
     console.log(`\n🪝  Webhook receiver listening on port ${PORT}`);
     console.log(`   POST ${process.env.WEBHOOK_BASE_URL || 'http://localhost:' + PORT}/webhook/call-complete`);
     console.log(`   GET  /health`);
+    console.log(`   Dashboard: http://localhost:${PORT}/flatwhiteindex.html`);
   });
 
   process.on("SIGTERM", () => {
