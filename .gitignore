@@ -29,3 +29,6 @@ dist/
 
 # Bland.ai / ngrok
 *.ngrok-free.app
+
+# Generated mock data (not committed)
+mock-data.json
