@@ -17,6 +17,7 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   next();
 });
 
@@ -117,7 +118,7 @@ function inferStatus(payload) {
   return "completed";
 }
 
-// [SECURITY] Simple in-memory rate limiter
+// [SECURITY] Simple in-memory rate limiter with periodic cleanup
 const rateLimits = {};
 function rateLimit(key, maxPerMinute) {
   const now = Date.now();
@@ -127,6 +128,14 @@ function rateLimit(key, maxPerMinute) {
   rateLimits[key].push(now);
   return true;
 }
+// Purge stale rate limit keys every 5 minutes
+setInterval(() => {
+  const now = Date.now();
+  for (const key of Object.keys(rateLimits)) {
+    rateLimits[key] = rateLimits[key].filter(t => now - t < 60000);
+    if (rateLimits[key].length === 0) delete rateLimits[key];
+  }
+}, 300000);
 
 app.post("/webhook/call-complete", async (req, res) => {
   // [SECURITY] Rate limit: 100 webhook calls per minute
