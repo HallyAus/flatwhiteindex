@@ -17,6 +17,17 @@ const EXCLUDED_CHAINS = [
   "the coffee club", "boost juice", "donut king", "michel's",
 ];
 
+export function isExcludedChain(name) {
+  const nameLower = name.toLowerCase();
+  return EXCLUDED_CHAINS.some(chain => nameLower.includes(chain));
+}
+
+export function filterEligibleCafes(cafes) {
+  return cafes.filter(c => c.phone && !isExcludedChain(c.name));
+}
+
+export { EXCLUDED_CHAINS };
+
 async function main() {
   console.log(`\n☕  Flat White Index — Sydney Caller`);
   console.log(`   Mode: ${DRY_RUN ? "DRY RUN (no calls)" : "LIVE"}`);
@@ -55,7 +66,10 @@ async function main() {
   console.log("   Monitor: supabase dashboard → price_calls table");
 }
 
-main().catch(err => {
-  console.error("Fatal error:", err);
-  process.exit(1);
-});
+const isMainModule = process.argv[1]?.replace(/\\/g, "/").endsWith("index.js");
+if (isMainModule) {
+  main().catch(err => {
+    console.error("Fatal error:", err);
+    process.exit(1);
+  });
+}
