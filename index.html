@@ -74,12 +74,23 @@
   .cup-icon {
     width: 52px; height: 52px;
     background: var(--espresso);
-    border-radius: 12px;
+    border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(44, 26, 14, 0.25);
+    position: relative;
+    overflow: hidden;
   }
 
-  .cup-icon svg { width: 28px; height: 28px; }
+  .cup-icon::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%);
+    border-radius: 14px;
+  }
+
+  .cup-icon svg { width: 30px; height: 30px; position: relative; z-index: 1; }
 
   h1 {
     font-family: 'Playfair Display', serif;
@@ -635,29 +646,56 @@
   .site-footer {
     border-top: 1px solid var(--border);
     margin-top: 2.5rem;
-    padding: 2rem 0 1rem;
+    padding: 2.5rem 0 1.5rem;
   }
 
   .footer-content {
     max-width: 1100px;
     margin: 0 auto;
     padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
   }
 
   .footer-brand {
     font-size: 0.85rem;
-    line-height: 1.6;
-    margin-bottom: 1rem;
+    line-height: 1.8;
   }
 
   .footer-brand strong {
     font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+  }
+
+  .footer-parent {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--milk);
+    border-radius: 6px;
+    font-size: 0.72rem;
+    color: var(--mid);
+    text-decoration: none;
+    transition: background 0.15s;
+  }
+
+  .footer-parent:hover {
+    background: var(--border);
+    color: var(--espresso);
+  }
+
+  .footer-parent svg {
+    width: 14px;
+    height: 14px;
   }
 
   .footer-muted {
     font-size: 0.75rem;
     color: var(--text-muted);
-    line-height: 1.6;
+    line-height: 1.8;
   }
 
   .footer-muted a {
@@ -671,9 +709,8 @@
 
   .footer-links {
     display: flex;
-    gap: 1.5rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
+    flex-direction: column;
+    gap: 0.6rem;
   }
 
   .footer-links a {
@@ -685,6 +722,28 @@
 
   .footer-links a:hover {
     color: var(--espresso);
+  }
+
+  .footer-bottom {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .footer-content {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+    .footer-bottom {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 
   /* MODAL */
@@ -793,12 +852,27 @@
   <!-- HEADER -->
   <header>
     <div class="logo-area">
-      <div class="cup-icon">
-        <svg viewBox="0 0 28 28" fill="none">
-          <path d="M5 8h14l-2 12H7L5 8z" fill="#F7F3ED" opacity="0.9"/>
-          <path d="M19 10h2a3 3 0 0 1 0 6h-2" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-          <path d="M8 8C8 6 9 4 12 4s4 2 4 4" stroke="#F7F3ED" stroke-width="1.2" fill="none" opacity="0.5"/>
-          <path d="M5 21h14" stroke="#F7F3ED" stroke-width="1.5" stroke-linecap="round"/>
+      <div class="cup-icon" aria-hidden="true">
+        <svg viewBox="0 0 32 32" fill="none">
+          <!-- Steam wisps -->
+          <path d="M11 7c0-2 1.5-3.5 1.5-3.5" stroke="#F7F3ED" stroke-width="1" stroke-linecap="round" opacity="0.3">
+            <animate attributeName="d" values="M11 7c0-2 1.5-3.5 1.5-3.5;M11 7c0-2 -0.5-3.5 -0.5-3.5;M11 7c0-2 1.5-3.5 1.5-3.5" dur="3s" repeatCount="indefinite"/>
+          </path>
+          <path d="M16 6c0-2 1-3 1-3" stroke="#F7F3ED" stroke-width="1" stroke-linecap="round" opacity="0.25">
+            <animate attributeName="d" values="M16 6c0-2 1-3 1-3;M16 6c0-2 -1-3 -1-3;M16 6c0-2 1-3 1-3" dur="2.5s" repeatCount="indefinite"/>
+          </path>
+          <path d="M21 7c0-1.5 0.8-2.8 0.8-2.8" stroke="#F7F3ED" stroke-width="1" stroke-linecap="round" opacity="0.2">
+            <animate attributeName="d" values="M21 7c0-1.5 0.8-2.8 0.8-2.8;M21 7c0-1.5 -0.8-2.8 -0.8-2.8;M21 7c0-1.5 0.8-2.8 0.8-2.8" dur="3.5s" repeatCount="indefinite"/>
+          </path>
+          <!-- Cup body -->
+          <path d="M6 10h20l-2.5 14a2 2 0 0 1-2 1.7H10.5a2 2 0 0 1-2-1.7L6 10z" fill="#F7F3ED" opacity="0.92"/>
+          <!-- Latte art circle -->
+          <circle cx="16" cy="14" r="4" fill="none" stroke="#D4A26A" stroke-width="0.8" opacity="0.5"/>
+          <circle cx="16" cy="14" r="1.8" fill="#D4A26A" opacity="0.25"/>
+          <!-- Handle -->
+          <path d="M26 13h1.5a3 3 0 0 1 0 6H26" stroke="#F7F3ED" stroke-width="1.8" stroke-linecap="round" fill="none" opacity="0.85"/>
+          <!-- Saucer -->
+          <ellipse cx="16" cy="27.5" rx="10" ry="1.5" fill="#F7F3ED" opacity="0.3"/>
         </svg>
       </div>
       <div>
@@ -953,17 +1027,24 @@
 <footer class="site-footer">
   <div class="footer-content">
     <div class="footer-brand">
-      <strong>Flat White Index</strong> · Sydney · 2026<br>
-      <span class="footer-muted">An independent coffee price survey. Not affiliated with any café or brand.</span>
+      <strong>Flat White Index</strong><br>
+      <span class="footer-muted">An independent coffee price survey for Sydney.<br>Not affiliated with any cafe or brand.</span><br>
+      <a href="https://agenticconsciousness.com.au" target="_blank" rel="noopener" class="footer-parent">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+        Part of Agentic Consciousness
+      </a>
     </div>
     <div class="footer-links">
       <a href="#about">Methodology</a>
       <a href="#" onclick="openModal(); return false;">Submit a price</a>
       <a href="mailto:hello@flatwhiteindex.com.au">Media enquiries</a>
+      <a href="https://agenticconsciousness.com.au" target="_blank" rel="noopener">Agentic Consciousness</a>
     </div>
-    <div class="footer-muted">
-      Data free to use with attribution: "Source: Flat White Index, flatwhiteindex.com.au"<br>
-      ☕ <a href="https://buymeacoffee.com/printforge">Buy me a coffee</a> · 🛰️ <a href="https://www.starlink.com/referral">Free month of Starlink</a>
+    <div class="footer-bottom">
+      <span class="footer-muted">Data free to use with attribution: "Source: Flat White Index, flatwhiteindex.com.au"</span>
+      <span class="footer-muted">
+        <a href="https://buymeacoffee.com/printforge">Buy me a coffee</a> · <a href="https://www.starlink.com/referral">Free month of Starlink</a>
+      </span>
     </div>
   </div>
 </footer>
