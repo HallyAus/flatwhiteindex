@@ -193,11 +193,18 @@
     position: relative;
     height: 420px;
     background: #E8E0D5;
+    z-index: 1;
+  }
+
+  .panel:has(.map-container) {
+    overflow: visible;
   }
 
   #leaflet-map {
     width: 100%;
     height: 100%;
+    border-radius: 0 0 16px 16px;
+    z-index: 1;
   }
 
   /* Warm coffee filter on map tiles */
@@ -835,6 +842,9 @@ function initMap(suburbs) {
     marker.addTo(map);
     markers[s.name] = marker;
   });
+
+  // Force Leaflet to recalculate container size
+  setTimeout(() => map.invalidateSize(), 100);
 }
 
 // ─── SIDEBAR ──────────────────────────────────────────────────────────────────
