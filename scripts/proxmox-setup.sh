@@ -10,7 +10,7 @@
 #
 # What it does:
 #   1. Downloads Ubuntu 24.04 template
-#   2. Creates an LXC container (ID 300)
+#   2. Creates an LXC container (ID 700)
 #   3. Installs Node.js 20, git, ngrok
 #   4. Clones the repo
 #   5. Sets up systemd services for webhook + ngrok
@@ -25,7 +25,7 @@
 set -e
 
 # --- CONFIG (adjust these) ---------------------------------------------------
-CTID=300
+CTID=700
 HOSTNAME="flatwhite"
 MEMORY=512          # MB — Node.js is lightweight
 SWAP=256
