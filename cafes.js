@@ -103,6 +103,8 @@ function getSuburbCenter(suburb) {
   return centers[suburb] || centers.sydney_cbd;
 }
 
+export { extractSuburb, getSydneySearchGrid, getSuburbCenter };
+
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));
 }
