@@ -118,14 +118,39 @@ app.post("/webhook/call-complete", async (req, res) => {
   }
 });
 
-app.get("/health", (_, res) => res.json({ ok: true }));
+app.get("/health", (_, res) => {
+  res.json({
+    ok: true,
+    service: "flatwhiteindex-webhook",
+    uptime: Math.round(process.uptime()),
+    env: {
+      supabase: !!process.env.SUPABASE_URL,
+      webhook_url: process.env.WEBHOOK_BASE_URL || "not set",
+    },
+  });
+});
+
+function validateEnv() {
+  const required = ["SUPABASE_URL", "SUPABASE_SERVICE_KEY"];
+  const missing = required.filter(k => !process.env[k]);
+  if (missing.length > 0) {
+    console.warn(`⚠️  Missing env vars: ${missing.join(", ")} — webhook will start but DB writes will fail`);
+  }
+}
 
 const isMainModule = process.argv[1]?.replace(/\\/g, "/").endsWith("webhook.js");
 if (isMainModule) {
   const PORT = process.env.PORT || 3001;
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
+    validateEnv();
     console.log(`\n🪝  Webhook receiver listening on port ${PORT}`);
-    console.log(`   POST ${process.env.WEBHOOK_BASE_URL}/webhook/call-complete`);
+    console.log(`   POST ${process.env.WEBHOOK_BASE_URL || 'http://localhost:' + PORT}/webhook/call-complete`);
+    console.log(`   GET  /health`);
+  });
+
+  process.on("SIGTERM", () => {
+    console.log("Shutting down webhook server...");
+    server.close(() => process.exit(0));
   });
 }
 
