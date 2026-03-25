@@ -635,6 +635,98 @@
     font-size: 1.1rem;
   }
 
+  .winner-card {
+    background: linear-gradient(135deg, #2C1A0E 0%, #4A2E1A 100%);
+    margin: 0.75rem;
+    border-radius: 12px;
+    padding: 1.25rem;
+    color: var(--cream);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .winner-trophy {
+    font-size: 2.5rem;
+    line-height: 1;
+  }
+
+  .winner-info { flex: 1; }
+
+  .winner-label {
+    font-size: 0.65rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--bronze-light);
+    margin-bottom: 0.2rem;
+  }
+
+  .winner-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 0.15rem;
+  }
+
+  .winner-suburb {
+    font-size: 0.78rem;
+    color: rgba(247, 243, 237, 0.6);
+  }
+
+  .winner-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .podium {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .podium-item {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 0.75rem;
+    border-right: 1px solid var(--border);
+    font-size: 0.8rem;
+  }
+
+  .podium-item:last-child { border-right: none; }
+
+  .podium-medal { font-size: 1.3rem; flex-shrink: 0; }
+
+  .podium-name {
+    font-size: 0.78rem;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+
+  .podium-sub {
+    font-size: 0.65rem;
+    color: var(--text-muted);
+  }
+
+  .podium-price {
+    font-family: 'Playfair Display', serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--green);
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 540px) {
+    .podium { flex-direction: column; }
+    .podium-item { border-right: none; border-bottom: 1px solid var(--border); }
+    .podium-item:last-child { border-bottom: none; }
+    .winner-card { flex-wrap: wrap; }
+  }
+
   /* SALARY CALCULATOR */
   .salary-calc {
     margin-top: 1.5rem;
@@ -1339,7 +1431,13 @@
 
     <!-- CHEAPEST GEMS -->
     <div class="panel">
-      <h2 class="section-title">Cheapest finds ✦</h2>
+      <h2 class="section-title">Cheapest finds</h2>
+      <div class="winner-card" id="winnerCard">
+        <!-- populated by JS -->
+      </div>
+      <div class="podium" id="podium">
+        <!-- populated by JS -->
+      </div>
       <div class="finds-list" id="findsList">
         <!-- populated by JS -->
       </div>
@@ -1379,20 +1477,20 @@
     <h2>How we built this</h2>
     <div class="about-grid">
       <div class="about-block">
-        <h3>AI voice agent</h3>
-        <p>An AI voice agent called "Mia" phones each café and asks: "How much is a small flat white?" She handles voicemail, cafés that don't do flat whites, and the occasional hostile barista. Each call takes about 45 seconds.</p>
+        <h3>The calls</h3>
+        <p>An AI voice agent phones each café directly and asks one question: "How much is a small flat white?" It handles voicemail, cafés that don't serve them, and the occasional hang-up. Each call averages 45 seconds.</p>
       </div>
       <div class="about-block">
-        <h3>The tech stack</h3>
-        <p>Cafés are discovered via Google Places API. Calls are dispatched through <strong>Bland.ai</strong> in batches of 10 with 30-second delays. Results arrive via webhook, and prices are extracted from transcripts using pattern matching — "$4.50", "four fifty", "five eighty".</p>
+        <h3>The process</h3>
+        <p>Cafés are discovered automatically from public business listings. Calls go out in small batches during business hours, weekdays only. Prices are extracted from the call transcripts and verified before publishing.</p>
       </div>
       <div class="about-block">
         <h3>The data</h3>
-        <p>847 cafés called across 23 Sydney suburbs. January–March 2026. Updated monthly. Chains excluded (no Starbucks, McCafé, Gloria Jean's). Sample sizes shown per suburb — anything under 10 cafés, treat with caution.</p>
+        <p>847 cafés called across 23 Sydney suburbs so far. Chains excluded — only independent cafés. Prices collected January–March 2026, updated monthly. Sample sizes shown per suburb. Anything under 10 cafés, treat with caution.</p>
       </div>
       <div class="about-block">
         <h3>What's next</h3>
-        <p>Phase 2 expands to Greater Sydney — Eastern Suburbs, North Shore, Northern Beaches. Phase 3 hits <a href="/melbourne.html">Melbourne</a>. Our goal: every independent café in Australia's major cities, priced and mapped. Got a suburb you want us to call? <a href="#" onclick="openReconModal(); return false;">Request it below.</a></p>
+        <p>Phase 2 expands to Greater Sydney — Eastern Suburbs, North Shore, Northern Beaches. Phase 3 hits <a href="/melbourne.html">Melbourne</a>. The goal: every independent café in Australia's major cities, priced and mapped. Got a suburb you want us to call? <a href="#" onclick="openReconModal(); return false;">Request it here.</a></p>
       </div>
     </div>
   </section>
@@ -1768,16 +1866,47 @@ function renderDist(distData) {
 }
 
 function renderGems(gems) {
-  const list = document.getElementById('findsList');
-  const trophies = ['🥇', '🥈', '🥉'];
-  // Sort all gems by price to assign trophies
-  const allSorted = [...gems].sort((a, b) => a.price - b.price);
-  const rankMap = {};
-  allSorted.forEach((g, i) => { rankMap[g.name] = i; });
+  const sorted = [...gems].sort((a, b) => a.price - b.price);
+  const winner = sorted[0];
+  const runnerUp = sorted[1];
+  const third = sorted[2];
+  const rest = sorted.slice(3);
 
-  // Group by suburb
+  // Winner hero card
+  document.getElementById('winnerCard').innerHTML = `
+    <div class="winner-trophy">🏆</div>
+    <div class="winner-info">
+      <div class="winner-label">Sydney's cheapest flat white</div>
+      <div class="winner-name">${winner.name}</div>
+      <div class="winner-suburb">${winner.suburb}</div>
+    </div>
+    <div class="winner-price">$${winner.price.toFixed(2)}</div>
+  `;
+
+  // Podium — 2nd and 3rd
+  document.getElementById('podium').innerHTML = `
+    <div class="podium-item">
+      <div class="podium-medal">🥈</div>
+      <div>
+        <div class="podium-name">${runnerUp.name}</div>
+        <div class="podium-sub">${runnerUp.suburb}</div>
+      </div>
+      <div class="podium-price">$${runnerUp.price.toFixed(2)}</div>
+    </div>
+    <div class="podium-item">
+      <div class="podium-medal">🥉</div>
+      <div>
+        <div class="podium-name">${third.name}</div>
+        <div class="podium-sub">${third.suburb}</div>
+      </div>
+      <div class="podium-price">$${third.price.toFixed(2)}</div>
+    </div>
+  `;
+
+  // Rest grouped by suburb
+  const list = document.getElementById('findsList');
   const grouped = {};
-  gems.forEach(g => {
+  rest.forEach(g => {
     if (!grouped[g.suburb]) grouped[g.suburb] = [];
     grouped[g.suburb].push(g);
   });
@@ -1786,11 +1915,9 @@ function renderGems(gems) {
   Object.entries(grouped).forEach(([suburb, cafes]) => {
     html += `<div class="finds-suburb-header">${suburb}</div>`;
     cafes.forEach(g => {
-      const rank = rankMap[g.name];
-      const icon = rank < 3 ? trophies[rank] : '✦';
       html += `
         <div class="find-row">
-          <div class="find-gem ${rank < 3 ? 'find-trophy' : ''}">${icon}</div>
+          <div class="find-gem">✦</div>
           <div>
             <div class="find-name">${g.name}</div>
             ${g.note ? '<div class="find-note">' + g.note + '</div>' : ''}
