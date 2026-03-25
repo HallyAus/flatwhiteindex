@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&amp;family=DM+Sans:wght@300;400;500&amp;display=swap');
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#F7F3ED"/>
+
+  <!-- Subtle grain texture -->
+  <filter id="grain">
+    <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="4" stitchTiles="stitch"/>
+  </filter>
+  <rect width="1200" height="630" filter="url(#grain)" opacity="0.02"/>
+
+  <!-- Top accent bar -->
+  <rect width="1200" height="4" fill="#B5763A"/>
+
+  <!-- Logo icon -->
+  <rect x="80" y="80" width="64" height="64" rx="14" fill="#2C1A0E"/>
+  <path d="M93 91h28l-3.5 21a2 2 0 0 1-2 1.7h-17a2 2 0 0 1-2-1.7L93 91z" fill="#F7F3ED" opacity="0.9" transform="translate(0 3)"/>
+
+  <!-- Title -->
+  <text x="164" y="115" font-family="Playfair Display, serif" font-size="42" font-weight="700" fill="#2C1A0E">Flat White Index</text>
+  <text x="164" y="140" font-family="DM Sans, sans-serif" font-size="16" font-weight="300" fill="#8B7355" letter-spacing="2">SYDNEY COFFEE PRICE GUIDE · 2026</text>
+
+  <!-- Hero stat -->
+  <text x="80" y="240" font-family="DM Sans, sans-serif" font-size="20" fill="#7A6248">Sydney average flat white</text>
+  <text x="80" y="310" font-family="Playfair Display, serif" font-size="96" font-weight="700" fill="#2C1A0E">$5.80</text>
+
+  <!-- Divider -->
+  <line x1="80" y1="340" x2="500" y2="340" stroke="#B5763A" stroke-width="2" opacity="0.3"/>
+
+  <!-- Key stats -->
+  <text x="80" y="385" font-family="DM Sans, sans-serif" font-size="18" fill="#7A6248">847 cafes called across 23 suburbs</text>
+
+  <text x="80" y="430" font-family="DM Sans, sans-serif" font-size="22" font-weight="500" fill="#3A7D44">Cheapest: Ashfield $4.60</text>
+  <text x="80" y="465" font-family="DM Sans, sans-serif" font-size="22" font-weight="500" fill="#C0392B">Dearest: Darling Harbour $7.20</text>
+
+  <!-- 80% callout -->
+  <rect x="80" y="500" width="440" height="70" rx="12" fill="#2C1A0E"/>
+  <text x="105" y="530" font-family="Playfair Display, serif" font-size="32" font-weight="700" fill="#B5763A">80%</text>
+  <text x="175" y="530" font-family="DM Sans, sans-serif" font-size="16" fill="#F7F3ED" opacity="0.85">price gap between cheapest</text>
+  <text x="175" y="552" font-family="DM Sans, sans-serif" font-size="16" fill="#F7F3ED" opacity="0.85">and dearest Sydney suburbs</text>
+
+  <!-- Right side: mini suburb ranking -->
+  <rect x="620" y="180" width="500" height="380" rx="16" fill="#FAF8F4" stroke="#6B3A1F" stroke-opacity="0.18"/>
+
+  <text x="660" y="220" font-family="Playfair Display, serif" font-size="18" font-weight="600" fill="#2C1A0E">Price by suburb</text>
+
+  <!-- Suburb rows -->
+  <text x="660" y="260" font-family="DM Sans, sans-serif" font-size="15" fill="#7A6248">1</text>
+  <text x="690" y="260" font-family="DM Sans, sans-serif" font-size="15" fill="#2C1A0E">Ashfield</text>
+  <text x="1060" y="260" font-family="Playfair Display, serif" font-size="17" font-weight="600" fill="#3A7D44" text-anchor="end">$4.60</text>
+
+  <text x="660" y="293" font-family="DM Sans, sans-serif" font-size="15" fill="#7A6248">2</text>
+  <text x="690" y="293" font-family="DM Sans, sans-serif" font-size="15" fill="#2C1A0E">Marrickville</text>
+  <text x="1060" y="293" font-family="Playfair Display, serif" font-size="17" font-weight="600" fill="#3A7D44" text-anchor="end">$4.80</text>
+
+  <text x="660" y="326" font-family="DM Sans, sans-serif" font-size="15" fill="#7A6248">3</text>
+  <text x="690" y="326" font-family="DM Sans, sans-serif" font-size="15" fill="#2C1A0E">Strathfield</text>
+  <text x="1060" y="326" font-family="Playfair Display, serif" font-size="17" font-weight="600" fill="#3A7D44" text-anchor="end">$4.80</text>
+
+  <line x1="660" y1="345" x2="1060" y2="345" stroke="#6B3A1F" stroke-opacity="0.12"/>
+
+  <text x="860" y="375" font-family="DM Sans, sans-serif" font-size="13" fill="#7A6248" text-anchor="middle">· · ·</text>
+
+  <text x="660" y="410" font-family="DM Sans, sans-serif" font-size="15" fill="#7A6248">21</text>
+  <text x="700" y="410" font-family="DM Sans, sans-serif" font-size="15" fill="#2C1A0E">Mosman</text>
+  <text x="1060" y="410" font-family="Playfair Display, serif" font-size="17" font-weight="600" fill="#C0392B" text-anchor="end">$7.00</text>
+
+  <text x="660" y="443" font-family="DM Sans, sans-serif" font-size="15" fill="#7A6248">22</text>
+  <text x="700" y="443" font-family="DM Sans, sans-serif" font-size="15" fill="#2C1A0E">Double Bay</text>
+  <text x="1060" y="443" font-family="Playfair Display, serif" font-size="17" font-weight="600" fill="#C0392B" text-anchor="end">$7.20</text>
+
+  <text x="660" y="476" font-family="DM Sans, sans-serif" font-size="15" fill="#7A6248">23</text>
+  <text x="700" y="476" font-family="DM Sans, sans-serif" font-size="15" fill="#2C1A0E">Darling Harbour</text>
+  <text x="1060" y="476" font-family="Playfair Display, serif" font-size="17" font-weight="600" fill="#C0392B" text-anchor="end">$7.20</text>
+
+  <!-- URL -->
+  <text x="860" y="540" font-family="DM Sans, sans-serif" font-size="14" fill="#B5763A" text-anchor="middle" font-weight="500">flatwhiteindex.com.au</text>
+
+  <!-- Bottom accent -->
+  <rect y="626" width="1200" height="4" fill="#2C1A0E"/>
+</svg>
