@@ -1,12 +1,13 @@
 import express from "express";
 import { saveCallResult } from "./db.js";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const app = express();
 app.use(express.json());
 
 // Serve dashboard and static files
-import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 app.use(express.static(__dirname));
 
@@ -122,6 +123,37 @@ app.post("/webhook/call-complete", async (req, res) => {
     console.error("Webhook error:", err);
     res.status(500).json({ error: err.message });
   }
+});
+
+const SUBSCRIBERS_FILE = join(__dirname, 'subscribers.json');
+
+function loadSubscribers() {
+  if (!existsSync(SUBSCRIBERS_FILE)) return [];
+  try {
+    return JSON.parse(readFileSync(SUBSCRIBERS_FILE, 'utf-8'));
+  } catch { return []; }
+}
+
+function saveSubscriber(email, source) {
+  const subscribers = loadSubscribers();
+  if (subscribers.some(s => s.email === email)) return false; // already exists
+  subscribers.push({ email, source, subscribed_at: new Date().toISOString() });
+  writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(subscribers, null, 2));
+  return true;
+}
+
+app.post("/api/subscribe", (req, res) => {
+  const { email, source } = req.body;
+
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    return res.status(400).json({ error: "Valid email required" });
+  }
+
+  const sanitised = email.toLowerCase().trim();
+  const isNew = saveSubscriber(sanitised, source || 'website');
+
+  console.log(`📧 ${isNew ? 'New' : 'Existing'} subscriber: ${sanitised} (${source || 'website'})`);
+  res.json({ ok: true, new: isNew });
 });
 
 app.get("/health", (_, res) => {

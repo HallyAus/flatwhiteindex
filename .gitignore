@@ -32,3 +32,6 @@ dist/
 
 # Generated mock data (not committed)
 mock-data.json
+
+# Newsletter subscribers (local fallback — not committed)
+subscribers.json
