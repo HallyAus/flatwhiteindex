@@ -813,6 +813,103 @@
     padding: 1rem; color: var(--green);
     font-weight: 500;
   }
+
+  .newsletter-strip {
+    background: var(--espresso);
+    border-radius: 14px;
+    padding: 1.25rem 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .newsletter-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .newsletter-text {
+    color: var(--cream);
+    font-size: 0.9rem;
+  }
+
+  .newsletter-text strong {
+    font-family: 'Playfair Display', serif;
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 2px;
+  }
+
+  .newsletter-text span {
+    font-size: 0.8rem;
+    opacity: 0.7;
+  }
+
+  .newsletter-form {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  .newsletter-form input {
+    padding: 0.6rem 1rem;
+    border: 1px solid rgba(247, 243, 237, 0.2);
+    background: rgba(247, 243, 237, 0.08);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    color: var(--cream);
+    width: 220px;
+  }
+
+  .newsletter-form input::placeholder {
+    color: rgba(247, 243, 237, 0.4);
+  }
+
+  .newsletter-form input:focus {
+    outline: none;
+    border-color: var(--bronze);
+    background: rgba(247, 243, 237, 0.12);
+  }
+
+  .newsletter-btn {
+    padding: 0.6rem 1.2rem;
+    background: var(--bronze);
+    color: var(--cream);
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s;
+  }
+
+  .newsletter-btn:hover {
+    background: var(--bronze-light);
+  }
+
+  .newsletter-success {
+    display: none;
+    color: var(--green-light);
+    font-size: 0.85rem;
+    width: 100%;
+    padding-top: 0.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .newsletter-content {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .newsletter-form {
+      flex-direction: column;
+    }
+    .newsletter-form input {
+      width: 100%;
+    }
+  }
 </style>
 
 <script type="application/ld+json">
@@ -918,6 +1015,21 @@
       <div class="stat-label">Prices collected</div>
       <div class="stat-value" id="statPrices">512</div>
       <div class="stat-sub">60% answer rate</div>
+    </div>
+  </section>
+
+  <!-- NEWSLETTER -->
+  <section class="newsletter-strip">
+    <div class="newsletter-content">
+      <div class="newsletter-text">
+        <strong>The Flat White Index, monthly.</strong>
+        <span>Every suburb. Verified prices. Free.</span>
+      </div>
+      <form class="newsletter-form" onsubmit="subscribeEmail(event)">
+        <input type="email" id="newsletterEmail" placeholder="your@email.com" required>
+        <button type="submit" class="newsletter-btn">Subscribe</button>
+      </form>
+      <div class="newsletter-success" id="newsletterSuccess">Thanks! You'll get the first report soon.</div>
     </div>
   </section>
 
@@ -1300,6 +1412,7 @@ function highlightSuburb(name) {
     row.classList.add('highlighted');
     row.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
+  updateHash(name);
 }
 
 function clickSuburb(name) {
@@ -1419,6 +1532,33 @@ async function init() {
   renderDist(distData);
   renderGems(gems);
   initMap(mappable);
+  loadFromHash();
+}
+
+// ─── HASH ROUTING ─────────────────────────────────────────────────────────────
+function updateHash(suburbName) {
+  history.replaceState(null, '', '#suburb=' + encodeURIComponent(suburbName));
+}
+
+function loadFromHash() {
+  const hash = window.location.hash;
+  if (!hash.startsWith('#suburb=')) return;
+  const name = decodeURIComponent(hash.slice(8));
+  // Wait for map to be ready
+  setTimeout(() => {
+    clickSuburb(name);
+  }, 500);
+}
+
+// ─── NEWSLETTER ───────────────────────────────────────────────────────────────
+function subscribeEmail(e) {
+  e.preventDefault();
+  const email = document.getElementById('newsletterEmail').value;
+  if (!email) return;
+  // For now, just show success — hook up to Mailchimp/Supabase later
+  document.getElementById('newsletterSuccess').style.display = 'block';
+  document.querySelector('.newsletter-form').style.display = 'none';
+  console.log('Newsletter signup:', email);
 }
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────
