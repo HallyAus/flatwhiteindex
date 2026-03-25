@@ -79,7 +79,7 @@ function generateMockData() {
 }
 
 const data = generateMockData();
-const outPath = join(__dirname, "..", "mock-data.json");
+const outPath = join(__dirname, "..", "public", "mock-data.json");
 writeFileSync(outPath, JSON.stringify(data, null, 2));
 console.log(`Generated ${data.total_cafes} mock cafes across ${data.total_suburbs} suburbs`);
 console.log(`Average flat white: $${data.avg_price}`);

@@ -4,25 +4,36 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const app = express();
-app.use(express.json());
-
-// Serve dashboard and static files
 const __dirname = dirname(fileURLToPath(import.meta.url));
+const app = express();
+
+// [SECURITY] Body size limit — prevent DoS via large payloads
+app.use(express.json({ limit: '64kb' }));
+
+// [SECURITY] Basic security headers
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-XSS-Protection', '0');
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
+  next();
+});
 
 // Cache static assets aggressively, HTML briefly
 app.use((req, res, next) => {
-  if (req.path.match(/\.(js|css|svg|png|jpg|woff2?)$/)) {
-    res.setHeader('Cache-Control', 'public, max-age=86400, immutable'); // 1 day
+  if (req.path.match(/\.(css|svg|png|jpg|woff2?)$/)) {
+    res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
   } else if (req.path.endsWith('.json')) {
-    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min
+    res.setHeader('Cache-Control', 'public, max-age=300');
   } else if (req.path.endsWith('.html') || req.path === '/') {
-    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 min
+    res.setHeader('Cache-Control', 'public, max-age=300');
   }
   next();
 });
 
-app.use(express.static(__dirname));
+// [SECURITY] Serve ONLY the public/ directory — never the project root
+app.use(express.static(join(__dirname, 'public'), { dotfiles: 'deny' }));
 
 const PRICE_PATTERNS = [
   /\$\s*(\d+(?:\.\d{1,2})?)/g,
@@ -81,10 +92,13 @@ export function extractPrices(transcript) {
   };
 }
 
+// [SECURITY] Validate payload structure and field lengths
 function validatePayload(payload) {
   if (!payload || typeof payload !== "object") return false;
   if (!payload.call_id || typeof payload.call_id !== "string") return false;
+  if (payload.call_id.length > 128) return false;
   if (!payload.metadata?.cafe_id) return false;
+  if (typeof payload.metadata.cafe_id !== "string" || payload.metadata.cafe_id.length > 128) return false;
   return true;
 }
 
@@ -103,7 +117,23 @@ function inferStatus(payload) {
   return "completed";
 }
 
+// [SECURITY] Simple in-memory rate limiter
+const rateLimits = {};
+function rateLimit(key, maxPerMinute) {
+  const now = Date.now();
+  if (!rateLimits[key]) rateLimits[key] = [];
+  rateLimits[key] = rateLimits[key].filter(t => now - t < 60000);
+  if (rateLimits[key].length >= maxPerMinute) return false;
+  rateLimits[key].push(now);
+  return true;
+}
+
 app.post("/webhook/call-complete", async (req, res) => {
+  // [SECURITY] Rate limit: 100 webhook calls per minute
+  if (!rateLimit('webhook', 100)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   try {
     const payload = req.body;
 
@@ -114,7 +144,13 @@ app.post("/webhook/call-complete", async (req, res) => {
     const cafeId = payload.metadata?.cafe_id;
     const blandCallId = payload.call_id;
 
-    const transcript = (payload.transcripts || []).map(t => t.text).join(" ");
+    // [SECURITY] Cap transcript length
+    const transcript = (payload.transcripts || [])
+      .slice(0, 100)
+      .map(t => String(t.text || '').slice(0, 2000))
+      .join(" ")
+      .slice(0, 50000);
+
     const status = inferStatus(payload);
     const { price_small, price_large, needs_review } = extractPrices(transcript);
 
@@ -129,16 +165,20 @@ app.post("/webhook/call-complete", async (req, res) => {
       completed_at: new Date().toISOString(),
     });
 
-    console.log(`✓ ${payload.metadata?.cafe_name} (${payload.metadata?.suburb}) — ${status} — small: $${price_small}, large: $${price_large}`);
+    console.log(`✓ ${String(payload.metadata?.cafe_name || '').slice(0, 100)} (${String(payload.metadata?.suburb || '').slice(0, 50)}) — ${status} — small: $${price_small}, large: $${price_large}`);
 
     res.json({ ok: true });
   } catch (err) {
     console.error("Webhook error:", err);
-    res.status(500).json({ error: err.message });
+    // [SECURITY] Never leak internal error messages
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
+// --- Newsletter / price submissions ---
+
 const SUBSCRIBERS_FILE = join(__dirname, 'subscribers.json');
+const MAX_SUBSCRIBERS = 10000;
 
 function loadSubscribers() {
   if (!existsSync(SUBSCRIBERS_FILE)) return [];
@@ -149,26 +189,38 @@ function loadSubscribers() {
 
 function saveSubscriber(email, source) {
   const subscribers = loadSubscribers();
-  if (subscribers.some(s => s.email === email)) return false; // already exists
+  if (subscribers.length >= MAX_SUBSCRIBERS) return false;
+  if (subscribers.some(s => s.email === email)) return false;
   subscribers.push({ email, source, subscribed_at: new Date().toISOString() });
   writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(subscribers, null, 2));
   return true;
 }
 
 app.post("/api/subscribe", (req, res) => {
+  // [SECURITY] Rate limit: 10 subscribes per minute per IP
+  const ip = req.ip || 'unknown';
+  if (!rateLimit('sub:' + ip, 10)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
   const { email, source } = req.body;
 
-  if (!email || typeof email !== 'string' || !email.includes('@')) {
+  if (!email || typeof email !== 'string' || !email.includes('@') || email.length > 254) {
     return res.status(400).json({ error: "Valid email required" });
   }
 
+  // [SECURITY] Sanitise source field
+  const sanitisedSource = typeof source === 'string'
+    ? source.slice(0, 200)
+    : 'website';
   const sanitised = email.toLowerCase().trim();
-  const isNew = saveSubscriber(sanitised, source || 'website');
+  const isNew = saveSubscriber(sanitised, sanitisedSource);
 
-  console.log(`📧 ${isNew ? 'New' : 'Existing'} subscriber: ${sanitised} (${source || 'website'})`);
+  console.log(`📧 ${isNew ? 'New' : 'Existing'} subscriber: ${sanitised} (${sanitisedSource.slice(0, 30)})`);
   res.json({ ok: true, new: isNew });
 });
 
+// [SECURITY] Health endpoint — no sensitive values exposed
 app.get("/health", (_, res) => {
   res.json({
     ok: true,
@@ -176,7 +228,7 @@ app.get("/health", (_, res) => {
     uptime: Math.round(process.uptime()),
     env: {
       supabase: !!process.env.SUPABASE_URL,
-      webhook_url: process.env.WEBHOOK_BASE_URL || "not set",
+      webhook_url: !!process.env.WEBHOOK_BASE_URL,
     },
   });
 });
@@ -195,9 +247,10 @@ if (isMainModule) {
   const server = app.listen(PORT, () => {
     validateEnv();
     console.log(`\n🪝  Webhook receiver listening on port ${PORT}`);
-    console.log(`   POST ${process.env.WEBHOOK_BASE_URL || 'http://localhost:' + PORT}/webhook/call-complete`);
+    console.log(`   POST /webhook/call-complete`);
+    console.log(`   POST /api/subscribe`);
     console.log(`   GET  /health`);
-    console.log(`   Dashboard: http://localhost:${PORT}/flatwhiteindex.html`);
+    console.log(`   Dashboard: http://localhost:${PORT}/`);
   });
 
   process.on("SIGTERM", () => {
