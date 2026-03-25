@@ -112,10 +112,13 @@ app.post("/webhook/call-complete", async (req, res) => {
 
 app.get("/health", (_, res) => res.json({ ok: true }));
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`\n🪝  Webhook receiver listening on port ${PORT}`);
-  console.log(`   POST ${process.env.WEBHOOK_BASE_URL}/webhook/call-complete`);
-});
+const isMainModule = process.argv[1]?.replace(/\\/g, "/").endsWith("webhook.js");
+if (isMainModule) {
+  const PORT = process.env.PORT || 3001;
+  app.listen(PORT, () => {
+    console.log(`\n🪝  Webhook receiver listening on port ${PORT}`);
+    console.log(`   POST ${process.env.WEBHOOK_BASE_URL}/webhook/call-complete`);
+  });
+}
 
 export default app;
