@@ -47,11 +47,7 @@ async function main() {
   console.log("📍 Fetching Sydney cafés from Google Places...");
   const cafes = await fetchSydneyCafes(SYDNEY_BOUNDS, SUBURB_FILTER);
 
-  const filtered = cafes.filter(c => {
-    if (!c.phone) return false;
-    const nameLower = c.name.toLowerCase();
-    return !EXCLUDED_CHAINS.some(chain => nameLower.includes(chain));
-  });
+  const filtered = filterEligibleCafes(cafes);
 
   console.log(`   Found ${cafes.length} cafés → ${filtered.length} eligible (have phone, not a chain)\n`);
 
