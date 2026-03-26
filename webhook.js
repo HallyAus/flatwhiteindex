@@ -405,16 +405,36 @@ function validateEnv() {
   }
 }
 
+// Twilio status callback (voicemail detection, call completion)
+app.post("/webhook/twilio-status", (req, res) => {
+  const { CallSid, CallStatus, AnsweredBy } = req.body;
+  console.log(`📱 Twilio status: ${CallSid} — ${CallStatus} (${AnsweredBy || 'unknown'})`);
+  res.sendStatus(200);
+});
+
 const isMainModule = process.argv[1]?.replace(/\\/g, "/").endsWith("webhook.js");
 if (isMainModule) {
   const PORT = process.env.PORT || 3001;
-  const server = app.listen(PORT, () => {
+  const server = app.listen(PORT, async () => {
     validateEnv();
     console.log(`\n🪝  Webhook receiver listening on port ${PORT}`);
     console.log(`   POST /webhook/call-complete`);
     console.log(`   POST /api/subscribe`);
     console.log(`   GET  /health`);
     console.log(`   Dashboard: http://localhost:${PORT}/`);
+
+    // Set up Twilio media stream WebSocket if using Twilio provider
+    if (process.env.CALL_PROVIDER === "twilio") {
+      try {
+        const { setupMediaStreamServer } = await import("./caller-twilio.js");
+        if (setupMediaStreamServer) {
+          setupMediaStreamServer(server);
+          console.log(`   WSS /media-stream (Twilio + OpenAI Realtime)`);
+        }
+      } catch (err) {
+        console.warn("⚠️  Twilio media stream setup failed:", err.message);
+      }
+    }
   });
 
   process.on("SIGTERM", () => {
