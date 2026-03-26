@@ -8,7 +8,7 @@ When they pick up, wait a moment, then say: "Hi there, is this {{cafe_name}}?"
 
 If yes: "Great, I'm calling from the Flat White Index. We're a free coffee price guide for Sydney. Quick question — how much is a regular flat white?"
 
-When they answer: "Lovely, thanks so much! Have a great day."
+When they answer, confirm the exact amount: "So that's [dollars] dollars [cents]? Perfect, thanks so much! Have a great day."
 
 If they ask who you are: "The Flat White Index — it's at flatwhiteindex.com.au."
 If they ask if you're AI: "Yes I am — just collecting prices for a public guide."
@@ -66,6 +66,16 @@ async function dispatchSingleCall(cafe) {
       max_duration: 2,
       answered_by_enabled: true,
       wait_for_greeting: true,
+      analysis_schema: {
+        price: {
+          type: "number",
+          description: "The price of a regular flat white in AUD, e.g. 4.60",
+        },
+        has_flat_white: {
+          type: "boolean",
+          description: "Whether the cafe serves flat whites",
+        },
+      },
       webhook: `${process.env.WEBHOOK_BASE_URL}/webhook/call-complete`,
       metadata: {
         cafe_id: cafe.id,

@@ -56,17 +56,40 @@ export function extractPrices(transcript) {
 
   const prices = [];
 
+  // Pattern 1: $X.XX or $X
   const dollarMatches = [...transcript.matchAll(/\$\s*(\d+(?:\.\d{1,2})?)/g)];
   dollarMatches.forEach(m => {
     const val = parseFloat(m[1]);
     if (val >= 3 && val <= 15) prices.push(val);
   });
 
-  const wordMatches = [...transcript.matchAll(/\b(four|five|six|seven|eight|nine|ten)\s+(fifty|eighty|twenty|thirty|forty|sixty|seventy|ninety)\b/gi)];
+  // Pattern 2: "X.XX" or "X dollars XX" as bare numbers in context
+  const decimalMatches = [...transcript.matchAll(/\b(\d+)\.(\d{1,2})\b/g)];
+  decimalMatches.forEach(m => {
+    const val = parseFloat(m[0]);
+    if (val >= 3 && val <= 15) prices.push(val);
+  });
+
+  // Pattern 3: "X dollars and Y cents" or "X dollars Y"
+  const dollarCentMatches = [...transcript.matchAll(/(\d+)\s*dollars?\s*(?:and\s*)?(\d{1,2})\s*(?:cents?)?/gi)];
+  dollarCentMatches.forEach(m => {
+    const val = parseFloat(m[1]) + parseFloat(m[2]) / 100;
+    if (val >= 3 && val <= 15) prices.push(val);
+  });
+
+  // Pattern 4: Word prices — "four sixty", "five fifty"
+  const wordMatches = [...transcript.matchAll(/\b(three|four|five|six|seven|eight|nine|ten)\s+(ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)\b/gi)];
   wordMatches.forEach(m => {
     const dollars = WORD_TO_NUM[m[1].toLowerCase()];
     const cents = WORD_TO_NUM[m[2].toLowerCase()];
     if (dollars !== undefined && cents !== undefined) prices.push(dollars + cents);
+  });
+
+  // Pattern 5: "X dollars" without cents (whole dollar price)
+  const wholeDollarMatches = [...transcript.matchAll(/\b(\d+)\s*dollars?\b/gi)];
+  wholeDollarMatches.forEach(m => {
+    const val = parseFloat(m[1]);
+    if (val >= 3 && val <= 15) prices.push(val);
   });
 
   const uniquePrices = [...new Set(prices)].sort((a, b) => a - b);
@@ -161,7 +184,15 @@ app.post("/webhook/call-complete", async (req, res) => {
       .slice(0, 50000);
 
     const status = inferStatus(payload);
-    const { price_small, price_large, needs_review } = extractPrices(transcript);
+    let { price_small, price_large, needs_review } = extractPrices(transcript);
+
+    // Prefer Bland.ai's structured analysis if available (more reliable than regex)
+    const analysis = payload.analysis || payload.variables || {};
+    if (analysis.price && typeof analysis.price === 'number' && analysis.price >= 3 && analysis.price <= 15) {
+      price_small = analysis.price;
+      needs_review = false;
+      console.log(`   📊 Using Bland.ai analysis price: $${analysis.price}`);
+    }
 
     await saveCallResult({
       cafe_id: cafeId,
