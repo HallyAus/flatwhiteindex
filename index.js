@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { fetchSydneyCafes } from "./cafes.js";
 import { dispatchCalls } from "./caller.js";
-import { upsertCafes, markCafesBulkStatus, getCafeByPlaceId } from "./db.js";
+import { upsertCafes, markCafesBulkStatus, getCafeByPlaceId, getCalledCafeIds, getEligibleCafesFromDb } from "./db.js";
 
 const BATCH_SIZE = parseInt(process.argv.find(a => a.startsWith("--batch-size="))?.split("=")[1] || "10");
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -128,13 +128,33 @@ async function main() {
     return;
   }
 
-  const callableCafes = filtered.filter(c => !c.alreadyCalled);
-  console.log(`📞 Dispatching calls to ${callableCafes.length} cafés in batches of ${BATCH_SIZE}...\n`);
+  // Get eligible cafes from DB (they have real UUIDs) and exclude already-called ones
+  console.log("🔍 Checking which cafés have already been called...");
+  const [dbCafes, calledIds] = await Promise.all([
+    getEligibleCafesFromDb(),
+    getCalledCafeIds(),
+  ]);
 
-  await dispatchCalls(callableCafes, BATCH_SIZE);
+  const uncalled = dbCafes.filter(c => !calledIds.has(c.id));
+  const alreadyCalled = dbCafes.length - uncalled.length;
 
-  console.log("\n✅ All batches dispatched. Results will arrive via webhook.");
-  console.log("   Monitor: supabase dashboard → price_calls table");
+  console.log(`   ${dbCafes.length} eligible in DB, ${alreadyCalled} already called, ${uncalled.length} remaining\n`);
+
+  if (uncalled.length === 0) {
+    console.log("✅ All eligible cafés have been called! Nothing to do.");
+    return;
+  }
+
+  // Take only BATCH_SIZE from the uncalled list
+  const batch = uncalled.slice(0, BATCH_SIZE);
+  console.log(`📞 Dispatching ${batch.length} calls (batch of ${BATCH_SIZE})...\n`);
+
+  await dispatchCalls(batch, BATCH_SIZE);
+
+  const remaining = uncalled.length - batch.length;
+  console.log(`\n✅ Batch dispatched. Results will arrive via webhook.`);
+  console.log(`   ${remaining} cafés remaining — run again for the next batch.`);
+  console.log("   Monitor: journalctl -u flatwhite-webhook -f");
 }
 
 const isMainModule = process.argv[1]?.replace(/\\/g, "/").endsWith("index.js");

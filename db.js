@@ -42,6 +42,26 @@ export async function markCafesBulkStatus(googlePlaceIds, status, reason = null)
   if (error) throw new Error(`markCafesBulkStatus: ${error.message}`);
 }
 
+export async function getCalledCafeIds() {
+  const { data, error } = await supabase()
+    .from("price_calls")
+    .select("cafe_id");
+
+  if (error) throw new Error(`getCalledCafeIds: ${error.message}`);
+  return new Set(data.map(r => r.cafe_id));
+}
+
+export async function getEligibleCafesFromDb() {
+  const { data, error } = await supabase()
+    .from("cafes")
+    .select("id, google_place_id, name, suburb, phone, lat, lng")
+    .eq("status", "eligible")
+    .not("phone", "is", null);
+
+  if (error) throw new Error(`getEligibleCafesFromDb: ${error.message}`);
+  return data;
+}
+
 export async function getCafeByPlaceId(googlePlaceId) {
   const { data, error } = await supabase()
     .from("cafes")
