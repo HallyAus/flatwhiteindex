@@ -10,61 +10,50 @@ export async function fetchSydneyCafes(bounds, suburbFilter = null) {
     : getSydneySearchGrid(bounds);
 
   for (const location of searchLocations) {
-    let pageToken = null;
-
-    do {
-      const body = {
-        includedTypes: ["cafe"],
-        maxResultCount: 20,
-        locationRestriction: {
-          circle: {
-            center: { latitude: location.lat, longitude: location.lng },
-            radius: 2000.0,
-          },
+    const body = {
+      includedTypes: ["cafe"],
+      maxResultCount: 20,
+      locationRestriction: {
+        circle: {
+          center: { latitude: location.lat, longitude: location.lng },
+          radius: 2000.0,
         },
-      };
+      },
+    };
 
-      if (pageToken) {
-        body.pageToken = pageToken;
-      }
+    const res = await fetch(`${PLACES_API}:searchNearby`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": process.env.GOOGLE_PLACES_API_KEY,
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.location,places.rating",
+      },
+      body: JSON.stringify(body),
+    });
 
-      const res = await fetch(`${PLACES_API}:searchNearby`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": process.env.GOOGLE_PLACES_API_KEY,
-          "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.location,places.rating,nextPageToken",
-        },
-        body: JSON.stringify(body),
+    const data = await res.json();
+
+    if (data.error) {
+      throw new Error(`Places API error: ${data.error.status} — ${data.error.message}`);
+    }
+
+    for (const place of data.places || []) {
+      if (seen.has(place.id)) continue;
+      seen.add(place.id);
+
+      const phone = place.nationalPhoneNumber?.replace(/\s/g, "") || null;
+
+      cafes.push({
+        google_place_id: place.id,
+        name: place.displayName?.text || "Unknown",
+        address: place.formattedAddress || null,
+        suburb: extractSuburb(place.formattedAddress),
+        phone,
+        lat: place.location?.latitude || null,
+        lng: place.location?.longitude || null,
+        google_rating: place.rating || null,
       });
-
-      const data = await res.json();
-
-      if (data.error) {
-        throw new Error(`Places API error: ${data.error.status} — ${data.error.message}`);
-      }
-
-      for (const place of data.places || []) {
-        if (seen.has(place.id)) continue;
-        seen.add(place.id);
-
-        const phone = place.nationalPhoneNumber?.replace(/\s/g, "") || null;
-
-        cafes.push({
-          google_place_id: place.id,
-          name: place.displayName?.text || "Unknown",
-          address: place.formattedAddress || null,
-          suburb: extractSuburb(place.formattedAddress),
-          phone,
-          lat: place.location?.latitude || null,
-          lng: place.location?.longitude || null,
-          google_rating: place.rating || null,
-        });
-      }
-
-      pageToken = data.nextPageToken || null;
-      if (pageToken) await sleep(2000);
-    } while (pageToken);
+    }
 
     await sleep(200);
   }
