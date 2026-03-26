@@ -1,5 +1,5 @@
 import express from "express";
-import { saveCallResult } from "./db.js";
+import { saveCallResult, getPriceStats, getCallStats } from "./db.js";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -181,6 +181,111 @@ app.post("/webhook/call-complete", async (req, res) => {
     console.error("Webhook error:", err);
     // [SECURITY] Never leak internal error messages
     res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// --- Live dashboard data API ---
+
+let dashboardCache = null;
+let dashboardCacheTime = 0;
+const CACHE_TTL = 300000; // 5 minutes
+
+app.get("/api/dashboard", async (req, res) => {
+  try {
+    const now = Date.now();
+    if (dashboardCache && (now - dashboardCacheTime) < CACHE_TTL) {
+      return res.json(dashboardCache);
+    }
+
+    const [priceData, callStats] = await Promise.all([
+      getPriceStats(),
+      getCallStats(),
+    ]);
+
+    // Group by suburb
+    const suburbMap = {};
+    priceData.forEach(row => {
+      const suburb = row.cafes?.suburb || 'Unknown';
+      if (!suburbMap[suburb]) {
+        suburbMap[suburb] = {
+          suburb,
+          lat: row.cafes?.lat,
+          lng: row.cafes?.lng,
+          prices: [],
+          cafes: [],
+        };
+      }
+      suburbMap[suburb].prices.push(row.price_small);
+      suburbMap[suburb].cafes.push({
+        name: row.cafes?.name,
+        suburb,
+        price: row.price_small,
+        price_large: row.price_large,
+        rating: row.cafes?.google_rating,
+      });
+    });
+
+    const suburbs = Object.values(suburbMap).map(s => {
+      const prices = s.prices.filter(Boolean).sort((a, b) => a - b);
+      const avg = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+      return {
+        suburb: s.suburb,
+        avg_price: Math.round(avg * 100) / 100,
+        sample_size: prices.length,
+        min_price: prices[0] || null,
+        max_price: prices[prices.length - 1] || null,
+        lat: s.lat,
+        lng: s.lng,
+      };
+    }).sort((a, b) => a.avg_price - b.avg_price);
+
+    // Top cheapest cafes
+    const allCafes = Object.values(suburbMap).flatMap(s => s.cafes).filter(c => c.price);
+    allCafes.sort((a, b) => a.price - b.price);
+    const gems = allCafes.slice(0, 12).map(c => ({
+      name: c.name,
+      suburb: c.suburb,
+      price: c.price,
+      note: '',
+    }));
+
+    // Distribution
+    const allPrices = priceData.map(r => r.price_small).filter(Boolean);
+    const buckets = [
+      { label: '$3–3.99', min: 3, max: 4 },
+      { label: '$4–4.49', min: 4, max: 4.5 },
+      { label: '$4.50–4.99', min: 4.5, max: 5 },
+      { label: '$5–5.49', min: 5, max: 5.5 },
+      { label: '$5.50–5.99', min: 5.5, max: 6 },
+      { label: '$6–6.49', min: 6, max: 6.5 },
+      { label: '$6.50+', min: 6.5, max: 99 },
+    ];
+    const maxCount = Math.max(...buckets.map(b => allPrices.filter(p => p >= b.min && p < b.max).length), 1);
+    const distribution = buckets.map(b => ({
+      label: b.label,
+      count: allPrices.filter(p => p >= b.min && p < b.max).length,
+      max: maxCount,
+    }));
+
+    const avgPrice = allPrices.length > 0
+      ? Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length * 100) / 100
+      : 0;
+
+    dashboardCache = {
+      generated_at: new Date().toISOString(),
+      total_cafes: callStats.total,
+      prices_collected: callStats.completed,
+      avg_price: avgPrice,
+      suburbs,
+      gems,
+      distribution,
+    };
+    dashboardCacheTime = now;
+
+    res.json(dashboardCache);
+  } catch (err) {
+    console.error("Dashboard API error:", err);
+    res.status(500).json({ error: "Failed to load dashboard data" });
   }
 });
 
