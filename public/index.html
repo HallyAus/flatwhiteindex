@@ -1956,11 +1956,13 @@ function renderGems(gems) {
 
 // ─── STATS ────────────────────────────────────────────────────────────────────
 function updateStats(suburbs, totalCafes, pricesCollected, avgPrice) {
+  if (!suburbs || suburbs.length === 0) return; // No price data yet — handled by init
+
   const sorted = [...suburbs].sort((a, b) => a.price - b.price);
   const cheapest = sorted[0];
   const dearest = sorted[sorted.length - 1];
 
-  const avg = avgPrice != null
+  const avg = avgPrice != null && avgPrice > 0
     ? avgPrice
     : suburbs.reduce((s, x) => s + x.price, 0) / suburbs.length;
 
