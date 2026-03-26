@@ -1754,6 +1754,7 @@ function initMap(suburbs) {
       <div class="legend-row"><div class="legend-dot" style="background:#3A7D44"></div> Under $4.50</div>
       <div class="legend-row"><div class="legend-dot" style="background:#B5763A"></div> $4.50 – $5.50</div>
       <div class="legend-row"><div class="legend-dot" style="background:#C0392B"></div> Over $5.50</div>
+      <div class="legend-row"><div class="legend-dot" style="background:#9C8872;opacity:0.5"></div> Discovered</div>
     `;
     return div;
   };
@@ -1809,6 +1810,30 @@ function initMap(suburbs) {
 
   // Force Leaflet to recalculate container size
   setTimeout(() => map.invalidateSize(), 100);
+}
+
+// Add discovered (unprice) cafes as grey pulsing dots
+function addDiscoveredMarkers(discovered) {
+  if (!map || !discovered || !discovered.length) return;
+
+  discovered.forEach(c => {
+    const marker = L.circleMarker([c.lat, c.lng], {
+      radius: 5,
+      fillColor: '#9C8872',
+      fillOpacity: 0.5,
+      color: '#9C8872',
+      weight: 1,
+      className: 'discovered-marker',
+    });
+
+    marker.bindTooltip(
+      '<strong style="font-family:DM Sans,sans-serif">' + c.name + '</strong><br>' +
+      '<span style="font-size:0.75rem;color:#9C8872">Discovered — awaiting call</span>',
+      { direction: 'top', offset: [0, -5] }
+    );
+
+    marker.addTo(map);
+  });
 }
 
 // ─── SIDEBAR ──────────────────────────────────────────────────────────────────
@@ -2007,6 +2032,7 @@ async function init() {
   renderDist(distData);
   renderGems(gems);
   initMap(mappable);
+  if (raw && raw.discovered) addDiscoveredMarkers(raw.discovered);
   loadFromHash();
 
   // Update dynamic text based on real data

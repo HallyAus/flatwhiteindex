@@ -1,5 +1,5 @@
 import express from "express";
-import { saveCallResult, getPriceStats, getCallStats } from "./db.js";
+import { saveCallResult, getPriceStats, getCallStats, getDiscoveredCafes } from "./db.js";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -197,9 +197,10 @@ app.get("/api/dashboard", async (req, res) => {
       return res.json(dashboardCache);
     }
 
-    const [priceData, callStats] = await Promise.all([
+    const [priceData, callStats, discoveredCafes] = await Promise.all([
       getPriceStats(),
       getCallStats(),
+      getDiscoveredCafes(),
     ]);
 
     // Group by suburb
@@ -271,14 +272,29 @@ app.get("/api/dashboard", async (req, res) => {
       ? Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length * 100) / 100
       : 0;
 
+    // Build discovered cafes list (found but not yet priced)
+    const pricedCafeIds = new Set(priceData.map(r => r.cafes?.name).filter(Boolean));
+    const discovered = discoveredCafes
+      .filter(c => c.lat && c.lng && !pricedCafeIds.has(c.name))
+      .map(c => ({
+        name: c.name,
+        suburb: c.suburb,
+        lat: c.lat,
+        lng: c.lng,
+        rating: c.google_rating,
+        status: 'discovered',
+      }));
+
     dashboardCache = {
       generated_at: new Date().toISOString(),
-      total_cafes: callStats.total,
+      total_cafes: callStats.total || discoveredCafes.length,
+      total_discovered: discoveredCafes.length,
       prices_collected: callStats.completed,
       avg_price: avgPrice,
       suburbs,
       gems,
       distribution,
+      discovered,
     };
     dashboardCacheTime = now;
 

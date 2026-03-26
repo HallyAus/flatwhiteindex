@@ -66,6 +66,15 @@ export async function getPriceStats() {
   return data;
 }
 
+export async function getDiscoveredCafes() {
+  const { data, error } = await supabase()
+    .from("cafes")
+    .select("id, name, suburb, lat, lng, google_rating, phone");
+
+  if (error) throw new Error(`getDiscoveredCafes: ${error.message}`);
+  return data;
+}
+
 export async function testConnection() {
   try {
     const { data, error } = await supabase().from("cafes").select("id").limit(1);

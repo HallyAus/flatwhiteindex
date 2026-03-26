@@ -17,9 +17,18 @@ const EXCLUDED_CHAINS = [
   "the coffee club", "boost juice", "donut king", "michel's",
 ];
 
+// Non-cafe venues that Google Places tags as "cafe"
+const EXCLUDED_VENUES = [
+  "museum", "gallery", "library", "cinema", "theater", "theatre",
+  "nightclub", "club", "bar & grill", "hotel", "hostel", "motel",
+  "dymocks", "bookstore", "bookshop", "ivy sydney",
+  "university", "hospital", "airport",
+];
+
 export function isExcludedChain(name) {
   const nameLower = name.toLowerCase();
-  return EXCLUDED_CHAINS.some(chain => nameLower.includes(chain));
+  return EXCLUDED_CHAINS.some(chain => nameLower.includes(chain))
+    || EXCLUDED_VENUES.some(venue => nameLower.includes(venue));
 }
 
 export function filterEligibleCafes(cafes) {
