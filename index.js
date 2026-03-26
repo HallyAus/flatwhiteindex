@@ -14,16 +14,29 @@ const SYDNEY_BOUNDS = {
 };
 
 const EXCLUDED_CHAINS = [
-  "starbucks", "mccafe", "gloria jean", "hudsons", "zarraffa",
-  "the coffee club", "boost juice", "donut king", "michel's",
+  "starbucks", "mccafe", "mcdonald", "gloria jean", "hudsons", "zarraffa",
+  "the coffee club", "boost juice", "donut king", "michel's patisserie",
+  "jamaica blue", "coffee guru", "muzz buzz", "soul origin",
 ];
 
-// Non-cafe venues that Google Places tags as "cafe"
+// Non-cafe venues that Google Places incorrectly tags as "cafe"
 const EXCLUDED_VENUES = [
+  // Retail / supermarkets
+  "woolworths", "coles", "aldi", "iga", "metro haymarket",
+  // Bookstores
+  "dymocks", "bookstore", "bookshop", "kinokuniya",
+  // Entertainment / nightlife
   "museum", "gallery", "library", "cinema", "theater", "theatre",
-  "nightclub", "club", "bar & grill", "hotel", "hostel", "motel",
-  "dymocks", "bookstore", "bookshop", "ivy sydney",
-  "university", "hospital", "airport",
+  "nightclub", "club", "bar & grill", "ivy sydney", "casino",
+  // Accommodation
+  "hotel", "hostel", "motel", "resort", "airbnb",
+  // Institutions
+  "university", "hospital", "airport", "station",
+  // Fast food / not coffee-focused
+  "subway", "hungry jack", "kfc", "pizza", "sushi", "nando",
+  "grill'd", "oporto", "red rooster", "kebab",
+  // Department stores
+  "david jones", "myer", "target", "kmart",
 ];
 
 export function isExcludedChain(name) {
@@ -48,18 +61,29 @@ async function main() {
   const cafes = await fetchSydneyCafes(SYDNEY_BOUNDS, SUBURB_FILTER);
 
   const filtered = filterEligibleCafes(cafes);
+  const excluded = cafes.filter(c => !filtered.includes(c));
 
-  console.log(`   Found ${cafes.length} cafés → ${filtered.length} eligible (have phone, not a chain)\n`);
+  console.log(`   Found ${cafes.length} cafés → ${filtered.length} eligible, ${excluded.length} excluded\n`);
 
   console.log("💾 Upserting cafés to Supabase...");
   await upsertCafes(filtered);
 
   if (DRY_RUN) {
-    console.log("\n🔍 Dry run — first 5 cafés that would be called:");
-    filtered.slice(0, 5).forEach(c => {
-      console.log(`   ${c.name} | ${c.suburb} | ${c.phone}`);
+    console.log("✅ ELIGIBLE — would be called:");
+    filtered.forEach((c, i) => {
+      console.log(`   ${i + 1}. ${c.name} | ${c.suburb || '—'} | ${c.phone}`);
     });
-    console.log("\n✅ Dry run complete. Remove --dry-run to make live calls.");
+
+    if (excluded.length > 0) {
+      console.log(`\n❌ EXCLUDED (${excluded.length}):`);
+      excluded.forEach(c => {
+        const reason = !c.phone ? 'no phone' : 'filtered name';
+        console.log(`   ✗ ${c.name} | ${c.suburb || '—'} | ${c.phone || 'no phone'} [${reason}]`);
+      });
+    }
+
+    console.log(`\n📊 Summary: ${filtered.length} eligible, ${excluded.length} excluded, ${cafes.length} total`);
+    console.log("✅ Dry run complete. Remove --dry-run to make live calls.");
     return;
   }
 
