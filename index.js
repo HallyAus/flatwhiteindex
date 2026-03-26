@@ -6,6 +6,7 @@ import { upsertCafes } from "./db.js";
 const BATCH_SIZE = parseInt(process.argv.find(a => a.startsWith("--batch-size="))?.split("=")[1] || "10");
 const DRY_RUN = process.argv.includes("--dry-run");
 const SUBURB_FILTER = process.argv.find(a => a.startsWith("--suburb="))?.split("=")[1];
+const TEST_NUMBER = process.argv.find(a => a.startsWith("--test-call="))?.split("=")[1];
 
 const SYDNEY_BOUNDS = {
   northeast: { lat: -33.578, lng: 151.343 },
@@ -63,6 +64,22 @@ async function main() {
       console.log(`   ${c.name} | ${c.suburb} | ${c.phone}`);
     });
     console.log("\n✅ Dry run complete. Remove --dry-run to make live calls.");
+    return;
+  }
+
+  if (TEST_NUMBER) {
+    console.log(`\n🧪 TEST CALL — calling ${TEST_NUMBER} as "Test Café"`);
+    console.log(`   Mia will call you, confirm the café name, and ask for a flat white price.`);
+    console.log(`   Pretend you're a barista and give her a price!\n`);
+    const testCafe = {
+      id: filtered[0]?.id || "test",
+      name: "Test Café",
+      phone: TEST_NUMBER,
+      suburb: "Sydney",
+    };
+    await dispatchCalls([testCafe], 1);
+    console.log("\n✅ Test call dispatched. Check webhook logs for the result.");
+    console.log("   journalctl -u flatwhite-webhook -f");
     return;
   }
 
