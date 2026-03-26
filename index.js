@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { fetchSydneyCafes } from "./cafes.js";
 import { dispatchCalls } from "./caller.js";
-import { upsertCafes } from "./db.js";
+import { upsertCafes, markCafesBulkStatus } from "./db.js";
 
 const BATCH_SIZE = parseInt(process.argv.find(a => a.startsWith("--batch-size="))?.split("=")[1] || "10");
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -65,8 +65,21 @@ async function main() {
 
   console.log(`   Found ${cafes.length} cafés → ${filtered.length} eligible, ${excluded.length} excluded\n`);
 
-  console.log("💾 Upserting cafés to Supabase...");
-  await upsertCafes(filtered);
+  console.log("💾 Upserting ALL cafés to Supabase...");
+  await upsertCafes(cafes);
+
+  // Mark eligible/excluded status in DB
+  if (filtered.length > 0) {
+    const eligibleIds = filtered.map(c => c.google_place_id);
+    await markCafesBulkStatus(eligibleIds, "eligible");
+  }
+  if (excluded.length > 0) {
+    const excludedIds = excluded.filter(c => c.google_place_id).map(c => c.google_place_id);
+    if (excludedIds.length > 0) {
+      await markCafesBulkStatus(excludedIds, "excluded", "filtered");
+    }
+  }
+  console.log(`   ✓ ${filtered.length} marked eligible, ${excluded.length} marked excluded`);
 
   if (DRY_RUN) {
     console.log("✅ ELIGIBLE — would be called:");

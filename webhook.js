@@ -287,9 +287,12 @@ app.get("/api/dashboard", async (req, res) => {
 
     dashboardCache = {
       generated_at: new Date().toISOString(),
-      total_cafes: callStats.total || discoveredCafes.length,
+      total_cafes: callStats.cafes_total || discoveredCafes.length,
+      total_eligible: callStats.cafes_eligible || discoveredCafes.length,
+      total_excluded: callStats.cafes_excluded || 0,
       total_discovered: discoveredCafes.length,
       prices_collected: callStats.completed,
+      calls_total: callStats.total,
       avg_price: avgPrice,
       suburbs,
       gems,

@@ -20,6 +20,28 @@ export async function upsertCafes(cafes) {
   if (error) throw new Error(`upsertCafes: ${error.message}`);
 }
 
+export async function markCafeStatus(googlePlaceId, status, reason = null) {
+  const update = { status };
+  if (reason) update.exclude_reason = reason;
+  const { error } = await supabase()
+    .from("cafes")
+    .update(update)
+    .eq("google_place_id", googlePlaceId);
+
+  if (error) throw new Error(`markCafeStatus: ${error.message}`);
+}
+
+export async function markCafesBulkStatus(googlePlaceIds, status, reason = null) {
+  const update = { status };
+  if (reason) update.exclude_reason = reason;
+  const { error } = await supabase()
+    .from("cafes")
+    .update(update)
+    .in("google_place_id", googlePlaceIds);
+
+  if (error) throw new Error(`markCafesBulkStatus: ${error.message}`);
+}
+
 export async function markCallDispatched(cafeId, blandCallId) {
   const { error } = await supabase()
     .from("price_calls")
@@ -69,7 +91,8 @@ export async function getPriceStats() {
 export async function getDiscoveredCafes() {
   const { data, error } = await supabase()
     .from("cafes")
-    .select("id, name, suburb, lat, lng, google_rating, phone");
+    .select("id, name, suburb, lat, lng, google_rating, phone, status, exclude_reason")
+    .in("status", ["eligible", "discovered"]);
 
   if (error) throw new Error(`getDiscoveredCafes: ${error.message}`);
   return data;
@@ -86,18 +109,31 @@ export async function testConnection() {
 }
 
 export async function getCallStats() {
-  const { data, error } = await supabase()
+  // Count all cafes by status
+  const { data: cafes, error: cafeErr } = await supabase()
+    .from("cafes")
+    .select("status");
+
+  if (cafeErr) throw new Error(`getCallStats: ${cafeErr.message}`);
+
+  const { data: calls, error: callErr } = await supabase()
     .from("price_calls")
     .select("status");
 
-  if (error) throw new Error(`getCallStats: ${error.message}`);
+  if (callErr) throw new Error(`getCallStats: ${callErr.message}`);
 
-  const stats = { total: data.length, completed: 0, pending: 0, failed: 0 };
-  data.forEach(row => {
-    if (row.status === "completed") stats.completed++;
-    else if (row.status === "pending") stats.pending++;
-    else stats.failed++;
+  const cafeStats = { total: cafes.length, eligible: 0, excluded: 0 };
+  cafes.forEach(c => {
+    if (c.status === 'excluded') cafeStats.excluded++;
+    else cafeStats.eligible++;
   });
 
-  return stats;
+  const callStats = { total: calls.length, completed: 0, pending: 0, failed: 0 };
+  calls.forEach(row => {
+    if (row.status === "completed") callStats.completed++;
+    else if (row.status === "pending") callStats.pending++;
+    else callStats.failed++;
+  });
+
+  return { ...callStats, cafes_total: cafeStats.total, cafes_eligible: cafeStats.eligible, cafes_excluded: cafeStats.excluded };
 }
