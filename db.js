@@ -42,6 +42,17 @@ export async function markCafesBulkStatus(googlePlaceIds, status, reason = null)
   if (error) throw new Error(`markCafesBulkStatus: ${error.message}`);
 }
 
+export async function getCafeByPlaceId(googlePlaceId) {
+  const { data, error } = await supabase()
+    .from("cafes")
+    .select("id, name, suburb")
+    .eq("google_place_id", googlePlaceId)
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
 export async function markCallDispatched(cafeId, blandCallId) {
   const { error } = await supabase()
     .from("price_calls")

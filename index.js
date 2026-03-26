@@ -1,7 +1,7 @@
 import "dotenv/config";
 import { fetchSydneyCafes } from "./cafes.js";
 import { dispatchCalls } from "./caller.js";
-import { upsertCafes, markCafesBulkStatus } from "./db.js";
+import { upsertCafes, markCafesBulkStatus, getCafeByPlaceId } from "./db.js";
 
 const BATCH_SIZE = parseInt(process.argv.find(a => a.startsWith("--batch-size="))?.split("=")[1] || "10");
 const DRY_RUN = process.argv.includes("--dry-run");
@@ -101,14 +101,26 @@ async function main() {
   }
 
   if (TEST_NUMBER) {
-    console.log(`\n🧪 TEST CALL — calling ${TEST_NUMBER} as "Test Café"`);
+    // Use the first eligible cafe's DB record so the UUID is valid
+    const firstCafe = filtered[0];
+    if (!firstCafe) {
+      console.log("❌ No eligible cafes found to use as test. Run without --test-call first.");
+      return;
+    }
+    const dbCafe = await getCafeByPlaceId(firstCafe.google_place_id);
+    if (!dbCafe) {
+      console.log("❌ Cafe not found in DB. Run without --test-call first to upsert.");
+      return;
+    }
+
+    console.log(`\n🧪 TEST CALL — calling ${TEST_NUMBER} as "${firstCafe.name}"`);
     console.log(`   Mia will call you, confirm the café name, and ask for a flat white price.`);
     console.log(`   Pretend you're a barista and give her a price!\n`);
     const testCafe = {
-      id: filtered[0]?.id || "test",
-      name: "Test Café",
+      id: dbCafe.id,
+      name: firstCafe.name,
       phone: TEST_NUMBER,
-      suburb: "Sydney",
+      suburb: firstCafe.suburb || "Sydney",
     };
     await dispatchCalls([testCafe], 1);
     console.log("\n✅ Test call dispatched. Check webhook logs for the result.");
