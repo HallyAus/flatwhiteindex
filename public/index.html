@@ -2008,13 +2008,15 @@ async function init() {
 
   let suburbs, gems, distData, totalCafes, pricesCollected, avgPrice;
 
-  if (raw) {
+  const isLive = raw && (raw.prices_collected > 0 || raw.total_discovered > 0);
+
+  if (isLive) {
     suburbs         = normaliseMockSuburbs(raw.suburbs || []);
-    gems            = raw.gems         || DEMO_GEMS;
-    distData        = raw.distribution || DEMO_DIST;
-    totalCafes      = raw.total_cafes  ?? null;
-    pricesCollected = raw.prices_collected ?? null;
-    avgPrice        = raw.avg_price    ?? null;
+    gems            = raw.gems && raw.gems.length > 0 ? raw.gems : [];
+    distData        = raw.distribution || [];
+    totalCafes      = raw.total_cafes  ?? 0;
+    pricesCollected = raw.prices_collected ?? 0;
+    avgPrice        = raw.avg_price    ?? 0;
   } else {
     suburbs         = DEMO_SUBURBS;
     gems            = DEMO_GEMS;
@@ -2028,22 +2030,48 @@ async function init() {
   const mappable = suburbs.filter(s => s.lat != null && s.lng != null);
 
   updateStats(suburbs, totalCafes, pricesCollected, avgPrice);
-  renderSuburbList(suburbs);
-  renderDist(distData);
-  renderGems(gems);
+  if (suburbs.length > 0) renderSuburbList(suburbs);
+  if (distData.length > 0) renderDist(distData);
+  if (gems.length > 0) renderGems(gems);
   initMap(mappable);
-  if (raw && raw.discovered) addDiscoveredMarkers(raw.discovered);
+
+  // Show discovered cafes as grey dots
+  if (raw && raw.discovered && raw.discovered.length > 0) {
+    addDiscoveredMarkers(raw.discovered);
+  }
   loadFromHash();
 
   // Update dynamic text based on real data
-  if (totalCafes) {
-    document.getElementById('heroLede').textContent =
-      `We called ${totalCafes.toLocaleString()} Sydney cafés to find the real price of a flat white.`;
-    const pct = Math.round(totalCafes / 2100 * 100);
+  if (isLive) {
+    const discovered = raw.total_discovered || 0;
+    const called = raw.calls_total || 0;
+
+    if (pricesCollected > 0) {
+      document.getElementById('heroLede').textContent =
+        `We called ${totalCafes.toLocaleString()} Sydney cafés to find the real price of a flat white.`;
+    } else {
+      document.getElementById('heroLede').textContent =
+        `We've discovered ${discovered} cafés across Sydney. Calls starting soon.`;
+    }
+
+    document.getElementById('cafesCalled').textContent = called.toLocaleString();
+    document.getElementById('statPrices').textContent = pricesCollected.toLocaleString();
+
+    const pct = Math.round((discovered / 2100) * 100);
     document.getElementById('progressLabel').textContent =
-      `${totalCafes.toLocaleString()} of ~2,100 cafés called · Phase 1 ${pct >= 100 ? 'complete' : 'in progress'}`;
+      `${discovered} cafés discovered · ${called} called · ${pricesCollected} priced`;
     const bar = document.querySelector('.progress-bar-inner');
     if (bar) bar.style.width = Math.min(pct, 100) + '%';
+
+    if (pricesCollected === 0) {
+      document.getElementById('statAvg').textContent = '—';
+      document.getElementById('statCheapestPrice').textContent = '—';
+      document.getElementById('statCheapestName').textContent = 'awaiting calls';
+      document.getElementById('statDearestPrice').textContent = '—';
+      document.getElementById('statDearestName').textContent = 'awaiting calls';
+      const el = document.getElementById('statAnswerRate');
+      if (el) el.textContent = 'awaiting calls';
+    }
   }
   if (pricesCollected && totalCafes) {
     const rate = Math.round(pricesCollected / totalCafes * 100);
