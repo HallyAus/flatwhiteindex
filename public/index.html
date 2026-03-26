@@ -27,51 +27,11 @@
 <!-- Favicon -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232C1A0E'/><path d='M3 24c4-4 10 4 16-2s8-2 12 2' stroke='%23F7F3ED' stroke-width='1.2' fill='none' opacity='.3'/><g transform='translate(8,5) rotate(-10,8,10)'><path d='M1 6h14l-1.5 9a1.5 1.5 0 01-1.5 1.2H4a1.5 1.5 0 01-1.5-1.2L1 6z' fill='%23F7F3ED' opacity='.9'/><path d='M15 8h1.2a2 2 0 010 4H15' stroke='%23F7F3ED' stroke-width='1.2' fill='none' opacity='.8'/></g></svg>">
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
 <style>
-  /* Fonts — loaded from Google's CDN but declared inline to avoid render-blocking stylesheet */
-  @font-face {
-    font-family: 'Playfair Display';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtM.woff2) format('woff2');
-  }
-  @font-face {
-    font-family: 'Playfair Display';
-    font-style: normal;
-    font-weight: 600;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKepu3DXbtM.woff2) format('woff2');
-  }
-  @font-face {
-    font-family: 'Playfair Display';
-    font-style: normal;
-    font-weight: 700;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/playfairdisplay/v37/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKe_u3DXbtM.woff2) format('woff2');
-  }
-  @font-face {
-    font-family: 'DM Sans';
-    font-style: normal;
-    font-weight: 300;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAop1hTmf3ZGMZpg.woff2) format('woff2');
-  }
-  @font-face {
-    font-family: 'DM Sans';
-    font-style: normal;
-    font-weight: 400;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAkJ1hTmf3ZGMZpg.woff2) format('woff2');
-  }
-  @font-face {
-    font-family: 'DM Sans';
-    font-style: normal;
-    font-weight: 500;
-    font-display: swap;
-    src: url(https://fonts.gstatic.com/s/dmsans/v15/rP2tp2ywxg089UriI5-g4vlH9VoD8CmcqZG40F9JadbnoEwAzp1hTmf3ZGMZpg.woff2) format('woff2');
-  }
 
   :root {
     --cream: #F7F3ED;
@@ -1891,10 +1851,12 @@ function renderDist(distData) {
 }
 
 function renderGems(gems) {
+  if (!gems || gems.length === 0) return;
+
   const sorted = [...gems].sort((a, b) => a.price - b.price);
   const winner = sorted[0];
-  const runnerUp = sorted[1];
-  const third = sorted[2];
+  const runnerUp = sorted[1] || null;
+  const third = sorted[2] || null;
   const rest = sorted.slice(3);
 
   // Winner hero card
@@ -1908,25 +1870,31 @@ function renderGems(gems) {
     <div class="winner-price">$${winner.price.toFixed(2)}</div>
   `;
 
-  // Podium — 2nd and 3rd
-  document.getElementById('podium').innerHTML = `
-    <div class="podium-item">
-      <div class="podium-medal">🥈</div>
-      <div>
-        <div class="podium-name">${runnerUp.name}</div>
-        <div class="podium-sub">${runnerUp.suburb}</div>
-      </div>
-      <div class="podium-price">$${runnerUp.price.toFixed(2)}</div>
-    </div>
-    <div class="podium-item">
-      <div class="podium-medal">🥉</div>
-      <div>
-        <div class="podium-name">${third.name}</div>
-        <div class="podium-sub">${third.suburb}</div>
-      </div>
-      <div class="podium-price">$${third.price.toFixed(2)}</div>
-    </div>
-  `;
+  // Podium — 2nd and 3rd (only if they exist)
+  let podiumHtml = '';
+  if (runnerUp) {
+    podiumHtml += `
+      <div class="podium-item">
+        <div class="podium-medal">🥈</div>
+        <div>
+          <div class="podium-name">${runnerUp.name}</div>
+          <div class="podium-sub">${runnerUp.suburb}</div>
+        </div>
+        <div class="podium-price">$${runnerUp.price.toFixed(2)}</div>
+      </div>`;
+  }
+  if (third) {
+    podiumHtml += `
+      <div class="podium-item">
+        <div class="podium-medal">🥉</div>
+        <div>
+          <div class="podium-name">${third.name}</div>
+          <div class="podium-sub">${third.suburb}</div>
+        </div>
+        <div class="podium-price">$${third.price.toFixed(2)}</div>
+      </div>`;
+  }
+  document.getElementById('podium').innerHTML = podiumHtml;
 
   // Rest grouped by suburb
   const list = document.getElementById('findsList');
