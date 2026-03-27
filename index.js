@@ -37,12 +37,21 @@ const EXCLUDED_VENUES = [
   "grill'd", "oporto", "red rooster", "kebab",
   // Department stores
   "david jones", "myer", "target", "kmart",
+  // Petrol stations
+  "shell", "caltex", "ampol", "7-eleven", "7 eleven",
+  // Not coffee-focused (dessert, gelato, kids)
+  "gelato", "gelateria", "lamington", "kids cafe", "play centre",
+  "play center", "playcentre",
 ];
+
+// Short names that need whole-word matching to avoid false positives
+const EXCLUDED_EXACT = ["bp"];
 
 export function isExcludedChain(name) {
   const nameLower = name.toLowerCase();
   return EXCLUDED_CHAINS.some(chain => nameLower.includes(chain))
-    || EXCLUDED_VENUES.some(venue => nameLower.includes(venue));
+    || EXCLUDED_VENUES.some(venue => nameLower.includes(venue))
+    || EXCLUDED_EXACT.some(word => new RegExp(`\\b${word}\\b`).test(nameLower));
 }
 
 export function filterEligibleCafes(cafes) {
