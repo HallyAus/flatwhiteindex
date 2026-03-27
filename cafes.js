@@ -41,7 +41,7 @@ export async function fetchSydneyCafes(bounds, suburbFilter = null) {
       if (seen.has(place.id)) continue;
       seen.add(place.id);
 
-      const phone = place.nationalPhoneNumber?.replace(/\s/g, "") || null;
+      const phone = normalisePhoneAU(place.nationalPhoneNumber);
 
       cafes.push({
         google_place_id: place.id,
@@ -139,7 +139,17 @@ function getSuburbCenter(suburb) {
   return centers[suburb] || centers.sydney_cbd;
 }
 
-export { extractSuburb, getSydneySearchGrid, getSuburbCenter };
+// Convert Australian local numbers to E.164 format for Twilio
+// (02) 9211 0665 → +61292110665 | 0432 445 342 → +61432445342 | 1300 074 178 → +611300074178
+function normalisePhoneAU(raw) {
+  if (!raw) return null;
+  let phone = raw.replace(/[\s()\-]/g, "");
+  if (phone.startsWith("+")) return phone; // already international
+  if (phone.startsWith("0")) return "+61" + phone.slice(1);
+  return "+61" + phone;
+}
+
+export { extractSuburb, getSydneySearchGrid, getSuburbCenter, normalisePhoneAU };
 
 function sleep(ms) {
   return new Promise(r => setTimeout(r, ms));

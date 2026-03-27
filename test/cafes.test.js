@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { extractSuburb, getSydneySearchGrid, getSuburbCenter } from "../cafes.js";
+import { extractSuburb, getSydneySearchGrid, getSuburbCenter, normalisePhoneAU } from "../cafes.js";
 
 describe("extractSuburb", () => {
   it("extracts suburb from standard Australian address", () => {
@@ -55,5 +55,27 @@ describe("getSuburbCenter", () => {
     assert.ok(Array.isArray(centers));
     assert.strictEqual(centers[0].lat, -33.8688);
     assert.strictEqual(centers[0].lng, 151.2093);
+  });
+});
+
+describe("normalisePhoneAU", () => {
+  it("converts (02) landline to E.164", () => {
+    assert.strictEqual(normalisePhoneAU("(02) 9211 0665"), "+61292110665");
+  });
+
+  it("converts 04xx mobile to E.164", () => {
+    assert.strictEqual(normalisePhoneAU("0432 445 342"), "+61432445342");
+  });
+
+  it("converts 1300 number to E.164", () => {
+    assert.strictEqual(normalisePhoneAU("1300 074 178"), "+611300074178");
+  });
+
+  it("leaves +61 numbers unchanged", () => {
+    assert.strictEqual(normalisePhoneAU("+61292110665"), "+61292110665");
+  });
+
+  it("returns null for null input", () => {
+    assert.strictEqual(normalisePhoneAU(null), null);
   });
 });
