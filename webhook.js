@@ -20,11 +20,11 @@ app.use((req, res, next) => {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://unpkg.com https://analytics.flatwhiteindex.com.au",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "script-src 'self' 'unsafe-inline' https://unpkg.com https://analytics.flatwhiteindex.com.au https://static.cloudflareinsights.com",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
     "font-src https://fonts.gstatic.com",
     "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
-    "connect-src 'self' https://analytics.flatwhiteindex.com.au",
+    "connect-src 'self' https://analytics.flatwhiteindex.com.au https://unpkg.com https://static.cloudflareinsights.com https://cloudflareinsights.com",
   ].join('; '));
   next();
 });

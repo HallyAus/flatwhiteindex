@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flat White Index — Sydney Coffee Prices 2026</title>
-<meta name="description" content="Sydney's most complete flat white price survey. 847 cafés called across 23 suburbs. Average: $5.80. Compare coffee prices and find the cheapest flat white near you.">
+<meta name="description" content="Sydney's flat white price index. An AI voice agent is calling every café to find the real cost of a flat white. Compare coffee prices by suburb.">
 <link rel="canonical" href="https://flatwhiteindex.com.au/">
 <meta name="theme-color" content="#2C1A0E">
 
@@ -12,7 +12,7 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Flat White Index">
 <meta property="og:title" content="Flat White Index — Sydney Coffee Prices 2026">
-<meta property="og:description" content="We called 847 Sydney cafés to find the real price of a flat white. From $4.00 in Ashfield to $7.20 in Darling Harbour.">
+<meta property="og:description" content="An AI voice agent is calling every Sydney café to find the real price of a flat white. Live data, updated as calls come in.">
 <meta property="og:url" content="https://flatwhiteindex.com.au/">
 <meta property="og:image" content="https://flatwhiteindex.com.au/og-image.svg">
 <meta property="og:image:width" content="1200">
@@ -21,7 +21,7 @@
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Flat White Index — Sydney Coffee Prices 2026">
-<meta name="twitter:description" content="We called 847 Sydney cafés. The price gap between cheapest and dearest is 80%. Find the real cost of a flat white in your suburb.">
+<meta name="twitter:description" content="An AI voice agent is calling every Sydney café to find the real price of a flat white. Live data, updated as calls come in.">
 <meta name="twitter:image" content="https://flatwhiteindex.com.au/og-image.svg">
 
 <!-- Favicon -->
@@ -1216,20 +1216,12 @@
     "name": "Flat White Index",
     "url": "https://flatwhiteindex.com.au/"
   },
-  "variableMeasured": [
-    {
-      "@type": "PropertyValue",
-      "name": "Average flat white price (small)",
-      "unitCode": "AUD",
-      "value": "5.80"
-    }
-  ],
-  "dateModified": "2026-03-25"
+  "dateModified": "2026-03-28"
 }
 </script>
 
 <!-- Umami Analytics (self-hosted, cookie-free) -->
-<script defer src="https://analytics.flatwhiteindex.com.au/script.js" data-website-id="UMAMI_WEBSITE_ID"></script>
+<script defer src="https://analytics.flatwhiteindex.com.au/script.js" data-website-id="726673cd-7ea7-499c-9056-9ccfa9f613c5"></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -1288,10 +1280,10 @@
 
   <!-- HERO -->
   <section class="hero">
-    <p class="hero-lede" id="heroLede">We're calling every Sydney café to find the real price of a flat white.</p>
-    <div class="hero-insight">
-      <span class="insight-number">80%</span>
-      <span class="insight-text">price gap between Sydney's cheapest and dearest suburbs</span>
+    <p class="hero-lede" id="heroLede">We're calling every Sydney café to find the real price of a flat white. Live data — updated as calls come in.</p>
+    <div class="hero-insight" id="heroInsight" style="display:none;">
+      <span class="insight-number" id="insightNumber"></span>
+      <span class="insight-text" id="insightText"></span>
     </div>
   </section>
 
@@ -1305,12 +1297,12 @@
     <div class="stat-card">
       <div class="stat-label">Cheapest suburb</div>
       <div class="stat-value good" id="statCheapestPrice">—</div>
-      <div class="stat-sub" id="statCheapestName">loading...</div>
+      <div class="stat-sub" id="statCheapestName">awaiting calls</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Most expensive</div>
       <div class="stat-value warn" id="statDearestPrice">—</div>
-      <div class="stat-sub" id="statDearestName">loading...</div>
+      <div class="stat-sub" id="statDearestName">awaiting calls</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Cafés called</div>
@@ -1320,29 +1312,37 @@
     <div class="stat-card">
       <div class="stat-label">Prices collected</div>
       <div class="stat-value" id="statPrices">0</div>
-      <div class="stat-sub" id="statAnswerRate">collecting...</div>
+      <div class="stat-sub" id="statAnswerRate">awaiting calls</div>
     </div>
   </section>
 
-  <!-- KEY FINDINGS -->
-  <section class="findings">
+  <!-- KEY FINDINGS — hidden until we have real data, shown by JS -->
+  <section class="findings" id="findingsSection" style="display:none;">
     <h2 class="findings-title">What the data tells us</h2>
+    <div class="findings-grid" id="findingsGrid">
+      <!-- populated by JS when live data exists -->
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS — shown when no data yet -->
+  <section class="findings" id="howItWorksSection">
+    <h2 class="findings-title">How it works</h2>
     <div class="findings-grid">
       <div class="finding">
         <div class="finding-icon">📍</div>
-        <div class="finding-text"><strong>Your suburb sets the price.</strong> Cross the bridge from Mosman to Marrickville and save $2.20 per cup.</div>
+        <div class="finding-text"><strong>Discover.</strong> We find every café in Sydney using Google Places — suburb by suburb, across the whole metro area.</div>
       </div>
       <div class="finding">
-        <div class="finding-icon">🎲</div>
-        <div class="finding-text"><strong>The CBD is a lottery.</strong> The same drink costs $5.50 or $8.50 depending on which block you're on.</div>
+        <div class="finding-icon">📞</div>
+        <div class="finding-text"><strong>Call.</strong> Our AI voice agent Mia phones each café and asks one question: "How much is a regular flat white?"</div>
       </div>
       <div class="finding">
-        <div class="finding-icon">🏆</div>
-        <div class="finding-text"><strong>Inner west is the value belt.</strong> Newtown, Marrickville, Leichhardt — all under $5.50 with 60+ cafés sampled.</div>
+        <div class="finding-icon">📊</div>
+        <div class="finding-text"><strong>Extract.</strong> Prices are pulled from the call transcript, verified, and added to the index in real time.</div>
       </div>
       <div class="finding">
-        <div class="finding-icon">⏱️</div>
-        <div class="finding-text"><strong>7 minutes of work per coffee.</strong> At minimum wage ($24.10/hr), a $5.80 flat white costs 14 minutes. In Ashfield, it's under 12.</div>
+        <div class="finding-icon">🗺️</div>
+        <div class="finding-text"><strong>Map.</strong> Every price lands on this dashboard — sorted by suburb, plotted on the map, updated live.</div>
       </div>
     </div>
   </section>
@@ -1449,7 +1449,7 @@
       </div>
       <div class="about-block">
         <h3>The data</h3>
-        <p>847 cafés called across 23 Sydney suburbs so far. Chains excluded — only independent cafés. Prices collected January–March 2026, updated monthly. Sample sizes shown per suburb. Anything under 10 cafés, treat with caution.</p>
+        <p>Data collection is underway across Sydney suburbs. Chains excluded — only independent cafés. Prices updated live as calls complete. Sample sizes shown per suburb. Anything under 10 cafés, treat with caution.</p>
       </div>
       <div class="about-block">
         <h3>What's next</h3>
@@ -1523,47 +1523,14 @@
   </div>
 </footer>
 
-<!-- NOSCRIPT DATA TABLE -->
+<!-- NOSCRIPT FALLBACK -->
 <noscript>
 <div style="max-width:1100px;margin:2rem auto;padding:0 1.5rem;">
-  <h2 style="font-family:'Playfair Display',serif;margin-bottom:1rem;">Sydney Flat White Prices by Suburb (2026)</h2>
-  <table style="width:100%;border-collapse:collapse;font-family:'DM Sans',sans-serif;font-size:0.9rem;">
-    <thead>
-      <tr style="border-bottom:2px solid #6B3A1F;">
-        <th style="text-align:left;padding:8px;">Suburb</th>
-        <th style="text-align:right;padding:8px;">Avg Price</th>
-        <th style="text-align:right;padding:8px;">Cafés Sampled</th>
-        <th style="text-align:right;padding:8px;">Min</th>
-        <th style="text-align:right;padding:8px;">Max</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td style="padding:6px 8px;">Ashfield</td><td style="text-align:right;padding:6px 8px;">$4.60</td><td style="text-align:right;padding:6px 8px;">12</td><td style="text-align:right;padding:6px 8px;">$3.80</td><td style="text-align:right;padding:6px 8px;">$5.50</td></tr>
-      <tr><td style="padding:6px 8px;">Marrickville</td><td style="text-align:right;padding:6px 8px;">$4.80</td><td style="text-align:right;padding:6px 8px;">19</td><td style="text-align:right;padding:6px 8px;">$4.00</td><td style="text-align:right;padding:6px 8px;">$5.80</td></tr>
-      <tr><td style="padding:6px 8px;">Strathfield</td><td style="text-align:right;padding:6px 8px;">$4.80</td><td style="text-align:right;padding:6px 8px;">14</td><td style="text-align:right;padding:6px 8px;">$4.00</td><td style="text-align:right;padding:6px 8px;">$5.50</td></tr>
-      <tr><td style="padding:6px 8px;">Erskineville</td><td style="text-align:right;padding:6px 8px;">$5.00</td><td style="text-align:right;padding:6px 8px;">11</td><td style="text-align:right;padding:6px 8px;">$4.20</td><td style="text-align:right;padding:6px 8px;">$5.80</td></tr>
-      <tr><td style="padding:6px 8px;">Leichhardt</td><td style="text-align:right;padding:6px 8px;">$5.20</td><td style="text-align:right;padding:6px 8px;">20</td><td style="text-align:right;padding:6px 8px;">$4.20</td><td style="text-align:right;padding:6px 8px;">$6.00</td></tr>
-      <tr><td style="padding:6px 8px;">Redfern</td><td style="text-align:right;padding:6px 8px;">$5.30</td><td style="text-align:right;padding:6px 8px;">17</td><td style="text-align:right;padding:6px 8px;">$4.50</td><td style="text-align:right;padding:6px 8px;">$6.20</td></tr>
-      <tr><td style="padding:6px 8px;">Newtown</td><td style="text-align:right;padding:6px 8px;">$5.40</td><td style="text-align:right;padding:6px 8px;">28</td><td style="text-align:right;padding:6px 8px;">$4.50</td><td style="text-align:right;padding:6px 8px;">$6.50</td></tr>
-      <tr><td style="padding:6px 8px;">Glebe</td><td style="text-align:right;padding:6px 8px;">$5.60</td><td style="text-align:right;padding:6px 8px;">14</td><td style="text-align:right;padding:6px 8px;">$4.80</td><td style="text-align:right;padding:6px 8px;">$6.50</td></tr>
-      <tr><td style="padding:6px 8px;">Chippendale</td><td style="text-align:right;padding:6px 8px;">$5.70</td><td style="text-align:right;padding:6px 8px;">12</td><td style="text-align:right;padding:6px 8px;">$5.00</td><td style="text-align:right;padding:6px 8px;">$6.50</td></tr>
-      <tr><td style="padding:6px 8px;">Balmain</td><td style="text-align:right;padding:6px 8px;">$5.90</td><td style="text-align:right;padding:6px 8px;">22</td><td style="text-align:right;padding:6px 8px;">$5.00</td><td style="text-align:right;padding:6px 8px;">$7.00</td></tr>
-      <tr><td style="padding:6px 8px;">Crows Nest</td><td style="text-align:right;padding:6px 8px;">$6.10</td><td style="text-align:right;padding:6px 8px;">18</td><td style="text-align:right;padding:6px 8px;">$5.50</td><td style="text-align:right;padding:6px 8px;">$7.00</td></tr>
-      <tr><td style="padding:6px 8px;">Surry Hills</td><td style="text-align:right;padding:6px 8px;">$6.20</td><td style="text-align:right;padding:6px 8px;">31</td><td style="text-align:right;padding:6px 8px;">$5.00</td><td style="text-align:right;padding:6px 8px;">$7.50</td></tr>
-      <tr><td style="padding:6px 8px;">Darlinghurst</td><td style="text-align:right;padding:6px 8px;">$6.30</td><td style="text-align:right;padding:6px 8px;">18</td><td style="text-align:right;padding:6px 8px;">$5.50</td><td style="text-align:right;padding:6px 8px;">$7.20</td></tr>
-      <tr><td style="padding:6px 8px;">Pyrmont</td><td style="text-align:right;padding:6px 8px;">$6.40</td><td style="text-align:right;padding:6px 8px;">15</td><td style="text-align:right;padding:6px 8px;">$5.50</td><td style="text-align:right;padding:6px 8px;">$7.00</td></tr>
-      <tr><td style="padding:6px 8px;">Paddington</td><td style="text-align:right;padding:6px 8px;">$6.50</td><td style="text-align:right;padding:6px 8px;">26</td><td style="text-align:right;padding:6px 8px;">$5.80</td><td style="text-align:right;padding:6px 8px;">$7.50</td></tr>
-      <tr><td style="padding:6px 8px;">Bondi Junction</td><td style="text-align:right;padding:6px 8px;">$6.50</td><td style="text-align:right;padding:6px 8px;">22</td><td style="text-align:right;padding:6px 8px;">$5.80</td><td style="text-align:right;padding:6px 8px;">$7.50</td></tr>
-      <tr><td style="padding:6px 8px;">Neutral Bay</td><td style="text-align:right;padding:6px 8px;">$6.60</td><td style="text-align:right;padding:6px 8px;">13</td><td style="text-align:right;padding:6px 8px;">$6.00</td><td style="text-align:right;padding:6px 8px;">$7.20</td></tr>
-      <tr><td style="padding:6px 8px;">CBD</td><td style="text-align:right;padding:6px 8px;">$6.80</td><td style="text-align:right;padding:6px 8px;">42</td><td style="text-align:right;padding:6px 8px;">$5.50</td><td style="text-align:right;padding:6px 8px;">$8.50</td></tr>
-      <tr><td style="padding:6px 8px;">Kirribilli</td><td style="text-align:right;padding:6px 8px;">$6.80</td><td style="text-align:right;padding:6px 8px;">9</td><td style="text-align:right;padding:6px 8px;">$6.20</td><td style="text-align:right;padding:6px 8px;">$7.50</td></tr>
-      <tr><td style="padding:6px 8px;">Bondi</td><td style="text-align:right;padding:6px 8px;">$6.90</td><td style="text-align:right;padding:6px 8px;">34</td><td style="text-align:right;padding:6px 8px;">$6.00</td><td style="text-align:right;padding:6px 8px;">$8.00</td></tr>
-      <tr><td style="padding:6px 8px;">Mosman</td><td style="text-align:right;padding:6px 8px;">$7.00</td><td style="text-align:right;padding:6px 8px;">16</td><td style="text-align:right;padding:6px 8px;">$6.50</td><td style="text-align:right;padding:6px 8px;">$7.80</td></tr>
-      <tr><td style="padding:6px 8px;">Darling Harbour</td><td style="text-align:right;padding:6px 8px;">$7.20</td><td style="text-align:right;padding:6px 8px;">8</td><td style="text-align:right;padding:6px 8px;">$6.50</td><td style="text-align:right;padding:6px 8px;">$8.00</td></tr>
-      <tr><td style="padding:6px 8px;">Double Bay</td><td style="text-align:right;padding:6px 8px;">$7.20</td><td style="text-align:right;padding:6px 8px;">11</td><td style="text-align:right;padding:6px 8px;">$6.80</td><td style="text-align:right;padding:6px 8px;">$7.80</td></tr>
-    </tbody>
-  </table>
-  <p style="margin-top:1rem;font-size:0.8rem;color:#7A6248;">Source: Flat White Index, flatwhiteindex.com.au · Data collected January–March 2026</p>
+  <h2 style="font-family:'Playfair Display',serif;margin-bottom:1rem;">Flat White Index — Sydney 2026</h2>
+  <p style="font-family:'DM Sans',sans-serif;font-size:0.95rem;line-height:1.6;color:#2C1A0E;">
+    We're calling every Sydney café to find the real price of a flat white. Data collection is underway — enable JavaScript to see the live interactive map and suburb rankings.
+  </p>
+  <p style="margin-top:1rem;font-size:0.8rem;color:#7A6248;">Source: Flat White Index, flatwhiteindex.com.au</p>
 </div>
 </noscript>
 
@@ -2029,10 +1996,38 @@ async function init() {
 
     if (pricesCollected > 0) {
       document.getElementById('heroLede').textContent =
-        `We called ${totalCafes.toLocaleString()} Sydney cafés to find the real price of a flat white.`;
+        `We've called ${called.toLocaleString()} Sydney cafés so far to find the real price of a flat white. Live data — updated as calls come in.`;
+
+      // Show findings section, hide how-it-works
+      document.getElementById('findingsSection').style.display = '';
+      document.getElementById('howItWorksSection').style.display = 'none';
+
+      // Show hero insight with real gap
+      if (suburbs.length >= 2) {
+        const sorted = [...suburbs].sort((a, b) => a.price - b.price);
+        const gap = Math.round((sorted[sorted.length - 1].price / sorted[0].price - 1) * 100);
+        document.getElementById('insightNumber').textContent = gap + '%';
+        document.getElementById('insightText').textContent = 'price gap between Sydney\'s cheapest and dearest suburbs';
+        document.getElementById('heroInsight').style.display = '';
+      }
+
+      // Populate findings from real data
+      const findingsGrid = document.getElementById('findingsGrid');
+      if (findingsGrid && suburbs.length >= 2) {
+        const sorted = [...suburbs].sort((a, b) => a.price - b.price);
+        const cheapestS = sorted[0];
+        const dearestS = sorted[sorted.length - 1];
+        const saving = (dearestS.price - cheapestS.price).toFixed(2);
+        findingsGrid.innerHTML = `
+          <div class="finding"><div class="finding-icon">📍</div>
+            <div class="finding-text"><strong>Your suburb sets the price.</strong> ${esc(cheapestS.name)} averages $${cheapestS.price.toFixed(2)} while ${esc(dearestS.name)} averages $${dearestS.price.toFixed(2)} — a $${saving} gap.</div></div>
+          <div class="finding"><div class="finding-icon">📊</div>
+            <div class="finding-text"><strong>${pricesCollected} prices collected</strong> across ${suburbs.length} suburbs so far. More calls going out daily.</div></div>
+        `;
+      }
     } else {
       document.getElementById('heroLede').textContent =
-        `We've discovered ${discovered} cafés across Sydney. Calls starting soon.`;
+        `We've discovered ${discovered.toLocaleString()} cafés across Sydney. Calls starting soon — prices will appear here live.`;
     }
 
     document.getElementById('cafesCalled').textContent = called.toLocaleString();
