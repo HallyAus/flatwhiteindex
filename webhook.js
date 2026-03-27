@@ -9,6 +9,7 @@ const app = express();
 
 // [SECURITY] Body size limit — prevent DoS via large payloads
 app.use(express.json({ limit: '64kb' }));
+app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 
 // [SECURITY] Basic security headers
 app.use((req, res, next) => {
