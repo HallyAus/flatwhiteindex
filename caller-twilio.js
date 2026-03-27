@@ -125,6 +125,8 @@ export function setupMediaStreamServer(server) {
         });
 
         openaiWs.on("open", () => {
+          console.log(`    🧠 OpenAI Realtime connected for ${metadata?.cafe_name}`);
+
           // Configure session
           openaiWs.send(JSON.stringify({
             type: "session.update",
@@ -143,6 +145,20 @@ export function setupMediaStreamServer(server) {
               },
             },
           }));
+
+          // Trigger Mia to speak first — send a conversation item
+          setTimeout(() => {
+            openaiWs.send(JSON.stringify({
+              type: "conversation.item.create",
+              item: {
+                type: "message",
+                role: "user",
+                content: [{ type: "input_text", text: "The cafe has just picked up the phone. Start the conversation now." }],
+              },
+            }));
+            openaiWs.send(JSON.stringify({ type: "response.create" }));
+            console.log(`    🗣️  Triggered Mia to start speaking`);
+          }, 1000);
         });
 
         openaiWs.on("message", (data) => {
@@ -160,9 +176,14 @@ export function setupMediaStreamServer(server) {
           // Collect transcript
           if (event.type === "response.audio_transcript.done") {
             transcript += " [Mia]: " + event.transcript;
+            console.log(`    💬 Mia: ${event.transcript}`);
           }
           if (event.type === "conversation.item.input_audio_transcription.completed") {
             transcript += " [Cafe]: " + event.transcript;
+            console.log(`    💬 Cafe: ${event.transcript}`);
+          }
+          if (event.type === "error") {
+            console.error(`    ❌ OpenAI error:`, event.error?.message || JSON.stringify(event));
           }
         });
 
@@ -171,11 +192,15 @@ export function setupMediaStreamServer(server) {
         });
 
         openaiWs.on("close", () => {
+          console.log(`    📝 Call ended. Transcript length: ${transcript.length} chars`);
           // Call ended — post result to our own webhook
           const metadata = activeCalls.get(callSid);
           if (metadata) {
+            console.log(`    📤 Posting result for ${metadata.cafe_name}...`);
             postCallResult(callSid, metadata, transcript);
             activeCalls.delete(callSid);
+          } else {
+            console.warn(`    ⚠️ No metadata found for call ${callSid}`);
           }
         });
       }
@@ -206,8 +231,9 @@ export function setupMediaStreamServer(server) {
 // Post the result back to our own webhook in the same format
 async function postCallResult(callSid, metadata, transcript) {
   try {
+    console.log(`    📤 Posting to webhook: ${metadata.cafe_name} — transcript: "${transcript.slice(0, 100)}..."`);
     const webhookUrl = `${process.env.WEBHOOK_BASE_URL}/webhook/call-complete`;
-    await fetch(webhookUrl, {
+    const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -221,8 +247,9 @@ async function postCallResult(callSid, metadata, transcript) {
         },
       }),
     });
+    console.log(`    ✅ Webhook response: ${response.status}`);
   } catch (err) {
-    console.error(`Failed to post call result for ${metadata.cafe_name}:`, err.message);
+    console.error(`    ❌ Failed to post call result for ${metadata.cafe_name}:`, err.message);
   }
 }
 
