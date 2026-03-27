@@ -69,18 +69,20 @@ async function dispatchSingleCall(cafe) {
     prompt,
   };
 
-  // Encode metadata as URL params so the WebSocket handler can read them
-  const params = new URLSearchParams({
-    cafe_id: cafe.id,
-    cafe_name: cafe.name,
-    suburb: cafe.suburb || "Sydney",
-  });
-  const streamUrl = `wss://${new URL(webhookBase).host}/media-stream?${params}`;
+  // XML-escape values for TwiML
+  function xmlEscape(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&apos;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  const safeName = xmlEscape(cafe.name);
+  const safeSuburb = xmlEscape(cafe.suburb || "Sydney");
+  const safeId = xmlEscape(cafe.id);
+  const streamUrl = `wss://${new URL(webhookBase).host}/media-stream`;
 
   const call = await client.calls.create({
     to: cafe.phone,
     from: process.env.TWILIO_PHONE_NUMBER,
-    twiml: `<Response><Connect><Stream url="${streamUrl}"><Parameter name="cafe_id" value="${cafe.id}" /><Parameter name="cafe_name" value="${cafe.name}" /><Parameter name="suburb" value="${cafe.suburb || 'Sydney'}" /></Stream></Connect></Response>`,
+    twiml: `<Response><Connect><Stream url="${streamUrl}"><Parameter name="cafe_id" value="${safeId}" /><Parameter name="cafe_name" value="${safeName}" /><Parameter name="suburb" value="${safeSuburb}" /></Stream></Connect></Response>`,
     machineDetection: "Enable",
     machineDetectionTimeout: 5,
     statusCallback: `${webhookBase}/webhook/twilio-status`,
