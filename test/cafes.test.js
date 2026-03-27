@@ -45,16 +45,14 @@ describe("getSuburbCenter", () => {
   it("returns array of coordinates for known suburb", () => {
     const centers = getSuburbCenter("newtown");
     assert.ok(Array.isArray(centers), "should return an array");
-    assert.ok(centers.length > 0, "should have at least one point");
-    assert.strictEqual(centers[0].lat, -33.8967);
-    assert.strictEqual(centers[0].lng, 151.1796);
+    assert.ok(centers.length >= 3, "should have multiple search points");
+    assert.ok(centers[0].lat < -33.89 && centers[0].lat > -33.91, "lat should be in Newtown");
   });
 
   it("falls back to sydney_cbd for unknown suburb", () => {
     const centers = getSuburbCenter("nonexistent");
     assert.ok(Array.isArray(centers));
-    assert.strictEqual(centers[0].lat, -33.8688);
-    assert.strictEqual(centers[0].lng, 151.2093);
+    assert.ok(centers.length >= 10, "CBD should have many search points");
   });
 });
 
@@ -67,8 +65,12 @@ describe("normalisePhoneAU", () => {
     assert.strictEqual(normalisePhoneAU("0432 445 342"), "+61432445342");
   });
 
-  it("converts 1300 number to E.164", () => {
-    assert.strictEqual(normalisePhoneAU("1300 074 178"), "+611300074178");
+  it("returns null for 1300 numbers", () => {
+    assert.strictEqual(normalisePhoneAU("1300 074 178"), null);
+  });
+
+  it("returns null for 1800 numbers", () => {
+    assert.strictEqual(normalisePhoneAU("1800 123 456"), null);
   });
 
   it("leaves +61 numbers unchanged", () => {

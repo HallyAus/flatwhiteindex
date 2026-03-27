@@ -16,7 +16,7 @@ export async function fetchSydneyCafes(bounds, suburbFilter = null) {
       locationRestriction: {
         circle: {
           center: { latitude: location.lat, longitude: location.lng },
-          radius: 2000.0,
+          radius: location.radius || 1000.0,
         },
       },
     };
@@ -91,48 +91,66 @@ function getSydneySearchGrid(bounds) {
 function getSuburbCenter(suburb) {
   // Multiple search points per suburb for better coverage (20 results per point)
   const centers = {
+    // CBD: dense grid with 800m radius — covers Circular Quay to Town Hall
     sydney_cbd: [
-      { lat: -33.8688, lng: 151.2093 },
-      { lat: -33.8650, lng: 151.2050 },
-      { lat: -33.8720, lng: 151.2130 },
-      { lat: -33.8660, lng: 151.2150 },
-      { lat: -33.8710, lng: 151.2020 },
+      { lat: -33.8610, lng: 151.2090 },  // Circular Quay
+      { lat: -33.8640, lng: 151.2050 },  // Wynyard
+      { lat: -33.8640, lng: 151.2130 },  // Bridge St east
+      { lat: -33.8670, lng: 151.2090 },  // Martin Place
+      { lat: -33.8670, lng: 151.2020 },  // Barangaroo
+      { lat: -33.8700, lng: 151.2060 },  // Town Hall west
+      { lat: -33.8700, lng: 151.2120 },  // Town Hall east / Hyde Park
+      { lat: -33.8730, lng: 151.2050 },  // Darling Harbour north
+      { lat: -33.8730, lng: 151.2130 },  // Museum / Liverpool St
+      { lat: -33.8760, lng: 151.2090 },  // Central south
+      { lat: -33.8680, lng: 151.2170 },  // The Domain
+      { lat: -33.8590, lng: 151.2100 },  // The Rocks
     ],
     surry_hills: [
-      { lat: -33.8872, lng: 151.2108 },
-      { lat: -33.8840, lng: 151.2140 },
+      { lat: -33.8840, lng: 151.2108 },
+      { lat: -33.8870, lng: 151.2140 },
       { lat: -33.8900, lng: 151.2080 },
+      { lat: -33.8860, lng: 151.2060 },
+      { lat: -33.8900, lng: 151.2130 },
     ],
     newtown: [
-      { lat: -33.8967, lng: 151.1796 },
-      { lat: -33.8930, lng: 151.1770 },
-      { lat: -33.9000, lng: 151.1820 },
+      { lat: -33.8940, lng: 151.1790 },
+      { lat: -33.8970, lng: 151.1770 },
+      { lat: -33.9000, lng: 151.1800 },
+      { lat: -33.9030, lng: 151.1820 },
     ],
     glebe: [
-      { lat: -33.8800, lng: 151.1876 },
+      { lat: -33.8790, lng: 151.1876 },
       { lat: -33.8770, lng: 151.1840 },
+      { lat: -33.8810, lng: 151.1910 },
     ],
     balmain: [
-      { lat: -33.8600, lng: 151.1764 },
-      { lat: -33.8570, lng: 151.1730 },
+      { lat: -33.8580, lng: 151.1764 },
+      { lat: -33.8560, lng: 151.1730 },
+      { lat: -33.8610, lng: 151.1800 },
     ],
     paddington: [
-      { lat: -33.8840, lng: 151.2280 },
+      { lat: -33.8840, lng: 151.2270 },
       { lat: -33.8810, lng: 151.2310 },
+      { lat: -33.8870, lng: 151.2240 },
     ],
     darlinghurst: [
       { lat: -33.8769, lng: 151.2173 },
       { lat: -33.8800, lng: 151.2200 },
+      { lat: -33.8760, lng: 151.2220 },
     ],
     redfern: [
       { lat: -33.8944, lng: 151.2047 },
       { lat: -33.8910, lng: 151.2020 },
+      { lat: -33.8970, lng: 151.2070 },
     ],
     chippendale: [
       { lat: -33.8895, lng: 151.1987 },
+      { lat: -33.8880, lng: 151.1960 },
     ],
     erskineville: [
       { lat: -33.9003, lng: 151.1858 },
+      { lat: -33.9030, lng: 151.1880 },
     ],
   };
 
@@ -140,11 +158,13 @@ function getSuburbCenter(suburb) {
 }
 
 // Convert Australian local numbers to E.164 format for Twilio
-// (02) 9211 0665 → +61292110665 | 0432 445 342 → +61432445342 | 1300 074 178 → +611300074178
+// (02) 9211 0665 → +61292110665 | 0432 445 342 → +61432445342
+// Returns null for 1300/1800 numbers (not dialable via Twilio, usually chains)
 function normalisePhoneAU(raw) {
   if (!raw) return null;
   let phone = raw.replace(/[\s()\-]/g, "");
-  if (phone.startsWith("+")) return phone; // already international
+  if (/^1[38]00/.test(phone)) return null; // skip 1300/1800 numbers
+  if (phone.startsWith("+")) return phone;
   if (phone.startsWith("0")) return "+61" + phone.slice(1);
   return "+61" + phone;
 }

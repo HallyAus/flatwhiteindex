@@ -250,7 +250,7 @@ app.post("/webhook/call-complete", verifyWebhookOrigin, async (req, res) => {
 
 let dashboardCache = null;
 let dashboardCacheTime = 0;
-const CACHE_TTL = 300000; // 5 minutes
+const CACHE_TTL = 30000; // 30 seconds (short while testing, increase to 300000 for production)
 
 app.get("/api/dashboard", async (req, res) => {
   try {
