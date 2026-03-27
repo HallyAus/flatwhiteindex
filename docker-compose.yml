@@ -1,0 +1,20 @@
+services:
+  webhook:
+    build: .
+    container_name: flatwhite-webhook
+    restart: unless-stopped
+    ports:
+      - "3001:3001"
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+
+  # Caller runs on-demand via: docker compose run --rm caller
+  caller:
+    build: .
+    container_name: flatwhite-caller
+    env_file: .env
+    environment:
+      - NODE_ENV=production
+    entrypoint: ["node", "index.js"]
+    profiles: ["caller"]
