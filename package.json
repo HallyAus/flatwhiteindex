@@ -8,7 +8,7 @@
     "start": "node index.js",
     "webhook": "node webhook.js",
     "dry-run": "node index.js --suburb=sydney_cbd --dry-run",
-    "test": "node --test ./test/webhook.test.js ./test/cafes.test.js ./test/caller.test.js ./test/index.test.js"
+    "test": "node --test --test-force-exit ./test/webhook.test.js ./test/cafes.test.js ./test/caller.test.js ./test/index.test.js"
   },
   "keywords": ["coffee", "flat-white", "sydney", "voice-agent", "bland-ai", "price-index"],
   "author": "Daniel <printforge.com.au>",
