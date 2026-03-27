@@ -135,6 +135,9 @@
     h1 { font-size: 1.8rem; }
   }
 </style>
+
+<!-- Umami Analytics (self-hosted, cookie-free) -->
+<script defer src="https://analytics.flatwhiteindex.com.au/script.js" data-website-id="UMAMI_WEBSITE_ID"></script>
 </head>
 <body>
 <div class="container">
@@ -144,7 +147,8 @@
   <p>We're expanding south. Melbourne has over 3,000 independent cafes and arguably the best coffee culture in Australia. We'll be calling every one of them.</p>
   <p>Want to know when Melbourne goes live?</p>
   <form class="notify-form" onsubmit="notifyMe(event)">
-    <input type="email" placeholder="your@email.com" required>
+    <label for="melbEmail" style="display:none">Email address</label>
+    <input type="email" id="melbEmail" placeholder="your@email.com" required aria-label="Email address">
     <button type="submit">Notify me</button>
   </form>
   <div class="success" id="melbSuccess">You're on the list. We'll email you when Melbourne launches.</div>
@@ -156,8 +160,20 @@
 <script>
 function notifyMe(e) {
   e.preventDefault();
-  document.querySelector('.notify-form').style.display = 'none';
-  document.getElementById('melbSuccess').style.display = 'block';
+  const email = document.getElementById('melbEmail').value;
+  if (!email) return;
+  fetch('/api/subscribe', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, source: 'melbourne-notify' }),
+  }).then(() => {
+    document.querySelector('.notify-form').style.display = 'none';
+    document.getElementById('melbSuccess').style.display = 'block';
+  }).catch(() => {
+    document.querySelector('.notify-form').style.display = 'none';
+    document.getElementById('melbSuccess').textContent = 'Something went wrong — try again later.';
+    document.getElementById('melbSuccess').style.display = 'block';
+  });
 }
 </script>
 </body>

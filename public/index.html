@@ -1227,6 +1227,9 @@
   "dateModified": "2026-03-25"
 }
 </script>
+
+<!-- Umami Analytics (self-hosted, cookie-free) -->
+<script defer src="https://analytics.flatwhiteindex.com.au/script.js" data-website-id="UMAMI_WEBSITE_ID"></script>
 </head>
 <body>
 <div class="grain"></div>
@@ -1461,7 +1464,7 @@
     <p class="embed-desc">Add the Flat White Index to your article or website.</p>
     <div class="embed-code-wrapper">
       <code class="embed-code" id="embedCode">&lt;iframe src="https://flatwhiteindex.com.au/" width="100%" height="600" frameborder="0" title="Flat White Index — Sydney Coffee Prices"&gt;&lt;/iframe&gt;</code>
-      <button class="embed-copy-btn" onclick="copyEmbed()">Copy</button>
+      <button class="embed-copy-btn" onclick="copyEmbed(this)">Copy</button>
     </div>
   </section>
 
@@ -1473,7 +1476,8 @@
         <span>Every suburb. Verified prices. Free.</span>
       </div>
       <form class="newsletter-form" onsubmit="subscribeEmail(event)">
-        <input type="email" id="newsletterEmail" placeholder="your@email.com" required>
+        <label for="newsletterEmail" style="display:none">Email address</label>
+        <input type="email" id="newsletterEmail" placeholder="your@email.com" required aria-label="Email address">
         <button type="submit" class="newsletter-btn">Subscribe</button>
       </form>
       <div class="newsletter-success" id="newsletterSuccess">Thanks! You'll get the first report soon.</div>
@@ -1605,8 +1609,15 @@
   </div>
 </div>
 
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+<script defer src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
 <script>
+// ─── HTML ESCAPING — prevents XSS from API/DB data ──────────────────────────
+function esc(str) {
+  const d = document.createElement('div');
+  d.textContent = str;
+  return d.innerHTML;
+}
+
 // ─── DEMO DATA ───────────────────────────────────────────────────────────────
 // lat/lng coordinates for real Sydney suburb centres
 const DEMO_SUBURBS = [
@@ -1735,7 +1746,7 @@ function initMap(suburbs) {
 
     // Hover tooltip
     marker.bindTooltip(
-      `<strong style="font-family:'DM Sans',sans-serif">${s.name}</strong><br>
+      `<strong style="font-family:'DM Sans',sans-serif">${esc(s.name)}</strong><br>
        <span style="font-family:'Playfair Display',serif;font-size:1rem">$${s.price.toFixed(2)}</span>`,
       {
         permanent: false,
@@ -1756,11 +1767,11 @@ function initMap(suburbs) {
         : '';
 
       marker.bindPopup(`
-        <div class="popup-suburb">${s.name}</div>
+        <div class="popup-suburb">${esc(s.name)}</div>
         <div class="popup-price ${popupPriceClass(s.price)}">$${s.price.toFixed(2)}</div>
         <div class="popup-meta">${s.count} café${s.count !== 1 ? 's' : ''} sampled</div>
         ${minMax}
-        <button class="popup-share" onclick="shareSuburb('${s.name}', ${s.price})">Share this suburb</button>
+        <button class="popup-share" onclick="shareSuburb('${esc(s.name).replace(/'/g, "\\'")}', ${s.price}, this)">Share this suburb</button>
       `, { maxWidth: 200 }).openPopup();
     });
 
@@ -1787,7 +1798,7 @@ function addDiscoveredMarkers(discovered) {
     });
 
     marker.bindTooltip(
-      '<strong style="font-family:DM Sans,sans-serif">' + c.name + '</strong><br>' +
+      '<strong style="font-family:DM Sans,sans-serif">' + esc(c.name) + '</strong><br>' +
       '<span style="font-size:0.75rem;color:#9C8872">Discovered — awaiting call</span>',
       { direction: 'top', offset: [0, -5] }
     );
@@ -1801,10 +1812,10 @@ function renderSuburbList(suburbs) {
   const sorted = [...suburbs].sort((a, b) => a.price - b.price);
   const list = document.getElementById('suburbList');
   list.innerHTML = sorted.map((s, i) => `
-    <div class="suburb-row" id="row-${s.name.replace(/\s/g,'-')}" onclick="clickSuburb('${s.name}')">
+    <div class="suburb-row" id="row-${esc(s.name).replace(/\s/g,'-')}" onclick="clickSuburb('${esc(s.name).replace(/'/g, "\\'")}')">
       <div class="price-bar-bg" style="width:${((s.price - 4) / 3.5 * 100).toFixed(0)}%"></div>
       <span class="suburb-rank">${i + 1}</span>
-      <span class="suburb-name">${s.name}</span>
+      <span class="suburb-name">${esc(s.name)}</span>
       <span class="sample-badge">${s.count} cafés</span>
       <span class="suburb-price ${priceClass(s.price)}">$${s.price.toFixed(2)}</span>
     </div>
@@ -1864,8 +1875,8 @@ function renderGems(gems) {
     <div class="winner-trophy">🏆</div>
     <div class="winner-info">
       <div class="winner-label">Sydney's cheapest flat white</div>
-      <div class="winner-name">${winner.name}</div>
-      <div class="winner-suburb">${winner.suburb}</div>
+      <div class="winner-name">${esc(winner.name)}</div>
+      <div class="winner-suburb">${esc(winner.suburb)}</div>
     </div>
     <div class="winner-price">$${winner.price.toFixed(2)}</div>
   `;
@@ -1877,8 +1888,8 @@ function renderGems(gems) {
       <div class="podium-item">
         <div class="podium-medal">🥈</div>
         <div>
-          <div class="podium-name">${runnerUp.name}</div>
-          <div class="podium-sub">${runnerUp.suburb}</div>
+          <div class="podium-name">${esc(runnerUp.name)}</div>
+          <div class="podium-sub">${esc(runnerUp.suburb)}</div>
         </div>
         <div class="podium-price">$${runnerUp.price.toFixed(2)}</div>
       </div>`;
@@ -1888,8 +1899,8 @@ function renderGems(gems) {
       <div class="podium-item">
         <div class="podium-medal">🥉</div>
         <div>
-          <div class="podium-name">${third.name}</div>
-          <div class="podium-sub">${third.suburb}</div>
+          <div class="podium-name">${esc(third.name)}</div>
+          <div class="podium-sub">${esc(third.suburb)}</div>
         </div>
         <div class="podium-price">$${third.price.toFixed(2)}</div>
       </div>`;
@@ -1906,14 +1917,14 @@ function renderGems(gems) {
 
   let html = '';
   Object.entries(grouped).forEach(([suburb, cafes]) => {
-    html += `<div class="finds-suburb-header">${suburb}</div>`;
+    html += `<div class="finds-suburb-header">${esc(suburb)}</div>`;
     cafes.forEach(g => {
       html += `
         <div class="find-row">
           <div class="find-gem">✦</div>
           <div>
-            <div class="find-name">${g.name}</div>
-            ${g.note ? '<div class="find-note">' + g.note + '</div>' : ''}
+            <div class="find-name">${esc(g.name)}</div>
+            ${g.note ? '<div class="find-note">' + esc(g.note) + '</div>' : ''}
           </div>
           <div class="find-price">$${g.price.toFixed(2)}</div>
         </div>`;
@@ -2076,14 +2087,18 @@ function subscribeEmail(e) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ email, source: 'newsletter' }),
   })
-  .then(r => r.json())
+  .then(r => {
+    if (!r.ok) throw new Error('Failed');
+    return r.json();
+  })
   .then(() => {
     document.getElementById('newsletterSuccess').style.display = 'block';
     document.querySelector('.newsletter-form').style.display = 'none';
   })
   .catch(() => {
-    document.getElementById('newsletterSuccess').style.display = 'block';
-    document.querySelector('.newsletter-form').style.display = 'none';
+    const el = document.getElementById('newsletterSuccess');
+    el.textContent = 'Something went wrong — try again later.';
+    el.style.display = 'block';
   });
 }
 
@@ -2104,21 +2119,30 @@ function submitPrice() {
   const priceLarge = document.getElementById('cafePriceLarge').value;
   if (!name || !suburb || (!priceSmall && !priceLarge)) return;
 
-  fetch('/api/subscribe', {
+  fetch('/api/submit-price', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      email: 'price-submit',
-      source: 'price-submit:' + JSON.stringify({ name, suburb, small: priceSmall, large: priceLarge })
-    }),
-  }).catch(() => {});
-
-  document.getElementById('successMsg').style.display = 'block';
-  setTimeout(closeModal, 2000);
+    body: JSON.stringify({ name, suburb, price_small: priceSmall, price_large: priceLarge }),
+  }).then(r => {
+    if (!r.ok) throw new Error('Failed');
+    document.getElementById('successMsg').style.display = 'block';
+    setTimeout(closeModal, 2000);
+  }).catch(() => {
+    document.getElementById('successMsg').textContent = 'Something went wrong — try again.';
+    document.getElementById('successMsg').style.display = 'block';
+  });
 }
 
 document.getElementById('modal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
+});
+
+// Close modals on Escape key
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeReconModal();
+  }
 });
 
 // ─── SUBURB RECON ─────────────────────────────────────────────────────────────
@@ -2140,13 +2164,18 @@ function submitRecon() {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      email: email || 'recon-request',
+      email: email || 'recon-request@flatwhiteindex.com.au',
       source: 'recon-request:' + suburb
     }),
-  }).catch(() => {});
-
-  document.getElementById('reconSuccess').style.display = 'block';
-  setTimeout(closeReconModal, 2500);
+  }).then(r => {
+    if (!r.ok) throw new Error('Failed');
+    document.getElementById('reconSuccess').style.display = 'block';
+    setTimeout(closeReconModal, 2500);
+  }).catch(() => {
+    const el = document.getElementById('reconSuccess');
+    el.textContent = 'Something went wrong — try again.';
+    el.style.display = 'block';
+  });
 }
 
 document.getElementById('reconModal').addEventListener('click', function(e) {
@@ -2154,16 +2183,14 @@ document.getElementById('reconModal').addEventListener('click', function(e) {
 });
 
 // ─── SHARE ────────────────────────────────────────────────────────────────────
-function shareSuburb(name, price) {
+function shareSuburb(name, price, btnEl) {
   const text = `A flat white in ${name} costs $${price.toFixed(2)} on average ☕ Check your suburb at flatwhiteindex.com.au/#suburb=${encodeURIComponent(name)}`;
 
   if (navigator.share) {
     navigator.share({ title: 'Flat White Index', text: text, url: 'https://flatwhiteindex.com.au/#suburb=' + encodeURIComponent(name) });
   } else if (navigator.clipboard) {
     navigator.clipboard.writeText(text).then(() => {
-      const btn = event.target;
-      btn.textContent = 'Copied!';
-      setTimeout(() => btn.textContent = 'Share this suburb', 2000);
+      if (btnEl) { btnEl.textContent = 'Copied!'; setTimeout(() => btnEl.textContent = 'Share this suburb', 2000); }
     });
   }
 }
@@ -2197,12 +2224,10 @@ function calcSalary() {
 }
 
 // ─── EMBED ────────────────────────────────────────────────────────────────────
-function copyEmbed() {
+function copyEmbed(btnEl) {
   const code = document.getElementById('embedCode').textContent;
   navigator.clipboard.writeText(code).then(() => {
-    const btn = event.target;
-    btn.textContent = 'Copied!';
-    setTimeout(() => btn.textContent = 'Copy', 2000);
+    if (btnEl) { btnEl.textContent = 'Copied!'; setTimeout(() => btnEl.textContent = 'Copy', 2000); }
   });
 }
 

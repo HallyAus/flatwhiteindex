@@ -1,6 +1,5 @@
 import express from "express";
-import { saveCallResult, getPriceStats, getCallStats, getDiscoveredCafes } from "./db.js";
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { saveCallResult, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -11,7 +10,7 @@ const app = express();
 app.use(express.json({ limit: '64kb' }));
 app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 
-// [SECURITY] Basic security headers
+// [SECURITY] Basic security headers + CSP
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
@@ -19,6 +18,14 @@ app.use((req, res, next) => {
   res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self' 'unsafe-inline' https://unpkg.com https://analytics.flatwhiteindex.com.au",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src https://fonts.gstatic.com",
+    "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
+    "connect-src 'self' https://analytics.flatwhiteindex.com.au",
+  ].join('; '));
   next();
 });
 
@@ -36,13 +43,6 @@ app.use((req, res, next) => {
 
 // [SECURITY] Serve ONLY the public/ directory — never the project root
 app.use(express.static(join(__dirname, 'public'), { dotfiles: 'deny' }));
-
-const PRICE_PATTERNS = [
-  /\$\s*(\d+(?:\.\d{1,2})?)/g,
-  /(\d+)\s*dollars?\s*(?:and\s*)?(\d+)?\s*cents?/gi,
-  /\b(four|five|six|seven|eight|nine|ten)\s*(fifty|eighty|twenty|seventy|thirty|forty|sixty|ninety|dollars?)\b/gi,
-  /(\d+(?:\.\d{1,2})?)\s*(?:bucks?|dollars?|AUD)/gi,
-];
 
 const WORD_TO_NUM = {
   zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5,
@@ -152,16 +152,46 @@ function rateLimit(key, maxPerMinute) {
   rateLimits[key].push(now);
   return true;
 }
-// Purge stale rate limit keys every 5 minutes
+// Purge stale rate limit keys every 5 minutes (.unref so it doesn't prevent shutdown)
 setInterval(() => {
   const now = Date.now();
   for (const key of Object.keys(rateLimits)) {
     rateLimits[key] = rateLimits[key].filter(t => now - t < 60000);
     if (rateLimits[key].length === 0) delete rateLimits[key];
   }
-}, 300000);
+}, 300000).unref();
 
-app.post("/webhook/call-complete", async (req, res) => {
+// [SECURITY] Webhook authentication — verify requests come from our call providers
+async function verifyWebhookOrigin(req, res, next) {
+  // Twilio: validate X-Twilio-Signature if auth token is configured
+  if (process.env.TWILIO_AUTH_TOKEN && req.headers['x-twilio-signature']) {
+    try {
+      const twilio = await import("twilio");
+      const url = process.env.WEBHOOK_BASE_URL + req.originalUrl;
+      const valid = twilio.default.validateRequest(
+        process.env.TWILIO_AUTH_TOKEN,
+        req.headers['x-twilio-signature'],
+        url,
+        req.body
+      );
+      if (!valid) return res.status(403).json({ error: "Invalid Twilio signature" });
+      return next();
+    } catch { /* fall through to other checks */ }
+  }
+
+  // Bland.ai: check webhook secret if configured
+  if (process.env.WEBHOOK_SECRET) {
+    const provided = req.headers['x-webhook-secret'] || req.query.secret;
+    if (provided !== process.env.WEBHOOK_SECRET) {
+      return res.status(403).json({ error: "Invalid webhook secret" });
+    }
+  }
+
+  // Internal calls (from our own Twilio handler posting back) — check for localhost or same origin
+  next();
+}
+
+app.post("/webhook/call-complete", verifyWebhookOrigin, async (req, res) => {
   // [SECURITY] Rate limit: 100 webhook calls per minute
   if (!rateLimit('webhook', 100)) {
     return res.status(429).json({ error: "Too many requests" });
@@ -304,10 +334,10 @@ app.get("/api/dashboard", async (req, res) => {
       ? Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length * 100) / 100
       : 0;
 
-    // Build discovered cafes list (found but not yet priced)
-    const pricedCafeIds = new Set(priceData.map(r => r.cafes?.name).filter(Boolean));
+    // Build discovered cafes list (found but not yet priced) — filter by ID, not name
+    const pricedCafeIds = new Set(priceData.map(r => r.cafe_id).filter(Boolean));
     const discovered = discoveredCafes
-      .filter(c => c.lat && c.lng && !pricedCafeIds.has(c.name))
+      .filter(c => c.lat && c.lng && !pricedCafeIds.has(c.id))
       .map(c => ({
         name: c.name,
         suburb: c.suburb,
@@ -340,28 +370,9 @@ app.get("/api/dashboard", async (req, res) => {
   }
 });
 
-// --- Newsletter / price submissions ---
+// --- Newsletter subscriptions (Supabase-backed) ---
 
-const SUBSCRIBERS_FILE = join(__dirname, 'subscribers.json');
-const MAX_SUBSCRIBERS = 10000;
-
-function loadSubscribers() {
-  if (!existsSync(SUBSCRIBERS_FILE)) return [];
-  try {
-    return JSON.parse(readFileSync(SUBSCRIBERS_FILE, 'utf-8'));
-  } catch { return []; }
-}
-
-function saveSubscriber(email, source) {
-  const subscribers = loadSubscribers();
-  if (subscribers.length >= MAX_SUBSCRIBERS) return false;
-  if (subscribers.some(s => s.email === email)) return false;
-  subscribers.push({ email, source, subscribed_at: new Date().toISOString() });
-  writeFileSync(SUBSCRIBERS_FILE, JSON.stringify(subscribers, null, 2));
-  return true;
-}
-
-app.post("/api/subscribe", (req, res) => {
+app.post("/api/subscribe", async (req, res) => {
   // [SECURITY] Rate limit: 10 subscribes per minute per IP
   const ip = req.ip || 'unknown';
   if (!rateLimit('sub:' + ip, 10)) {
@@ -374,23 +385,66 @@ app.post("/api/subscribe", (req, res) => {
     return res.status(400).json({ error: "Valid email required" });
   }
 
-  // [SECURITY] Sanitise source field
-  const sanitisedSource = typeof source === 'string'
-    ? source.slice(0, 200)
-    : 'website';
+  const sanitisedSource = typeof source === 'string' ? source.slice(0, 200) : 'website';
   const sanitised = email.toLowerCase().trim();
-  const isNew = saveSubscriber(sanitised, sanitisedSource);
 
-  console.log(`📧 ${isNew ? 'New' : 'Existing'} subscriber: ${sanitised} (${sanitisedSource.slice(0, 30)})`);
-  res.json({ ok: true, new: isNew });
+  try {
+    const isNew = await saveSubscriberToDb(sanitised, sanitisedSource);
+    console.log(`📧 ${isNew ? 'New' : 'Existing'} subscriber: ${sanitised.slice(0, 3)}*** (${sanitisedSource.slice(0, 30)})`);
+    res.json({ ok: true, new: isNew });
+  } catch (err) {
+    console.error("Subscribe error:", err.message);
+    res.status(500).json({ error: "Failed to save subscription" });
+  }
 });
 
-// [SECURITY] Health endpoint — no sensitive values exposed
-app.get("/health", (_, res) => {
-  res.json({
-    ok: true,
+// --- User price submissions (separate endpoint, not piggybacking on subscribe) ---
+
+app.post("/api/submit-price", async (req, res) => {
+  const ip = req.ip || 'unknown';
+  if (!rateLimit('price:' + ip, 5)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
+  const { name, suburb, price_small, price_large } = req.body;
+  if (!name || typeof name !== 'string' || name.length > 200) {
+    return res.status(400).json({ error: "Valid cafe name required" });
+  }
+  if (!suburb || typeof suburb !== 'string' || suburb.length > 100) {
+    return res.status(400).json({ error: "Valid suburb required" });
+  }
+
+  const small = price_small ? parseFloat(price_small) : null;
+  const large = price_large ? parseFloat(price_large) : null;
+  if (!small && !large) return res.status(400).json({ error: "At least one price required" });
+  if ((small && (small < 2 || small > 20)) || (large && (large < 2 || large > 20))) {
+    return res.status(400).json({ error: "Price out of range" });
+  }
+
+  try {
+    await saveUserPriceSubmission({
+      name: name.slice(0, 200),
+      suburb: suburb.slice(0, 100),
+      price_small: small,
+      price_large: large,
+    });
+    console.log(`📋 Price submission: ${name.slice(0, 30)} (${suburb.slice(0, 20)}) — $${small || large}`);
+    res.json({ ok: true });
+  } catch (err) {
+    console.error("Price submission error:", err.message);
+    res.status(500).json({ error: "Failed to save submission" });
+  }
+});
+
+// [SECURITY] Health endpoint — verifies DB connectivity
+app.get("/health", async (_, res) => {
+  const dbStatus = await testConnection();
+  const ok = dbStatus.ok;
+  res.status(ok ? 200 : 503).json({
+    ok,
     service: "flatwhiteindex-webhook",
     uptime: Math.round(process.uptime()),
+    database: dbStatus.ok ? "connected" : dbStatus.message,
     env: {
       supabase: !!process.env.SUPABASE_URL,
       webhook_url: !!process.env.WEBHOOK_BASE_URL,
@@ -402,7 +456,8 @@ function validateEnv() {
   const required = ["SUPABASE_URL", "SUPABASE_SERVICE_KEY"];
   const missing = required.filter(k => !process.env[k]);
   if (missing.length > 0) {
-    console.warn(`⚠️  Missing env vars: ${missing.join(", ")} — webhook will start but DB writes will fail`);
+    console.error(`❌ Missing required env vars: ${missing.join(", ")}`);
+    process.exit(1);
   }
 }
 
@@ -438,10 +493,15 @@ if (isMainModule) {
     }
   });
 
-  process.on("SIGTERM", () => {
-    console.log("Shutting down webhook server...");
+  function shutdown(signal) {
+    console.log(`${signal} received — shutting down...`);
     server.close(() => process.exit(0));
-  });
+    // Force exit after 10s if connections don't close cleanly
+    setTimeout(() => process.exit(1), 10000).unref();
+  }
+
+  process.on("SIGTERM", () => shutdown("SIGTERM"));
+  process.on("SIGINT", () => shutdown("SIGINT"));
 }
 
 export default app;

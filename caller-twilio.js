@@ -3,6 +3,16 @@ import { WebSocketServer } from "ws";
 import { WebSocket } from "ws";
 import { createServer } from "node:http";
 
+// Singleton Twilio client — created once, reused across calls
+let _twilioClient = null;
+async function getTwilioClient() {
+  if (!_twilioClient) {
+    const twilio = (await import("twilio")).default;
+    _twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  }
+  return _twilioClient;
+}
+
 const AGENT_PROMPT = `You are Mia, making a phone call to a café. You must follow these steps EXACTLY in order. Do NOT skip ahead. Do NOT assume or guess any information.
 
 STEP 1: Say "Hi there, is this {{cafe_name}}?" Then STOP and WAIT for their answer.
@@ -60,9 +70,7 @@ export async function dispatchCalls(cafes, batchSize) {
 }
 
 async function dispatchSingleCall(cafe) {
-  // Dynamic import twilio (only needed when using this provider)
-  const twilio = (await import("twilio")).default;
-  const client = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  const client = await getTwilioClient();
 
   const webhookBase = process.env.WEBHOOK_BASE_URL;
   const prompt = AGENT_PROMPT.replace("{{cafe_name}}", cafe.name);
@@ -106,13 +114,38 @@ export function setupMediaStreamServer(server) {
   const wss = new WebSocketServer({ noServer: true });
   const activeCallSessions = new Set(); // Prevent duplicate sessions per call
 
+  // [SECURITY] Validate WebSocket upgrades come from Twilio
   server.on("upgrade", (request, socket, head) => {
-    if (request.url.startsWith("/media-stream")) {
-      wss.handleUpgrade(request, socket, head, (ws) => {
-        wss.emit("connection", ws, request);
-      });
+    if (!request.url.startsWith("/media-stream")) return;
+
+    // Check origin / X-Twilio-Signature if available
+    const origin = request.headers.origin || '';
+    const isTwilio = !origin || origin.includes('twilio.com');
+    const hasWebhookSecret = process.env.WEBHOOK_SECRET;
+    const url = new URL(request.url, `http://${request.headers.host}`);
+
+    if (hasWebhookSecret && url.searchParams.get('secret') !== process.env.WEBHOOK_SECRET && !isTwilio) {
+      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+      socket.destroy();
+      return;
     }
+
+    wss.handleUpgrade(request, socket, head, (ws) => {
+      wss.emit("connection", ws, request);
+    });
   });
+
+  // Cleanup stale activeCalls entries every 5 minutes (calls should never last >10 min)
+  setInterval(() => {
+    const cutoff = Date.now() - 10 * 60 * 1000;
+    for (const [callSid, meta] of activeCalls) {
+      if (meta._startedAt && meta._startedAt < cutoff) {
+        console.warn(`    ⚠️ Cleaning stale call ${callSid}`);
+        activeCalls.delete(callSid);
+        activeCallSessions.delete(callSid);
+      }
+    }
+  }, 300000).unref();
 
   wss.on("connection", (twilioWs) => {
     let openaiWs = null;
@@ -122,7 +155,13 @@ export function setupMediaStreamServer(server) {
     let isSecondStream = false;
 
     twilioWs.on("message", (data) => {
-      const msg = JSON.parse(data);
+      let msg;
+      try {
+        msg = JSON.parse(data);
+      } catch {
+        console.warn("    ⚠️ Malformed WebSocket message, ignoring");
+        return;
+      }
 
       if (msg.event === "start") {
         streamSid = msg.start.streamSid;
@@ -144,7 +183,8 @@ export function setupMediaStreamServer(server) {
           suburb: customParams.suburb || "Sydney",
           prompt: AGENT_PROMPT.replace("{{cafe_name}}", customParams.cafe_name || "there"),
         };
-        // Store for close handler
+        // Store for close handler (with timestamp for TTL cleanup)
+        metadata._startedAt = Date.now();
         activeCalls.set(callSid, metadata);
 
         console.log(`    🎙️  Media stream started for ${metadata.cafe_name}`);

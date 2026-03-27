@@ -2,7 +2,7 @@
 .env
 .env.*
 secrets/
-env.example
+# env.example is NOT gitignored — new devs need it
 
 # Project management (private — not for public repo)
 .claude/
@@ -46,3 +46,6 @@ public/mock-data.json
 
 # Newsletter subscribers
 subscribers.json
+
+# Deploy state
+.last-deploy-sha

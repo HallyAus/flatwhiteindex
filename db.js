@@ -43,12 +43,23 @@ export async function markCafesBulkStatus(googlePlaceIds, status, reason = null)
 }
 
 export async function getCalledCafeIds() {
-  const { data, error } = await supabase()
-    .from("price_calls")
-    .select("cafe_id");
+  const allIds = [];
+  let from = 0;
+  const pageSize = 1000;
 
-  if (error) throw new Error(`getCalledCafeIds: ${error.message}`);
-  return new Set(data.map(r => r.cafe_id));
+  while (true) {
+    const { data, error } = await supabase()
+      .from("price_calls")
+      .select("cafe_id")
+      .range(from, from + pageSize - 1);
+
+    if (error) throw new Error(`getCalledCafeIds: ${error.message}`);
+    allIds.push(...data.map(r => r.cafe_id));
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return new Set(allIds);
 }
 
 export async function getEligibleCafesFromDb() {
@@ -105,6 +116,7 @@ export async function getPriceStats() {
   const { data, error } = await supabase()
     .from("price_calls")
     .select(`
+      cafe_id,
       price_small,
       price_large,
       status,
@@ -140,31 +152,46 @@ export async function testConnection() {
 }
 
 export async function getCallStats() {
-  // Count all cafes by status
-  const { data: cafes, error: cafeErr } = await supabase()
-    .from("cafes")
-    .select("status");
+  const db = supabase();
 
-  if (cafeErr) throw new Error(`getCallStats: ${cafeErr.message}`);
+  // Use head:true + count to avoid fetching rows
+  const [cafesTotal, cafesExcluded, callsTotal, callsCompleted, callsPending] = await Promise.all([
+    db.from("cafes").select("*", { count: "exact", head: true }),
+    db.from("cafes").select("*", { count: "exact", head: true }).eq("status", "excluded"),
+    db.from("price_calls").select("*", { count: "exact", head: true }),
+    db.from("price_calls").select("*", { count: "exact", head: true }).eq("status", "completed"),
+    db.from("price_calls").select("*", { count: "exact", head: true }).eq("status", "pending"),
+  ]);
 
-  const { data: calls, error: callErr } = await supabase()
-    .from("price_calls")
-    .select("status");
+  const total = cafesTotal.count || 0;
+  const excluded = cafesExcluded.count || 0;
+  const eligible = total - excluded;
+  const calls = callsTotal.count || 0;
+  const completed = callsCompleted.count || 0;
+  const pending = callsPending.count || 0;
+  const failed = calls - completed - pending;
 
-  if (callErr) throw new Error(`getCallStats: ${callErr.message}`);
+  return { total: calls, completed, pending, failed, cafes_total: total, cafes_eligible: eligible, cafes_excluded: excluded };
+}
 
-  const cafeStats = { total: cafes.length, eligible: 0, excluded: 0 };
-  cafes.forEach(c => {
-    if (c.status === 'excluded') cafeStats.excluded++;
-    else cafeStats.eligible++;
-  });
+// --- Subscribers ---
 
-  const callStats = { total: calls.length, completed: 0, pending: 0, failed: 0 };
-  calls.forEach(row => {
-    if (row.status === "completed") callStats.completed++;
-    else if (row.status === "pending") callStats.pending++;
-    else callStats.failed++;
-  });
+export async function saveSubscriberToDb(email, source) {
+  const { data, error } = await supabase()
+    .from("subscribers")
+    .upsert({ email, source, subscribed_at: new Date().toISOString() }, { onConflict: "email", ignoreDuplicates: true })
+    .select("email");
 
-  return { ...callStats, cafes_total: cafeStats.total, cafes_eligible: cafeStats.eligible, cafes_excluded: cafeStats.excluded };
+  if (error) throw new Error(`saveSubscriberToDb: ${error.message}`);
+  return data?.length > 0;
+}
+
+// --- User price submissions ---
+
+export async function saveUserPriceSubmission({ name, suburb, price_small, price_large }) {
+  const { error } = await supabase()
+    .from("user_price_submissions")
+    .insert({ cafe_name: name, suburb, price_small, price_large, submitted_at: new Date().toISOString() });
+
+  if (error) throw new Error(`saveUserPriceSubmission: ${error.message}`);
 }

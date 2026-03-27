@@ -42,15 +42,18 @@ describe("getSydneySearchGrid", () => {
 });
 
 describe("getSuburbCenter", () => {
-  it("returns coordinates for known suburb", () => {
-    const center = getSuburbCenter("newtown");
-    assert.strictEqual(center.lat, -33.8967);
-    assert.strictEqual(center.lng, 151.1796);
+  it("returns array of coordinates for known suburb", () => {
+    const centers = getSuburbCenter("newtown");
+    assert.ok(Array.isArray(centers), "should return an array");
+    assert.ok(centers.length > 0, "should have at least one point");
+    assert.strictEqual(centers[0].lat, -33.8967);
+    assert.strictEqual(centers[0].lng, 151.1796);
   });
 
   it("falls back to sydney_cbd for unknown suburb", () => {
-    const center = getSuburbCenter("nonexistent");
-    assert.strictEqual(center.lat, -33.8688);
-    assert.strictEqual(center.lng, 151.2093);
+    const centers = getSuburbCenter("nonexistent");
+    assert.ok(Array.isArray(centers));
+    assert.strictEqual(centers[0].lat, -33.8688);
+    assert.strictEqual(centers[0].lng, 151.2093);
   });
 });
