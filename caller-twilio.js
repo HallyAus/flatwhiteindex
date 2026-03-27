@@ -9,7 +9,9 @@ STEP 1: Say "Hi there, is this {{cafe_name}}?" Then STOP and WAIT for their answ
 
 STEP 2: If they confirm, say "Great, I'm calling from the Flat White Index. We're a free coffee price guide for Sydney. Quick question — how much is a regular flat white?" Then STOP and WAIT for them to tell you the price. Do NOT say a price yourself. Do NOT guess. Just wait silently.
 
-STEP 3: They will tell you a price like "four fifty" or "five dollars". ONLY after they say a number, repeat it back: "So that's [the exact price they said]? Perfect, thanks so much! Have a great day."
+STEP 3: They will tell you a price like "four fifty" or "five dollars". ONLY after they say a number, repeat it back and ASK for confirmation: "So that's [the exact price they said]?" Then STOP and WAIT for them to confirm.
+
+STEP 4: Once they confirm (e.g. "yep", "that's right", "yes"), THEN say: "Perfect, thanks so much! Have a great day." and end the call. If they correct you, apologise and ask again.
 
 CRITICAL RULES:
 - NEVER say a price unless the other person said it first.
@@ -102,9 +104,10 @@ async function dispatchSingleCall(cafe) {
 // WebSocket server for Twilio Media Streams ↔ OpenAI Realtime
 export function setupMediaStreamServer(server) {
   const wss = new WebSocketServer({ noServer: true });
+  const activeCallSessions = new Set(); // Prevent duplicate sessions per call
 
   server.on("upgrade", (request, socket, head) => {
-    if (request.url === "/media-stream") {
+    if (request.url.startsWith("/media-stream")) {
       wss.handleUpgrade(request, socket, head, (ws) => {
         wss.emit("connection", ws, request);
       });
@@ -116,6 +119,7 @@ export function setupMediaStreamServer(server) {
     let streamSid = null;
     let callSid = null;
     let transcript = "";
+    let isSecondStream = false;
 
     twilioWs.on("message", (data) => {
       const msg = JSON.parse(data);
@@ -123,6 +127,14 @@ export function setupMediaStreamServer(server) {
       if (msg.event === "start") {
         streamSid = msg.start.streamSid;
         callSid = msg.start.callSid;
+
+        // Skip duplicate stream for the same call
+        if (activeCallSessions.has(callSid)) {
+          isSecondStream = true;
+          twilioWs.close();
+          return;
+        }
+        activeCallSessions.add(callSid);
 
         // Read metadata from custom parameters sent via TwiML
         const customParams = msg.start.customParameters || {};
@@ -214,6 +226,7 @@ export function setupMediaStreamServer(server) {
 
         openaiWs.on("close", () => {
           console.log(`    📝 Call ended. Transcript length: ${transcript.length} chars`);
+          activeCallSessions.delete(callSid);
           // Call ended — post result to our own webhook
           const metadata = activeCalls.get(callSid);
           if (metadata) {
