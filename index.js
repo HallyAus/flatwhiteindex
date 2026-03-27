@@ -135,10 +135,18 @@ async function main() {
     getCalledCafeIds(),
   ]);
 
-  const uncalled = dbCafes.filter(c => !calledIds.has(c.id));
-  const alreadyCalled = dbCafes.length - uncalled.length;
+  let pool = dbCafes;
 
-  console.log(`   ${dbCafes.length} eligible in DB, ${alreadyCalled} already called, ${uncalled.length} remaining\n`);
+  // If suburb filter is set, only call cafes from the freshly-fetched batch
+  if (SUBURB_FILTER) {
+    const freshIds = new Set(filtered.map(c => c.google_place_id));
+    pool = dbCafes.filter(c => freshIds.has(c.google_place_id));
+  }
+
+  const uncalled = pool.filter(c => !calledIds.has(c.id));
+  const alreadyCalled = pool.length - uncalled.length;
+
+  console.log(`   ${pool.length} eligible${SUBURB_FILTER ? ' in ' + SUBURB_FILTER : ''}, ${alreadyCalled} already called, ${uncalled.length} remaining\n`);
 
   if (uncalled.length === 0) {
     console.log("✅ All eligible cafés have been called! Nothing to do.");
