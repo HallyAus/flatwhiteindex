@@ -13,27 +13,44 @@ async function getTwilioClient() {
   return _twilioClient;
 }
 
-const AGENT_PROMPT = `You are Mia, making a phone call to a café. You must follow these steps EXACTLY in order. Do NOT skip ahead. Do NOT assume or guess any information.
+const AGENT_PROMPT = `You are Mia, making a phone call to a café. Follow these steps EXACTLY.
 
-STEP 1: Say "Hi there, is this {{cafe_name}}?" Then STOP and WAIT for their answer.
+STEP 1: Say "Hi, is this {{cafe_name}}?" Then WAIT for their answer.
 
-STEP 2: If they confirm, say "Great, I'm calling from the Flat White Index. We're a free coffee price guide for Sydney. Quick question — how much is a regular flat white?" Then STOP and WAIT for them to tell you the price. Do NOT say a price yourself. Do NOT guess. Just wait silently.
+STEP 2: If they confirm, say "Great, I'm calling from the Flat White Index — a free coffee price guide for Sydney. How much is a regular flat white?" Then WAIT for the price.
 
-STEP 3: They will tell you a price like "four fifty" or "five dollars". ONLY after they say a number, repeat it back and ASK for confirmation: "So that's [the exact price they said]?" Then STOP and WAIT for them to confirm.
+STEP 3: When they say a price, repeat it back: "So that's [price]?" WAIT for confirmation.
 
-STEP 4: Once they confirm (e.g. "yep", "that's right", "yes"), THEN say: "Perfect, thanks so much! Have a great day." and end the call. If they correct you, apologise and ask again.
+STEP 4: Once confirmed, say "Perfect, thanks so much! Have a great day." then say "CALL_COMPLETE" to end.
 
-CRITICAL RULES:
-- NEVER say a price unless the other person said it first.
-- NEVER assume or fill in a price. Wait for them to speak.
-- If they haven't given you a number yet, ask again: "Sorry, how much was that?"
-- If they ask who you are: "The Flat White Index — it's at flatwhiteindex.com.au."
-- If they ask if you're AI: "Yes I am — just collecting prices for a public guide."
-- If they don't do flat whites: "No worries, thanks anyway!" then hang up.
-- If they want you to stop: "Sorry to bother you, won't call again." then hang up.
-- If voicemail: hang up immediately.
+HANGUP IMMEDIATELY by saying "CALL_COMPLETE" if ANY of these happen:
+- You hear a voicemail greeting, answering machine, or "leave a message"
+- You hear hold music, "please hold", "your call is important", or an IVR menu
+- You hear "press 1", "press 2", or any automated menu options
+- Nobody speaks for more than 5 seconds after you greet them
+- They say they don't do flat whites — say "No worries, thanks!" then "CALL_COMPLETE"
+- They ask you to stop calling — say "Sorry, won't call again." then "CALL_COMPLETE"
 
-Keep it short and friendly. Under 45 seconds.`;
+OTHER RULES:
+- NEVER say a price unless they said it first. If unclear, ask: "Sorry, how much was that?"
+- If they ask who you are: "The Flat White Index — flatwhiteindex.com.au"
+- If they ask if you're AI: "Yes, just collecting prices for a public guide."
+- Keep it under 30 seconds. Be brief and friendly.
+- Say "CALL_COMPLETE" to end EVERY call — whether successful or not.`;
+
+const MAX_CALL_DURATION_MS = 60000; // 60 seconds — force hangup if exceeded
+const callTimers = new Map();
+
+// End a Twilio call by SID
+async function endTwilioCall(callSid) {
+  try {
+    const client = await getTwilioClient();
+    await client.calls(callSid).update({ status: "completed" });
+    console.log(`    ☎️  Ended call ${callSid}`);
+  } catch (err) {
+    console.warn(`    ⚠️  Could not end call ${callSid}: ${err.message}`);
+  }
+}
 
 // Track active calls and their transcripts
 const activeCalls = new Map();
@@ -190,6 +207,14 @@ export function setupMediaStreamServer(server) {
         metadata._startedAt = Date.now();
         activeCalls.set(callSid, metadata);
 
+        // Safety net: force hangup after MAX_CALL_DURATION_MS
+        const timer = setTimeout(() => {
+          console.log(`    ⏰ Max duration reached for ${metadata.cafe_name} — forcing hangup`);
+          endTwilioCall(callSid);
+        }, MAX_CALL_DURATION_MS);
+        timer.unref();
+        callTimers.set(callSid, timer);
+
         console.log(`    🎙️  Media stream started for ${metadata.cafe_name}`);
 
         // Connect to OpenAI Realtime
@@ -253,10 +278,23 @@ export function setupMediaStreamServer(server) {
           if (event.type === "response.audio_transcript.done") {
             transcript += " [Mia]: " + event.transcript;
             console.log(`    💬 Mia: ${event.transcript}`);
+
+            // CALL_COMPLETE signal — Mia wants to hang up
+            if (event.transcript.includes("CALL_COMPLETE")) {
+              console.log(`    📴 Mia signalled CALL_COMPLETE — ending call`);
+              endTwilioCall(callSid);
+            }
           }
           if (event.type === "conversation.item.input_audio_transcription.completed") {
             transcript += " [Cafe]: " + event.transcript;
             console.log(`    💬 Cafe: ${event.transcript}`);
+
+            // Detect voicemail/IVR from cafe side and force hangup
+            const cafeText = event.transcript.toLowerCase();
+            if (/leave a message|after the (tone|beep)|press [0-9]|your call is important|please hold/.test(cafeText)) {
+              console.log(`    📴 Voicemail/IVR detected — ending call`);
+              endTwilioCall(callSid);
+            }
           }
           if (event.type === "error") {
             console.error(`    ❌ OpenAI error:`, event.error?.message || JSON.stringify(event));
@@ -270,6 +308,9 @@ export function setupMediaStreamServer(server) {
         openaiWs.on("close", () => {
           console.log(`    📝 Call ended. Transcript length: ${transcript.length} chars`);
           activeCallSessions.delete(callSid);
+          // Clear max duration timer
+          const timer = callTimers.get(callSid);
+          if (timer) { clearTimeout(timer); callTimers.delete(callSid); }
           // Call ended — post result to our own webhook
           const metadata = activeCalls.get(callSid);
           if (metadata) {
