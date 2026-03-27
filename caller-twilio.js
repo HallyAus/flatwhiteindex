@@ -69,19 +69,24 @@ async function dispatchSingleCall(cafe) {
     prompt,
   };
 
+  // Encode metadata as URL params so the WebSocket handler can read them
+  const params = new URLSearchParams({
+    cafe_id: cafe.id,
+    cafe_name: cafe.name,
+    suburb: cafe.suburb || "Sydney",
+  });
+  const streamUrl = `wss://${new URL(webhookBase).host}/media-stream?${params}`;
+
   const call = await client.calls.create({
     to: cafe.phone,
     from: process.env.TWILIO_PHONE_NUMBER,
-    twiml: `<Response><Connect><Stream url="wss://${new URL(webhookBase).host}/media-stream" /></Connect></Response>`,
+    twiml: `<Response><Connect><Stream url="${streamUrl}"><Parameter name="cafe_id" value="${cafe.id}" /><Parameter name="cafe_name" value="${cafe.name}" /><Parameter name="suburb" value="${cafe.suburb || 'Sydney'}" /></Stream></Connect></Response>`,
     machineDetection: "Enable",
     machineDetectionTimeout: 5,
     statusCallback: `${webhookBase}/webhook/twilio-status`,
     statusCallbackEvent: ["completed", "no-answer", "busy", "failed"],
     statusCallbackMethod: "POST",
   });
-
-  // Store metadata keyed by call SID
-  activeCalls.set(call.sid, callMetadata);
 
   await markCallDispatched(cafe.id, call.sid);
   console.log(`    📞 ${cafe.name} — call ${call.sid}`);
@@ -112,9 +117,19 @@ export function setupMediaStreamServer(server) {
       if (msg.event === "start") {
         streamSid = msg.start.streamSid;
         callSid = msg.start.callSid;
-        const metadata = activeCalls.get(callSid);
 
-        console.log(`    🎙️  Media stream started for ${metadata?.cafe_name || callSid}`);
+        // Read metadata from custom parameters sent via TwiML
+        const customParams = msg.start.customParameters || {};
+        const metadata = {
+          cafe_id: customParams.cafe_id || null,
+          cafe_name: customParams.cafe_name || "Unknown Café",
+          suburb: customParams.suburb || "Sydney",
+          prompt: AGENT_PROMPT.replace("{{cafe_name}}", customParams.cafe_name || "there"),
+        };
+        // Store for close handler
+        activeCalls.set(callSid, metadata);
+
+        console.log(`    🎙️  Media stream started for ${metadata.cafe_name}`);
 
         // Connect to OpenAI Realtime
         openaiWs = new WebSocket("wss://api.openai.com/v1/realtime?model=gpt-4o-mini-realtime-preview", {
