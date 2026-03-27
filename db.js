@@ -42,15 +42,19 @@ export async function markCafesBulkStatus(googlePlaceIds, status, reason = null)
   if (error) throw new Error(`markCafesBulkStatus: ${error.message}`);
 }
 
+// Only skip cafes that completed successfully (got a price or confirmed no flat white)
+// Failed, no_answer, voicemail, and pending calls should be retried
 export async function getCalledCafeIds() {
   const allIds = [];
   let from = 0;
   const pageSize = 1000;
+  const doneStatuses = ["completed", "no_flat_white", "refused"];
 
   while (true) {
     const { data, error } = await supabase()
       .from("price_calls")
       .select("cafe_id")
+      .in("status", doneStatuses)
       .range(from, from + pageSize - 1);
 
     if (error) throw new Error(`getCalledCafeIds: ${error.message}`);
@@ -85,6 +89,13 @@ export async function getCafeByPlaceId(googlePlaceId) {
 }
 
 export async function markCallDispatched(cafeId, blandCallId) {
+  // Clean up old failed/no_answer attempts for this cafe before inserting
+  await supabase()
+    .from("price_calls")
+    .delete()
+    .eq("cafe_id", cafeId)
+    .in("status", ["no_answer", "voicemail", "failed", "pending"]);
+
   const { error } = await supabase()
     .from("price_calls")
     .insert({

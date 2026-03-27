@@ -461,10 +461,39 @@ function validateEnv() {
   }
 }
 
-// Twilio status callback (voicemail detection, call completion)
-app.post("/webhook/twilio-status", (req, res) => {
-  const { CallSid, CallStatus, AnsweredBy } = req.body;
-  console.log(`📱 Twilio status: ${CallSid} — ${CallStatus} (${AnsweredBy || 'unknown'})`);
+// Twilio status callback — update DB for failed/no-answer/voicemail calls
+app.post("/webhook/twilio-status", async (req, res) => {
+  const { CallSid, CallStatus, AnsweredBy, Duration, ErrorCode, ErrorMessage } = req.body;
+  console.log(`📱 Twilio status: ${CallSid} — ${CallStatus} (${AnsweredBy || 'unknown'}) duration=${Duration || 0}s${ErrorCode ? ' error=' + ErrorCode + ': ' + ErrorMessage : ''}`);
+
+  // Map Twilio status to our status
+  const statusMap = {
+    'no-answer': 'no_answer',
+    'busy': 'no_answer',
+    'failed': 'failed',
+    'canceled': 'failed',
+  };
+
+  const dbStatus = statusMap[CallStatus];
+  const isVoicemail = AnsweredBy === 'machine_start' || AnsweredBy === 'machine_end_beep' || AnsweredBy === 'machine_end_silence';
+
+  if (dbStatus || isVoicemail) {
+    try {
+      await saveCallResult({
+        bland_call_id: CallSid,
+        status: isVoicemail ? 'voicemail' : dbStatus,
+        price_small: null,
+        price_large: null,
+        raw_transcript: isVoicemail ? '[voicemail detected]' : `[${CallStatus}]${ErrorMessage ? ' ' + ErrorMessage : ''}`,
+        needs_review: false,
+        completed_at: new Date().toISOString(),
+      });
+      console.log(`    💾 Saved ${isVoicemail ? 'voicemail' : dbStatus} status for ${CallSid}`);
+    } catch (err) {
+      console.error(`    ❌ Failed to save status for ${CallSid}:`, err.message);
+    }
+  }
+
   res.sendStatus(200);
 });
 

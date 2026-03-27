@@ -56,7 +56,10 @@ export async function dispatchCalls(cafes, batchSize) {
         dispatched++;
       } else {
         failed++;
-        console.warn(`    ⚠️  Failed to dispatch call to ${batch[idx].name}: ${r.reason?.message}`);
+        const err = r.reason;
+        console.warn(`    ⚠️  Failed: ${batch[idx].name} (${batch[idx].phone}): ${err?.message}`);
+        if (err?.code) console.warn(`       Twilio error code: ${err.code} — ${err.moreInfo || ''}`);
+        if (err?.status) console.warn(`       HTTP status: ${err.status}`);
       }
     });
 
@@ -261,7 +264,7 @@ export function setupMediaStreamServer(server) {
         });
 
         openaiWs.on("error", (err) => {
-          console.error("OpenAI WebSocket error:", err.message);
+          console.error(`    ❌ OpenAI WebSocket error for ${metadata?.cafe_name}:`, err.message);
         });
 
         openaiWs.on("close", () => {
