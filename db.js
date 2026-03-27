@@ -107,6 +107,17 @@ export async function markCallDispatched(cafeId, blandCallId) {
   if (error) throw new Error(`markCallDispatched: ${error.message}`);
 }
 
+export async function getCallByBlandId(blandCallId) {
+  const { data, error } = await supabase()
+    .from("price_calls")
+    .select("status, price_small, price_large, raw_transcript")
+    .eq("bland_call_id", blandCallId)
+    .single();
+
+  if (error) return null;
+  return data;
+}
+
 export async function saveCallResult(result) {
   const { error } = await supabase()
     .from("price_calls")

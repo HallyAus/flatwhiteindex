@@ -1,5 +1,5 @@
 import express from "express";
-import { saveCallResult, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission } from "./db.js";
+import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -479,16 +479,34 @@ app.post("/webhook/twilio-status", async (req, res) => {
 
   if (dbStatus || isVoicemail) {
     try {
-      await saveCallResult({
-        bland_call_id: CallSid,
-        status: isVoicemail ? 'voicemail' : dbStatus,
-        price_small: null,
-        price_large: null,
-        raw_transcript: isVoicemail ? '[voicemail detected]' : `[${CallStatus}]${ErrorMessage ? ' ' + ErrorMessage : ''}`,
-        needs_review: false,
-        completed_at: new Date().toISOString(),
-      });
-      console.log(`    💾 Saved ${isVoicemail ? 'voicemail' : dbStatus} status for ${CallSid}`);
+      // Don't overwrite if we already saved a completed result with a price
+      const existing = await getCallByBlandId(CallSid);
+      if (existing && (existing.status === 'completed' && (existing.price_small || existing.price_large))) {
+        console.log(`    ⏭️  Skipping ${isVoicemail ? 'voicemail' : dbStatus} — already have price for ${CallSid}`);
+      } else if (existing && existing.status === 'completed') {
+        // Completed but no price — voicemail detection was right
+        await saveCallResult({
+          bland_call_id: CallSid,
+          status: isVoicemail ? 'voicemail' : dbStatus,
+          price_small: null,
+          price_large: null,
+          raw_transcript: existing.raw_transcript || (isVoicemail ? '[voicemail detected]' : `[${CallStatus}]`),
+          needs_review: false,
+          completed_at: new Date().toISOString(),
+        });
+        console.log(`    💾 Corrected to ${isVoicemail ? 'voicemail' : dbStatus} for ${CallSid} (no price)`);
+      } else {
+        await saveCallResult({
+          bland_call_id: CallSid,
+          status: isVoicemail ? 'voicemail' : dbStatus,
+          price_small: null,
+          price_large: null,
+          raw_transcript: isVoicemail ? '[voicemail detected]' : `[${CallStatus}]${ErrorMessage ? ' ' + ErrorMessage : ''}`,
+          needs_review: false,
+          completed_at: new Date().toISOString(),
+        });
+        console.log(`    💾 Saved ${isVoicemail ? 'voicemail' : dbStatus} status for ${CallSid}`);
+      }
     } catch (err) {
       console.error(`    ❌ Failed to save status for ${CallSid}:`, err.message);
     }
