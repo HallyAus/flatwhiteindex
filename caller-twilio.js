@@ -129,21 +129,18 @@ async function dispatchSingleCall(cafe) {
 
 // WebSocket server for Twilio Media Streams ↔ OpenAI Realtime
 export function setupMediaStreamServer(server) {
-  const wss = new WebSocketServer({ noServer: true });
+  const wss = new WebSocketServer({ noServer: true, maxPayload: 1 * 1024 * 1024 }); // 1MB max message
   const activeCallSessions = new Set(); // Prevent duplicate sessions per call
+  const MAX_CONCURRENT_SESSIONS = 20; // Limit concurrent OpenAI sessions
 
-  // [SECURITY] Validate WebSocket upgrades come from Twilio
+  // [SECURITY] Validate WebSocket upgrades — Twilio doesn't send Origin headers
   server.on("upgrade", (request, socket, head) => {
     if (!request.url.startsWith("/media-stream")) return;
 
-    // Check origin / X-Twilio-Signature if available
-    const origin = request.headers.origin || '';
-    const isTwilio = !origin || origin.includes('twilio.com');
-    const hasWebhookSecret = process.env.WEBHOOK_SECRET;
-    const url = new URL(request.url, `http://${request.headers.host}`);
-
-    if (hasWebhookSecret && url.searchParams.get('secret') !== process.env.WEBHOOK_SECRET && !isTwilio) {
-      socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+    // Limit concurrent sessions to prevent abuse
+    if (activeCallSessions.size >= MAX_CONCURRENT_SESSIONS) {
+      console.warn("⚠️ WebSocket rejected: too many concurrent sessions");
+      socket.write('HTTP/1.1 503 Service Unavailable\r\n\r\n');
       socket.destroy();
       return;
     }
@@ -348,7 +345,9 @@ export function setupMediaStreamServer(server) {
 async function postCallResult(callSid, metadata, transcript) {
   try {
     console.log(`    📤 Posting to webhook: ${metadata.cafe_name} — transcript: "${transcript.slice(0, 100)}..."`);
-    const webhookUrl = `${process.env.WEBHOOK_BASE_URL}/webhook/call-complete`;
+    // Post to localhost to bypass auth (internal self-post)
+    const port = process.env.PORT || 3001;
+    const webhookUrl = `http://127.0.0.1:${port}/webhook/call-complete`;
     const response = await fetch(webhookUrl, {
       method: "POST",
       headers: { "Content-Type": "application/json" },

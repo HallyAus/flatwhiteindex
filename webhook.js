@@ -161,7 +161,7 @@ setInterval(() => {
   }
 }, 300000).unref();
 
-// [SECURITY] Webhook authentication — verify requests come from our call providers
+// [SECURITY] Webhook authentication — deny by default
 async function verifyWebhookOrigin(req, res, next) {
   // Twilio: validate X-Twilio-Signature if auth token is configured
   if (process.env.TWILIO_AUTH_TOKEN && req.headers['x-twilio-signature']) {
@@ -174,21 +174,27 @@ async function verifyWebhookOrigin(req, res, next) {
         url,
         req.body
       );
-      if (!valid) return res.status(403).json({ error: "Invalid Twilio signature" });
-      return next();
-    } catch { /* fall through to other checks */ }
-  }
-
-  // Bland.ai: check webhook secret if configured
-  if (process.env.WEBHOOK_SECRET) {
-    const provided = req.headers['x-webhook-secret'] || req.query.secret;
-    if (provided !== process.env.WEBHOOK_SECRET) {
-      return res.status(403).json({ error: "Invalid webhook secret" });
+      if (valid) return next();
+      return res.status(403).json({ error: "Invalid Twilio signature" });
+    } catch (err) {
+      console.warn("⚠️ Twilio signature validation error:", err.message);
     }
   }
 
-  // Internal calls (from our own Twilio handler posting back) — check for localhost or same origin
-  next();
+  // Webhook secret (header only — never accept via query string)
+  if (process.env.WEBHOOK_SECRET) {
+    const provided = req.headers['x-webhook-secret'];
+    if (provided === process.env.WEBHOOK_SECRET) return next();
+  }
+
+  // Internal self-post: allow localhost only
+  const ip = req.ip || req.connection?.remoteAddress || '';
+  if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') {
+    return next();
+  }
+
+  // Deny by default
+  return res.status(403).json({ error: "Unauthorized" });
 }
 
 app.post("/webhook/call-complete", verifyWebhookOrigin, async (req, res) => {
@@ -253,6 +259,9 @@ let dashboardCacheTime = 0;
 const CACHE_TTL = 60000; // 60 seconds
 
 app.get("/api/dashboard", async (req, res) => {
+  if (!rateLimit('dashboard:' + (req.ip || 'unknown'), 60)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
   try {
     const now = Date.now();
     if (dashboardCache && (now - dashboardCacheTime) < CACHE_TTL) {
@@ -444,12 +453,7 @@ app.get("/health", async (req, res) => {
   res.status(ok ? 200 : 503).json({
     ok,
     service: "flatwhiteindex-webhook",
-    uptime: Math.round(process.uptime()),
-    database: dbStatus.ok ? "connected" : dbStatus.message,
-    env: {
-      supabase: !!process.env.SUPABASE_URL,
-      webhook_url: !!process.env.WEBHOOK_BASE_URL,
-    },
+    database: dbStatus.ok ? "connected" : "error",
   });
 });
 
@@ -463,7 +467,7 @@ function validateEnv() {
 }
 
 // Twilio status callback — update DB for failed/no-answer/voicemail calls
-app.post("/webhook/twilio-status", async (req, res) => {
+app.post("/webhook/twilio-status", verifyWebhookOrigin, async (req, res) => {
   const { CallSid, CallStatus, AnsweredBy, Duration, ErrorCode, ErrorMessage } = req.body;
   console.log(`📱 Twilio status: ${CallSid} — ${CallStatus} (${AnsweredBy || 'unknown'}) duration=${Duration || 0}s${ErrorCode ? ' error=' + ErrorCode + ': ' + ErrorMessage : ''}`);
 
