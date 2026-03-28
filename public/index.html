@@ -2006,28 +2006,8 @@ function normaliseMockSuburbs(rawSuburbs) {
 }
 
 // ─── BOOTSTRAP ────────────────────────────────────────────────────────────────
-async function init() {
-  const raw = await loadData();
-
-  let suburbs, gems, distData, totalCafes, pricesCollected, avgPrice;
-
-  const isLive = raw && (raw.prices_collected > 0 || raw.total_discovered > 0);
-
-  if (isLive) {
-    suburbs         = normaliseMockSuburbs(raw.suburbs || []);
-    gems            = raw.gems && raw.gems.length > 0 ? raw.gems : [];
-    distData        = raw.distribution || [];
-    totalCafes      = raw.total_cafes  ?? 0;
-    pricesCollected = raw.prices_collected ?? 0;
-    avgPrice        = raw.avg_price    ?? 0;
-  } else {
-    suburbs         = DEMO_SUBURBS;
-    gems            = DEMO_GEMS;
-    distData        = DEMO_DIST;
-    totalCafes      = null;
-    pricesCollected = null;
-    avgPrice        = null;
-  }
+function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPrice, raw) {
+  const isLive = totalCafes != null;
 
   // Filter out any suburbs without coordinates (can't place on map)
   const mappable = suburbs.filter(s => s.lat != null && s.lng != null);
@@ -2108,6 +2088,33 @@ async function init() {
     const rate = Math.round(pricesCollected / totalCafes * 100);
     const el = document.getElementById('statAnswerRate');
     if (el) el.textContent = rate + '% answer rate';
+  }
+}
+
+async function init() {
+  // Render demo data instantly so the page isn't blank
+  renderAll(DEMO_SUBURBS, DEMO_GEMS, DEMO_DIST, null, null, null, null);
+
+  // Then fetch live data and re-render if available
+  const raw = await loadData();
+  const isLive = raw && (raw.prices_collected > 0 || raw.total_discovered > 0);
+
+  if (isLive) {
+    const suburbs = normaliseMockSuburbs(raw.suburbs || []);
+    const gems = raw.gems && raw.gems.length > 0 ? raw.gems : [];
+    const distData = raw.distribution || [];
+
+    // Clear existing map and re-render with live data
+    if (map) { map.remove(); map = null; markers = {}; }
+    renderAll(
+      suburbs.length > 0 ? suburbs : DEMO_SUBURBS,
+      gems.length > 0 ? gems : DEMO_GEMS,
+      distData.length > 0 ? distData : DEMO_DIST,
+      raw.total_cafes ?? 0,
+      raw.prices_collected ?? 0,
+      raw.avg_price ?? 0,
+      raw
+    );
   }
 }
 

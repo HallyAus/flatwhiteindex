@@ -250,7 +250,7 @@ app.post("/webhook/call-complete", verifyWebhookOrigin, async (req, res) => {
 
 let dashboardCache = null;
 let dashboardCacheTime = 0;
-const CACHE_TTL = 30000; // 30 seconds (short while testing, increase to 300000 for production)
+const CACHE_TTL = 60000; // 60 seconds
 
 app.get("/api/dashboard", async (req, res) => {
   try {
@@ -526,6 +526,12 @@ if (isMainModule) {
     console.log(`   POST /api/subscribe`);
     console.log(`   GET  /health`);
     console.log(`   Dashboard: http://localhost:${PORT}/`);
+
+    // Warm the dashboard cache so first visitor gets instant data
+    try {
+      const res = await fetch(`http://localhost:${PORT}/api/dashboard`);
+      if (res.ok) console.log(`   📊 Dashboard cache warmed`);
+    } catch {}
 
     // Set up Twilio media stream WebSocket if using Twilio provider
     if (process.env.CALL_PROVIDER === "twilio") {
