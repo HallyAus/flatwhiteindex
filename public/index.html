@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en-AU">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -1203,22 +1203,75 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Flat White Index",
+  "url": "https://flatwhiteindex.com.au",
+  "description": "Independent survey of flat white coffee prices across Australian cities, collected via AI-powered direct phone contact with cafes.",
+  "email": "hello@flatwhiteindex.com.au",
+  "foundingDate": "2026",
+  "parentOrganization": {
+    "@type": "Organization",
+    "name": "Agentic Consciousness",
+    "url": "https://agenticconsciousness.com.au"
+  },
+  "sameAs": [
+    "https://github.com/HallyAus/flatwhiteindex",
+    "https://buymeacoffee.com/printforge"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "Dataset",
   "name": "Flat White Index — Sydney 2026",
-  "description": "Flat white coffee prices across 23 Sydney suburbs, collected via direct phone contact with cafés.",
+  "description": "Flat white coffee prices across Sydney suburbs, collected via direct phone contact with cafés using an AI voice agent.",
   "url": "https://flatwhiteindex.com.au/",
   "license": "https://creativecommons.org/licenses/by/4.0/",
+  "datePublished": "2026-03-01",
+  "dateModified": "2026-03-28",
+  "keywords": ["flat white", "coffee prices", "Sydney", "cost of living", "cafe prices", "Australia"],
+  "measurementTechnique": "Direct phone contact with cafes via AI voice agent",
+  "variableMeasured": {
+    "@type": "PropertyValue",
+    "name": "Small flat white price",
+    "unitCode": "AUD",
+    "description": "Price of a small flat white coffee in Australian dollars"
+  },
   "spatialCoverage": {
     "@type": "Place",
-    "name": "Sydney, New South Wales, Australia"
+    "name": "Sydney, New South Wales, Australia",
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": -33.8688,
+      "longitude": 151.2093
+    }
   },
-  "temporalCoverage": "2026",
+  "temporalCoverage": "2026-01/2026-03",
   "creator": {
     "@type": "Organization",
     "name": "Flat White Index",
-    "url": "https://flatwhiteindex.com.au/"
+    "url": "https://flatwhiteindex.com.au"
   },
-  "dateModified": "2026-03-28"
+  "distribution": {
+    "@type": "DataDownload",
+    "encodingFormat": "text/plain",
+    "contentUrl": "https://flatwhiteindex.com.au/llms.txt"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Flat White Index",
+  "url": "https://flatwhiteindex.com.au",
+  "description": "Sydney's most complete flat white price survey — compare coffee prices by suburb.",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Flat White Index",
+    "url": "https://flatwhiteindex.com.au"
+  }
 }
 </script>
 
