@@ -20,11 +20,11 @@ app.use((req, res, next) => {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://unpkg.com https://analytics.flatwhiteindex.com.au https://static.cloudflareinsights.com",
-    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com",
-    "font-src https://fonts.gstatic.com",
+    "script-src 'self' 'unsafe-inline' https://analytics.flatwhiteindex.com.au https://static.cloudflareinsights.com",
+    "style-src 'self' 'unsafe-inline'",
+    "font-src 'self'",
     "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
-    "connect-src 'self' https://analytics.flatwhiteindex.com.au https://unpkg.com https://static.cloudflareinsights.com https://cloudflareinsights.com",
+    "connect-src 'self' https://analytics.flatwhiteindex.com.au https://static.cloudflareinsights.com https://cloudflareinsights.com",
   ].join('; '));
   next();
 });
@@ -437,7 +437,8 @@ app.post("/api/submit-price", async (req, res) => {
 });
 
 // [SECURITY] Health endpoint — verifies DB connectivity
-app.get("/health", async (_, res) => {
+app.get("/health", async (req, res) => {
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
   const dbStatus = await testConnection();
   const ok = dbStatus.ok;
   res.status(ok ? 200 : 503).json({

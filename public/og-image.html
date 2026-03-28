@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=1200">
+<title>Flat White Index — OG Image</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px;
+    height: 630px;
+    overflow: hidden;
+    font-family: Georgia, 'Times New Roman', serif;
+  }
+  .card {
+    width: 1200px;
+    height: 630px;
+    background: linear-gradient(135deg, #3D2516 0%, #2C1A0E 40%, #1A0F08 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  /* Gold accent bars */
+  .card::before, .card::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, #B5763A, #D4A05A, #B5763A);
+  }
+  .card::before { top: 0; }
+  .card::after { bottom: 0; }
+
+  .coffee-icon {
+    font-size: 80px;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 4px 12px rgba(181, 118, 58, 0.4));
+  }
+  .title {
+    font-size: 82px;
+    font-weight: bold;
+    color: #F7F3ED;
+    letter-spacing: 3px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    margin-bottom: 12px;
+  }
+  .divider {
+    width: 500px;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #B5763A, transparent);
+    margin-bottom: 30px;
+  }
+  .subtitle {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 36px;
+    color: #D4A05A;
+    letter-spacing: 8px;
+    font-weight: normal;
+    margin-bottom: 10px;
+  }
+  .year {
+    font-size: 42px;
+    color: #F7F3ED;
+    opacity: 0.7;
+    letter-spacing: 12px;
+    margin-bottom: 40px;
+  }
+  .tagline {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 20px;
+    color: #B5763A;
+    letter-spacing: 4px;
+    opacity: 0.8;
+    margin-bottom: 30px;
+  }
+  .url {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 22px;
+    color: #F7F3ED;
+    opacity: 0.45;
+    letter-spacing: 3px;
+    position: absolute;
+    bottom: 30px;
+  }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="coffee-icon">☕</div>
+  <div class="title">Flat White Index</div>
+  <div class="divider"></div>
+  <div class="subtitle">SYDNEY COFFEE PRICES</div>
+  <div class="year">2026</div>
+  <div class="tagline">AI-POWERED CAFE PRICE TRACKER</div>
+  <div class="url">flatwhiteindex.com.au</div>
+</div>
+</body>
+</html>

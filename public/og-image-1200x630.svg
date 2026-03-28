@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <!-- Dark espresso background -->
+  <rect width="1200" height="630" fill="#2C1A0E"/>
+
+  <!-- Subtle warm gradient overlay -->
+  <defs>
+    <linearGradient id="warmGlow" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3D2516" stop-opacity="1"/>
+      <stop offset="100%" stop-color="#1A0F08" stop-opacity="1"/>
+    </linearGradient>
+    <linearGradient id="goldAccent" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B5763A"/>
+      <stop offset="100%" stop-color="#D4A05A"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#warmGlow)"/>
+
+  <!-- Top gold accent bar -->
+  <rect width="1200" height="5" fill="url(#goldAccent)"/>
+
+  <!-- Bottom gold accent bar -->
+  <rect y="625" width="1200" height="5" fill="url(#goldAccent)"/>
+
+  <!-- Coffee cup icon -->
+  <!-- Cup body -->
+  <path d="M480 200 L520 200 L515 340 A10 10 0 0 1 505 350 L495 350 A10 10 0 0 1 485 340 Z" fill="none" stroke="#F7F3ED" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Cup handle -->
+  <path d="M520 230 Q555 230 555 270 Q555 310 520 310" fill="none" stroke="#F7F3ED" stroke-width="4" stroke-linecap="round"/>
+  <!-- Saucer -->
+  <ellipse cx="500" cy="360" rx="55" ry="10" fill="none" stroke="#F7F3ED" stroke-width="3"/>
+  <!-- Steam lines -->
+  <path d="M490 185 Q485 165 490 145" fill="none" stroke="#B5763A" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <path d="M500 180 Q495 155 500 135" fill="none" stroke="#B5763A" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+  <path d="M510 185 Q505 165 510 145" fill="none" stroke="#B5763A" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+  <!-- Flat white art (simple circle in cup) -->
+  <circle cx="500" cy="240" r="18" fill="none" stroke="#D4A05A" stroke-width="2" opacity="0.5"/>
+
+  <!-- Coffee cup on the left side -->
+  <!-- Large decorative cup -->
+  <path d="M80 280 L180 280 L172 440 A12 12 0 0 1 160 452 L100 452 A12 12 0 0 1 88 440 Z" fill="#3D2516" stroke="#B5763A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M180 310 Q220 310 220 360 Q220 410 180 410" fill="none" stroke="#B5763A" stroke-width="3" stroke-linecap="round"/>
+  <!-- Latte art pattern -->
+  <circle cx="130" cy="320" r="25" fill="#D4A05A" opacity="0.15"/>
+  <path d="M115 320 Q130 305 145 320 Q130 335 115 320" fill="#D4A05A" opacity="0.2"/>
+
+  <!-- Main title -->
+  <text x="600" y="250" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="82" font-weight="bold" fill="#F7F3ED" letter-spacing="2">Flat White Index</text>
+
+  <!-- Decorative line under title -->
+  <line x1="350" y1="280" x2="850" y2="280" stroke="#B5763A" stroke-width="2" opacity="0.6"/>
+
+  <!-- Subtitle -->
+  <text x="600" y="340" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="36" fill="#D4A05A" letter-spacing="6" font-weight="normal">SYDNEY COFFEE PRICES</text>
+
+  <!-- Year -->
+  <text x="600" y="390" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="42" fill="#F7F3ED" opacity="0.7" letter-spacing="10">2026</text>
+
+  <!-- Tagline -->
+  <text x="600" y="470" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="20" fill="#B5763A" opacity="0.8" letter-spacing="3">AI-POWERED CAFE PRICE TRACKER</text>
+
+  <!-- URL -->
+  <text x="600" y="560" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="#F7F3ED" opacity="0.5" letter-spacing="2">flatwhiteindex.com.au</text>
+</svg>
