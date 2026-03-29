@@ -1,4 +1,5 @@
 import { markCallDispatched } from "./db.js";
+import { chunk, sleep, sanitiseForPrompt } from "./utils.js";
 
 const BLAND_API = "https://api.bland.ai/v1";
 
@@ -66,7 +67,7 @@ async function dispatchSingleCall(cafe) {
     },
     body: JSON.stringify({
       phone_number: cafe.phone,
-      task: AGENT_PROMPT.replace("{{cafe_name}}", cafe.name),
+      task: AGENT_PROMPT.replace("{{cafe_name}}", sanitiseForPrompt(cafe.name)),
       voice: "maya",
       language: "en-AU",
       max_duration: 2,
@@ -105,14 +106,4 @@ async function dispatchSingleCall(cafe) {
   return data.call_id;
 }
 
-function chunk(arr, size) {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
-  return chunks;
-}
-
-export { chunk };
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
+export { chunk } from "./utils.js";

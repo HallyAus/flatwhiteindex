@@ -1,10 +1,14 @@
 import express from "express";
+import { timingSafeEqual } from "node:crypto";
 import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
+
+// [SECURITY] Trust first proxy (Cloudflare/nginx) for correct req.ip
+app.set('trust proxy', 1);
 
 // [SECURITY] Body size limit — prevent DoS via large payloads
 app.use(express.json({ limit: '64kb' }));
@@ -144,7 +148,9 @@ function inferStatus(payload) {
 
 // [SECURITY] Simple in-memory rate limiter with periodic cleanup
 const rateLimits = {};
+const MAX_RATE_KEYS = 10000;
 function rateLimit(key, maxPerMinute) {
+  if (Object.keys(rateLimits).length > MAX_RATE_KEYS && !rateLimits[key]) return false;
   const now = Date.now();
   if (!rateLimits[key]) rateLimits[key] = [];
   rateLimits[key] = rateLimits[key].filter(t => now - t < 60000);
@@ -160,6 +166,14 @@ setInterval(() => {
     if (rateLimits[key].length === 0) delete rateLimits[key];
   }
 }, 300000).unref();
+
+function safeCompare(a, b) {
+  if (typeof a !== 'string' || typeof b !== 'string') return false;
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
+}
 
 // [SECURITY] Webhook authentication — deny by default
 async function verifyWebhookOrigin(req, res, next) {
@@ -178,13 +192,14 @@ async function verifyWebhookOrigin(req, res, next) {
       return res.status(403).json({ error: "Invalid Twilio signature" });
     } catch (err) {
       console.warn("⚠️ Twilio signature validation error:", err.message);
+      return res.status(403).json({ error: "Signature validation failed" });
     }
   }
 
   // Webhook secret (header only — never accept via query string)
   if (process.env.WEBHOOK_SECRET) {
     const provided = req.headers['x-webhook-secret'];
-    if (provided === process.env.WEBHOOK_SECRET) return next();
+    if (safeCompare(provided, process.env.WEBHOOK_SECRET)) return next();
   }
 
   // Internal self-post: allow localhost only
@@ -241,6 +256,9 @@ app.post("/webhook/call-complete", verifyWebhookOrigin, async (req, res) => {
       needs_review: needs_review && status === "completed",
       completed_at: new Date().toISOString(),
     });
+
+    // Invalidate dashboard cache so next request gets fresh data
+    dashboardCache = null;
 
     console.log(`✓ ${String(payload.metadata?.cafe_name || '').slice(0, 100)} (${String(payload.metadata?.suburb || '').slice(0, 50)}) — ${status} — small: $${price_small}, large: $${price_large}`);
 
@@ -390,7 +408,8 @@ app.post("/api/subscribe", async (req, res) => {
 
   const { email, source } = req.body;
 
-  if (!email || typeof email !== 'string' || !email.includes('@') || email.length > 254) {
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!email || typeof email !== 'string' || !EMAIL_RE.test(email) || email.length > 254) {
     return res.status(400).json({ error: "Valid email required" });
   }
 
@@ -506,7 +525,7 @@ app.post("/webhook/twilio-status", verifyWebhookOrigin, async (req, res) => {
           status: isVoicemail ? 'voicemail' : dbStatus,
           price_small: null,
           price_large: null,
-          raw_transcript: isVoicemail ? '[voicemail detected]' : `[${CallStatus}]${ErrorMessage ? ' ' + ErrorMessage : ''}`,
+          raw_transcript: isVoicemail ? '[voicemail detected]' : `[${String(CallStatus).slice(0, 20)}]${ErrorMessage ? ' ' + String(ErrorMessage).slice(0, 200) : ''}`,
           needs_review: false,
           completed_at: new Date().toISOString(),
         });
@@ -522,9 +541,9 @@ app.post("/webhook/twilio-status", verifyWebhookOrigin, async (req, res) => {
 
 const isMainModule = process.argv[1]?.replace(/\\/g, "/").endsWith("webhook.js");
 if (isMainModule) {
+  validateEnv();
   const PORT = process.env.PORT || 3001;
   const server = app.listen(PORT, async () => {
-    validateEnv();
     console.log(`\n🪝  Webhook receiver listening on port ${PORT}`);
     console.log(`   POST /webhook/call-complete`);
     console.log(`   POST /api/subscribe`);
@@ -560,6 +579,10 @@ if (isMainModule) {
 
   process.on("SIGTERM", () => shutdown("SIGTERM"));
   process.on("SIGINT", () => shutdown("SIGINT"));
+
+  process.on("unhandledRejection", (reason) => {
+    console.error("Unhandled rejection:", reason);
+  });
 }
 
 export default app;

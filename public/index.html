@@ -18,6 +18,7 @@
 <meta property="og:image:type" content="image/svg+xml">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_AU">
 
 <!-- Twitter -->
 <meta name="twitter:card" content="summary_large_image">
@@ -29,6 +30,8 @@
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232C1A0E'/><path d='M3 24c4-4 10 4 16-2s8-2 12 2' stroke='%23F7F3ED' stroke-width='1.2' fill='none' opacity='.3'/><g transform='translate(8,5) rotate(-10,8,10)'><path d='M1 6h14l-1.5 9a1.5 1.5 0 01-1.5 1.2H4a1.5 1.5 0 01-1.5-1.2L1 6z' fill='%23F7F3ED' opacity='.9'/><path d='M15 8h1.2a2 2 0 010 4H15' stroke='%23F7F3ED' stroke-width='1.2' fill='none' opacity='.8'/></g></svg>">
 
 <!-- Self-hosted fonts + Leaflet (no external dependencies) -->
+<link rel="preload" href="fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/playfair-display-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="fonts.css">
 <link rel="stylesheet" href="leaflet.css">
 <link rel="dns-prefetch" href="https://a.basemaps.cartocdn.com">
@@ -41,14 +44,14 @@
     --roast: #6B3A1F;
     --milk: #EDE8E0;
     --foam: #FAF8F4;
-    --bronze: #B5763A;
+    --bronze: #8E5A28;
     --bronze-light: #D4A26A;
     --green: #3A7D44;
     --green-light: #E8F3EA;
     --red-price: #C0392B;
     --red-light: #FDEDEB;
-    --mid: #8B7355;
-    --text-muted: #7A6248;
+    --mid: #6B5840;
+    --text-muted: #6A5238;
     --border: rgba(107, 58, 31, 0.18);
     --ocean: #2E6B8A;
     --ocean-light: #E6F0F5;
@@ -1198,6 +1201,83 @@
   .embed-copy-btn:hover {
     background: var(--roast);
   }
+
+  /* ACCESSIBILITY */
+  .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+
+  /* Fix low-opacity white text contrast on dark backgrounds */
+  .stat-card.hero-stat .stat-sub { color: rgba(247,243,237,0.75); }
+  .contribute-text p { color: rgba(247,243,237,0.75); }
+
+  /* Hover states only on devices with hover capability */
+  @media (hover: hover) {
+    .suburb-row:hover { background: var(--milk); }
+    .find-row:hover { background: var(--milk); }
+  }
+  @media (hover: none) {
+    .suburb-row:hover, .find-row:hover { background: transparent; }
+  }
+
+  /* MOBILE TOUCH TARGETS & TYPOGRAPHY FIXES */
+  .suburb-row { min-height: 48px; }
+  .find-row { padding: 0.85rem 1.25rem; min-height: 48px; }
+  .podium-item { padding: 0.85rem 0.75rem; min-height: 48px; }
+  .popup-share { padding: 10px 12px; min-height: 44px; }
+  .newsletter-form input { padding: 0.75rem 1rem; }
+  .newsletter-btn { padding: 0.75rem 1.2rem; }
+  .btn-secondary, .btn-primary { padding: 0.75rem; min-height: 44px; }
+  .contribute-btn { padding: 0.75rem 1.4rem; min-height: 44px; }
+  .footer-links a { padding: 0.5rem 0; display: inline-block; }
+  .footer-muted a { padding: 0.35rem 0.25rem; display: inline-block; }
+  .embed-code { min-width: 0; }
+  .suburb-name, .find-name, .winner-name, .podium-name { overflow-wrap: break-word; word-break: break-word; }
+  .salary-comparison { overflow-wrap: break-word; }
+
+  /* Bump sub-12px fonts to readable minimums */
+  .dist-annotation { font-size: 0.72rem; }
+  .sample-badge { font-size: 0.68rem; }
+  .legend-title { font-size: 0.68rem; }
+  .winner-label { font-size: 0.7rem; }
+  .podium-sub { font-size: 0.7rem; }
+
+  /* Focus visibility for keyboard users */
+  a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+    outline: 2px solid var(--ocean);
+    outline-offset: 2px;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Leaflet zoom controls — larger touch targets */
+  .leaflet-control-zoom a {
+    width: 36px !important;
+    height: 36px !important;
+    line-height: 36px !important;
+    font-size: 18px !important;
+  }
+
+  @media (max-width: 540px) {
+    header { padding: 2rem 0 1.25rem; }
+    .cup-icon, .cup-icon svg { width: 48px; height: 48px; }
+    .about { padding: 1.5rem 0 1rem; }
+    .salary-result-card { flex-wrap: wrap; }
+    .salary-result-card > div { flex: 1 1 45%; }
+  }
+
+  @media (max-width: 480px) {
+    .embed-code-wrapper { flex-direction: column; }
+  }
+
+  @media (max-width: 780px) {
+    .grain { display: none; }
+  }
 </style>
 
 <script type="application/ld+json">
@@ -1208,7 +1288,18 @@
   "url": "https://flatwhiteindex.com.au",
   "description": "Independent survey of flat white coffee prices across Australian cities, collected via AI-powered direct phone contact with cafes.",
   "email": "hello@flatwhiteindex.com.au",
-  "foundingDate": "2026",
+  "foundingDate": "2026-01-01",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://flatwhiteindex.com.au/og-image-1200x630.svg",
+    "width": 1200,
+    "height": 630
+  },
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "hello@flatwhiteindex.com.au",
+    "contactType": "customer service"
+  },
   "parentOrganization": {
     "@type": "Organization",
     "name": "Agentic Consciousness",
@@ -1275,13 +1366,73 @@
 }
 </script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "Flat White Index — Sydney Coffee Prices 2026",
+  "url": "https://flatwhiteindex.com.au/",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".hero-lede", ".hero-insight"]
+  },
+  "inLanguage": "en-AU"
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [{
+    "@type": "ListItem",
+    "position": 1,
+    "name": "Flat White Index",
+    "item": "https://flatwhiteindex.com.au/"
+  }]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How much is a flat white in Sydney?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The average price of a regular flat white in Sydney is around $5.00 based on direct phone calls to hundreds of independent cafes. Prices range from about $4.00 in outer suburbs to over $6.00 in premium locations."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the Flat White Index?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The Flat White Index is a live price survey that uses an AI voice agent to call every independent cafe in Sydney and ask the price of a regular flat white. It provides suburb-by-suburb price comparisons updated as calls complete."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How are flat white prices collected?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Every price is collected by direct phone contact with the cafe. An AI voice agent named Mia calls each cafe and asks: 'How much is a regular flat white?' Prices are not scraped from menus or based on user reports."
+      }
+    }
+  ]
+}
+</script>
+
 <!-- Umami Analytics (self-hosted, cookie-free) -->
 <script defer src="https://analytics.flatwhiteindex.com.au/script.js" data-website-id="726673cd-7ea7-499c-9056-9ccfa9f613c5"></script>
 </head>
 <body>
-<div class="grain"></div>
+<a href="#content" class="skip-link" style="position:absolute;top:-40px;left:0;background:var(--espresso);color:var(--cream);padding:8px 16px;z-index:100;font-size:0.85rem;transition:top 0.2s;">Skip to content</a>
+<style>.skip-link:focus{top:0;}</style>
+<div class="grain" aria-hidden="true"></div>
 
-<main>
+<main id="content">
   <!-- HEADER -->
   <header>
     <div class="logo-area">
@@ -1343,7 +1494,7 @@
   </section>
 
   <!-- STATS -->
-  <section class="stats-row">
+  <section class="stats-row" aria-label="Key statistics">
     <div class="stat-card hero-stat">
       <div class="stat-label">Sydney average</div>
       <div class="stat-value" id="statAvg">—</div>
@@ -1384,19 +1535,19 @@
     <h2 class="findings-title">How it works</h2>
     <div class="findings-grid">
       <div class="finding">
-        <div class="finding-icon">📍</div>
+        <div class="finding-icon" role="img" aria-label="Location">📍</div>
         <div class="finding-text"><strong>Discover.</strong> We find every café in Sydney using Google Places — suburb by suburb, across the whole metro area.</div>
       </div>
       <div class="finding">
-        <div class="finding-icon">📞</div>
+        <div class="finding-icon" role="img" aria-label="Phone call">📞</div>
         <div class="finding-text"><strong>Call.</strong> Our AI voice agent Mia phones each café and asks one question: "How much is a regular flat white?"</div>
       </div>
       <div class="finding">
-        <div class="finding-icon">📊</div>
+        <div class="finding-icon" role="img" aria-label="Statistics">📊</div>
         <div class="finding-text"><strong>Extract.</strong> Prices are pulled from the call transcript, verified, and added to the index in real time.</div>
       </div>
       <div class="finding">
-        <div class="finding-icon">🗺️</div>
+        <div class="finding-icon" role="img" aria-label="Map">🗺️</div>
         <div class="finding-text"><strong>Map.</strong> Every price lands on this dashboard — sorted by suburb, plotted on the map, updated live.</div>
       </div>
     </div>
@@ -1411,7 +1562,7 @@
           <h2 class="panel-title">Price map by suburb</h2>
         </div>
         <div class="map-container">
-          <div id="leaflet-map"></div>
+          <div id="leaflet-map" role="application" aria-label="Interactive map showing flat white prices by Sydney suburb"></div>
         </div>
       </div>
     </div>
@@ -1429,7 +1580,7 @@
       </div>
 
       <div style="padding: 0.5rem 1.25rem 0;">
-        <div class="progress-bar-outer">
+        <div class="progress-bar-outer" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" aria-label="Data collection progress">
           <div class="progress-bar-inner" style="width: 40%"></div>
         </div>
         <div class="progress-label" id="progressLabel">Loading data...</div>
@@ -1468,7 +1619,7 @@
     <p class="salary-calc-desc">Enter your annual salary to see how many minutes of your workday a flat white costs.</p>
     <div class="salary-input-row">
       <label for="salaryInput">Annual salary (AUD)</label>
-      <input type="number" id="salaryInput" placeholder="85,000" step="1000" min="20000" max="500000">
+      <input type="number" id="salaryInput" placeholder="85,000" step="1000" min="20000" max="500000" inputmode="numeric">
       <button class="newsletter-btn" onclick="calcSalary()" style="padding:0.6rem 1.2rem;">Calculate</button>
     </div>
     <div class="salary-result" id="salaryResult">
@@ -1532,7 +1683,7 @@
       </div>
       <form class="newsletter-form" onsubmit="subscribeEmail(event)">
         <label for="newsletterEmail" style="display:none">Email address</label>
-        <input type="email" id="newsletterEmail" placeholder="your@email.com" required aria-label="Email address">
+        <input type="email" id="newsletterEmail" placeholder="your@email.com" required aria-label="Email address" autocomplete="email">
         <button type="submit" class="newsletter-btn">Subscribe</button>
       </form>
       <div class="newsletter-success" id="newsletterSuccess">Thanks! You'll get the first report soon.</div>
@@ -1580,19 +1731,18 @@
 
 <!-- NOSCRIPT FALLBACK -->
 <noscript>
-<div style="max-width:1100px;margin:2rem auto;padding:0 1.5rem;">
-  <h2 style="font-family:'Playfair Display',serif;margin-bottom:1rem;">Flat White Index — Sydney 2026</h2>
-  <p style="font-family:'DM Sans',sans-serif;font-size:0.95rem;line-height:1.6;color:#2C1A0E;">
-    We're calling every Sydney café to find the real price of a flat white. Data collection is underway — enable JavaScript to see the live interactive map and suburb rankings.
-  </p>
-  <p style="margin-top:1rem;font-size:0.8rem;color:#7A6248;">Source: Flat White Index, flatwhiteindex.com.au</p>
-</div>
+  <div style="padding: 2rem; max-width: 800px; margin: 0 auto;">
+    <h2>Sydney Flat White Price Data</h2>
+    <p>The Flat White Index surveys independent Sydney cafes by phone to find the real price of a flat white. Data collection is ongoing — visit with JavaScript enabled for the interactive dashboard with map, charts, and suburb rankings.</p>
+    <p>Methodology: Every price is collected by direct AI voice agent phone call. No menu scraping, no user reports. Sample sizes shown for every suburb.</p>
+    <p>Data is free to use with attribution: "Source: Flat White Index, flatwhiteindex.com.au"</p>
+  </div>
 </noscript>
 
 <!-- MODAL -->
-<div class="modal-overlay" id="modal">
+<div class="modal-overlay" id="modal" role="dialog" aria-modal="true" aria-labelledby="submitPriceTitle">
   <div class="modal">
-    <h3>Submit a price</h3>
+    <h3 id="submitPriceTitle">Submit a price</h3>
     <label for="cafeName">Café name</label>
     <input type="text" id="cafeName" placeholder="e.g. Single O">
     <label for="cafeSuburb">Suburb</label>
@@ -1600,11 +1750,11 @@
     <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.75rem;">
       <div>
         <label for="cafePriceSmall">Small flat white</label>
-        <input type="number" id="cafePriceSmall" placeholder="4.50" step="0.10" min="3" max="15">
+        <input type="number" id="cafePriceSmall" placeholder="4.50" step="0.10" min="3" max="15" inputmode="decimal">
       </div>
       <div>
         <label for="cafePriceLarge">Large flat white</label>
-        <input type="number" id="cafePriceLarge" placeholder="5.50" step="0.10" min="3" max="15">
+        <input type="number" id="cafePriceLarge" placeholder="5.50" step="0.10" min="3" max="15" inputmode="decimal">
       </div>
     </div>
     <div class="modal-actions">
@@ -1615,9 +1765,9 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="reconModal">
+<div class="modal-overlay" id="reconModal" role="dialog" aria-modal="true" aria-labelledby="reconTitle">
   <div class="modal">
-    <h3>Request a suburb</h3>
+    <h3 id="reconTitle">Request a suburb</h3>
     <p style="font-size:0.85rem; color:var(--mid); margin-bottom:1rem;">Want Mia to call cafés in your suburb? Tell us where and we'll add it to the queue.</p>
     <label for="reconSuburb">Suburb name</label>
     <input type="text" id="reconSuburb" placeholder="e.g. Manly, Cronulla, Parramatta">

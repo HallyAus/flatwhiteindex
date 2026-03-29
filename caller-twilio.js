@@ -1,4 +1,5 @@
 import { markCallDispatched } from "./db.js";
+import { chunk, sleep, sanitiseForPrompt } from "./utils.js";
 import { WebSocketServer } from "ws";
 import { WebSocket } from "ws";
 import { createServer } from "node:http";
@@ -91,7 +92,7 @@ async function dispatchSingleCall(cafe) {
   const client = await getTwilioClient();
 
   const webhookBase = process.env.WEBHOOK_BASE_URL;
-  const prompt = AGENT_PROMPT.replace("{{cafe_name}}", cafe.name);
+  const prompt = AGENT_PROMPT.replace("{{cafe_name}}", sanitiseForPrompt(cafe.name));
 
   // Store call metadata for when the media stream connects
   const callMetadata = {
@@ -196,7 +197,7 @@ export function setupMediaStreamServer(server) {
           cafe_id: customParams.cafe_id || null,
           cafe_name: customParams.cafe_name || "Unknown Café",
           suburb: customParams.suburb || "Sydney",
-          prompt: AGENT_PROMPT.replace("{{cafe_name}}", customParams.cafe_name || "there"),
+          prompt: AGENT_PROMPT.replace("{{cafe_name}}", sanitiseForPrompt(customParams.cafe_name || "there")),
         };
         // Store for close handler (with timestamp for TTL cleanup)
         metadata._startedAt = Date.now();
@@ -258,7 +259,13 @@ export function setupMediaStreamServer(server) {
         });
 
         openaiWs.on("message", (data) => {
-          const event = JSON.parse(data);
+          let event;
+          try {
+            event = JSON.parse(data);
+          } catch {
+            console.warn("    ⚠️ Malformed OpenAI message, ignoring");
+            return;
+          }
 
           // Forward audio back to Twilio
           if (event.type === "response.audio.delta" && event.delta) {
@@ -307,10 +314,10 @@ export function setupMediaStreamServer(server) {
           const timer = callTimers.get(callSid);
           if (timer) { clearTimeout(timer); callTimers.delete(callSid); }
           // Call ended — post result to our own webhook
-          const metadata = activeCalls.get(callSid);
-          if (metadata) {
-            console.log(`    📤 Posting result for ${metadata.cafe_name}...`);
-            postCallResult(callSid, metadata, transcript);
+          const callMeta = activeCalls.get(callSid);
+          if (callMeta) {
+            console.log(`    📤 Posting result for ${callMeta.cafe_name}...`);
+            postCallResult(callSid, callMeta, transcript);
             activeCalls.delete(callSid);
           } else {
             console.warn(`    ⚠️ No metadata found for call ${callSid}`);
@@ -368,14 +375,4 @@ async function postCallResult(callSid, metadata, transcript) {
   }
 }
 
-function chunk(arr, size) {
-  const chunks = [];
-  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
-  return chunks;
-}
-
-export { chunk };
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
+export { chunk } from "./utils.js";

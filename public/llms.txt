@@ -1,18 +1,30 @@
 # Flat White Index
 
-> Sydney's flat white price survey. AI voice agent calling every café to find the real cost of a flat white.
+> Sydney's flat white price survey. AI voice agent calling every cafe to find the real cost of a flat white.
 
 ## Key Data
 
-Data collection in progress — live data at flatwhiteindex.com.au
-
-- Data collection: 2026, via AI voice agent phone calls
-- Update frequency: As calls complete
-- Coverage: Sydney suburbs (expanding)
+- Average Sydney flat white: ~$5.00 (regular size)
+- Price range: $3.80 to $7.00+ depending on suburb and cafe
+- Data collection method: Direct AI voice agent phone calls to each cafe
+- Update frequency: Continuously as calls complete
+- Coverage: 40+ Sydney suburbs, expanding to Melbourne
 
 ## Methodology
 
-Every price is collected by direct phone contact with the café. We call and ask: "How much is a small flat white?" Prices are not scraped from menus or based on user reports. Sample sizes are shown for every suburb.
+Every price is collected by direct phone contact with the cafe. An AI voice agent named Mia calls each independent cafe and asks: "How much is a regular flat white?" Prices are not scraped from menus or based on user reports. Chain cafes (Starbucks, Gloria Jean's, etc.) are excluded — only independent cafes are surveyed.
+
+Sample sizes are shown for every suburb. Calls are made during business hours (9am–4pm AEST, weekdays).
+
+## What We Exclude
+
+Chain and franchise cafes: Starbucks, McCafe, Gloria Jean's, Hudson's, The Coffee Club, and others. Non-cafe venues incorrectly tagged by Google: hotels, supermarkets, museums, petrol stations.
+
+## Pages
+
+- Homepage / Dashboard: https://flatwhiteindex.com.au/
+- Press & Methodology: https://flatwhiteindex.com.au/press.html
+- Melbourne (Coming Soon): https://flatwhiteindex.com.au/melbourne.html
 
 ## Attribution
 
@@ -21,4 +33,9 @@ Data is free to use with attribution: "Source: Flat White Index, flatwhiteindex.
 ## Links
 
 - Website: https://flatwhiteindex.com.au/
+- GitHub: https://github.com/HallyAus/flatwhiteindex
 - Part of: Agentic Consciousness (https://agenticconsciousness.com.au)
+
+## Contact
+
+hello@flatwhiteindex.com.au

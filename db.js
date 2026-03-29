@@ -67,14 +67,26 @@ export async function getCalledCafeIds() {
 }
 
 export async function getEligibleCafesFromDb() {
-  const { data, error } = await supabase()
-    .from("cafes")
-    .select("id, google_place_id, name, suburb, phone, lat, lng")
-    .eq("status", "eligible")
-    .not("phone", "is", null);
+  const allCafes = [];
+  let from = 0;
+  const pageSize = 1000;
 
-  if (error) throw new Error(`getEligibleCafesFromDb: ${error.message}`);
-  return data;
+  while (true) {
+    const { data, error } = await supabase()
+      .from("cafes")
+      .select("id, google_place_id, name, suburb, phone, lat, lng")
+      .eq("status", "eligible")
+      .not("phone", "is", null)
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) throw new Error(`getEligibleCafesFromDb: ${error.message}`);
+    allCafes.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return allCafes;
 }
 
 export async function getCafeByPlaceId(googlePlaceId) {
@@ -90,11 +102,15 @@ export async function getCafeByPlaceId(googlePlaceId) {
 
 export async function markCallDispatched(cafeId, blandCallId) {
   // Clean up old failed/no_answer attempts for this cafe before inserting
-  await supabase()
+  const { error: delError } = await supabase()
     .from("price_calls")
     .delete()
     .eq("cafe_id", cafeId)
     .in("status", ["no_answer", "voicemail", "failed", "pending"]);
+
+  if (delError) {
+    console.warn(`⚠️ markCallDispatched cleanup failed for cafe ${cafeId}: ${delError.message}`);
+  }
 
   const { error } = await supabase()
     .from("price_calls")
@@ -119,7 +135,7 @@ export async function getCallByBlandId(blandCallId) {
 }
 
 export async function saveCallResult(result) {
-  const { error } = await supabase()
+  const { data, error } = await supabase()
     .from("price_calls")
     .update({
       status: result.status,
@@ -129,38 +145,66 @@ export async function saveCallResult(result) {
       needs_review: result.needs_review,
       completed_at: result.completed_at,
     })
-    .eq("bland_call_id", result.bland_call_id);
+    .eq("bland_call_id", result.bland_call_id)
+    .select("id");
 
   if (error) throw new Error(`saveCallResult: ${error.message}`);
+  if (!data || data.length === 0) {
+    console.warn(`⚠️ saveCallResult: no matching row for bland_call_id=${result.bland_call_id} — result may be lost`);
+  }
 }
 
 export async function getPriceStats() {
-  const { data, error } = await supabase()
-    .from("price_calls")
-    .select(`
-      cafe_id,
-      price_small,
-      price_large,
-      status,
-      cafes (
-        name, suburb, lat, lng, google_rating
-      )
-    `)
-    .eq("status", "completed")
-    .not("price_small", "is", null);
+  const allData = [];
+  let from = 0;
+  const pageSize = 1000;
 
-  if (error) throw new Error(`getPriceStats: ${error.message}`);
-  return data;
+  while (true) {
+    const { data, error } = await supabase()
+      .from("price_calls")
+      .select(`
+        cafe_id,
+        price_small,
+        price_large,
+        status,
+        cafes (
+          name, suburb, lat, lng, google_rating
+        )
+      `)
+      .eq("status", "completed")
+      .not("price_small", "is", null)
+      .order("cafe_id")
+      .range(from, from + pageSize - 1);
+
+    if (error) throw new Error(`getPriceStats: ${error.message}`);
+    allData.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return allData;
 }
 
 export async function getDiscoveredCafes() {
-  const { data, error } = await supabase()
-    .from("cafes")
-    .select("id, name, suburb, lat, lng, google_rating, phone, status, exclude_reason")
-    .in("status", ["eligible", "discovered"]);
+  const allCafes = [];
+  let from = 0;
+  const pageSize = 1000;
 
-  if (error) throw new Error(`getDiscoveredCafes: ${error.message}`);
-  return data;
+  while (true) {
+    const { data, error } = await supabase()
+      .from("cafes")
+      .select("id, name, suburb, lat, lng, google_rating, phone, status, exclude_reason")
+      .in("status", ["eligible", "discovered"])
+      .order("id")
+      .range(from, from + pageSize - 1);
+
+    if (error) throw new Error(`getDiscoveredCafes: ${error.message}`);
+    allCafes.push(...data);
+    if (data.length < pageSize) break;
+    from += pageSize;
+  }
+
+  return allCafes;
 }
 
 export async function testConnection() {

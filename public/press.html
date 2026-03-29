@@ -11,16 +11,18 @@
 <meta property="og:description" content="Methodology, key findings, data licensing, and media contact for Sydney's AI-powered coffee price survey.">
 <meta property="og:url" content="https://flatwhiteindex.com.au/press.html">
 <meta property="og:image" content="https://flatwhiteindex.com.au/og-image-1200x630.svg">
+<meta property="og:locale" content="en_AU">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="About the Flat White Index — Press & Media">
+<meta name="twitter:description" content="Methodology, key findings, data licensing, and media contact for Sydney's AI-powered coffee price survey.">
 <meta name="twitter:image" content="https://flatwhiteindex.com.au/og-image-1200x630.svg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 28 28'><rect width='28' height='28' rx='6' fill='%232C1A0E'/><path d='M5 8h14l-2 12H7L5 8z' fill='%23F7F3ED' opacity='0.9'/><path d='M19 10h2a3 3 0 0 1 0 6h-2' stroke='%23F7F3ED' stroke-width='1.5' fill='none'/></svg>">
 <link rel="stylesheet" href="fonts.css">
 <style>
   :root {
     --cream: #F7F3ED; --espresso: #2C1A0E; --roast: #6B3A1F;
-    --milk: #EDE8E0; --foam: #FAF8F4; --bronze: #B5763A;
-    --bronze-light: #D4A26A; --mid: #8B7355; --text-muted: #7A6248;
+    --milk: #EDE8E0; --foam: #FAF8F4; --bronze: #8E5A28;
+    --bronze-light: #D4A26A; --mid: #6B5840; --text-muted: #6A5238;
     --border: rgba(107, 58, 31, 0.18); --green: #3A7D44; --red-price: #C0392B;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -43,7 +45,9 @@
   .attribution-box code { background: rgba(247,243,237,0.15); padding: 2px 8px; border-radius: 4px; font-size: 0.82rem; }
   .contact-box { background: var(--foam); padding: 1.25rem 1.5rem; border-radius: 12px; border: 1px solid var(--border); }
   .footer-muted { margin-top: 3rem; padding-top: 1rem; border-top: 1px solid var(--border); font-size: 0.72rem; color: var(--text-muted); }
-  .footer-muted a { color: var(--bronze); text-decoration: none; }
+  .footer-muted a { color: var(--bronze); text-decoration: none; padding: 0.35rem 0.25rem; display: inline-block; }
+  a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid var(--bronze); outline-offset: 2px; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
 </style>
 
 <script type="application/ld+json">
@@ -53,6 +57,13 @@
   "headline": "About the Flat White Index — Methodology and Findings",
   "description": "About the Flat White Index: methodology, key findings, data licensing, and media contact for Sydney's AI-powered coffee price survey.",
   "url": "https://flatwhiteindex.com.au/press.html",
+  "image": "https://flatwhiteindex.com.au/og-image-1200x630.svg",
+  "mainEntityOfPage": "https://flatwhiteindex.com.au/press.html",
+  "inLanguage": "en-AU",
+  "speakable": {
+    "@type": "SpeakableSpecification",
+    "cssSelector": [".stat-highlight", "h2 + p"]
+  },
   "datePublished": "2026-03-01",
   "dateModified": "2026-03-28",
   "author": {
@@ -68,11 +79,22 @@
 }
 </script>
 
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Flat White Index", "item": "https://flatwhiteindex.com.au/"},
+    {"@type": "ListItem", "position": 2, "name": "Press & Media", "item": "https://flatwhiteindex.com.au/press.html"}
+  ]
+}
+</script>
+
 <!-- Umami Analytics (self-hosted, cookie-free) -->
 <script defer src="https://analytics.flatwhiteindex.com.au/script.js" data-website-id="726673cd-7ea7-499c-9056-9ccfa9f613c5"></script>
 </head>
 <body>
-<div class="page">
+<main class="page">
   <a href="/" class="back-link">← Back to the Index</a>
   <h1>About the Flat White Index</h1>
   <p class="subtitle">Sydney's most complete flat white price survey — methodology, findings, and how to use our data.</p>
@@ -138,6 +160,6 @@
     <a href="/">Flat White Index</a> · Part of <a href="https://agenticconsciousness.com.au" target="_blank">Agentic Consciousness</a><br>
     ☕ <a href="https://buymeacoffee.com/printforge">Buy me a coffee</a> · 🛰️ <a href="https://www.starlink.com/referral">Free month of Starlink</a>
   </div>
-</div>
+</main>
 </body>
 </html>

@@ -70,7 +70,8 @@ async function main() {
   const cafes = await fetchSydneyCafes(SYDNEY_BOUNDS, SUBURB_FILTER);
 
   const filtered = filterEligibleCafes(cafes);
-  const excluded = cafes.filter(c => !filtered.includes(c));
+  const filteredSet = new Set(filtered);
+  const excluded = cafes.filter(c => !filteredSet.has(c));
 
   console.log(`   Found ${cafes.length} cafés → ${filtered.length} eligible, ${excluded.length} excluded\n`);
 
@@ -174,7 +175,7 @@ async function main() {
   console.log("   Monitor: journalctl -u flatwhite-webhook -f");
 }
 
-const isMainModule = process.argv[1]?.replace(/\\/g, "/").endsWith("index.js");
+const isMainModule = import.meta.url === `file:///${process.argv[1]?.replace(/\\/g, "/")}`;
 if (isMainModule) {
   main().catch(err => {
     console.error("Fatal error:", err);

@@ -1,3 +1,5 @@
+import { sleep } from "./utils.js";
+
 // Google Places API (New) — https://developers.google.com/maps/documentation/places/web-service/nearby-search
 const PLACES_API = "https://places.googleapis.com/v1/places";
 
@@ -332,7 +334,3 @@ function normalisePhoneAU(raw) {
 }
 
 export { extractSuburb, getSydneySearchGrid, getSuburbCenter, normalisePhoneAU };
-
-function sleep(ms) {
-  return new Promise(r => setTimeout(r, ms));
-}
