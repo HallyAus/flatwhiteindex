@@ -7,239 +7,405 @@
 <meta name="robots" content="noindex, nofollow">
 <style>
   :root {
+    --bg: #1A1008; --surface: #231810; --surface2: #2C1E14;
     --cream: #F7F3ED; --espresso: #2C1A0E; --foam: #FAF8F4;
-    --milk: #EDE8E0; --bronze: #8E5A28; --green: #3A7D44;
-    --red: #C0392B; --ocean: #2E6B8A; --mid: #6B5840;
-    --border: rgba(107, 58, 31, 0.18); --text-muted: #6A5238;
+    --bronze: #8E5A28; --bronze-light: #D4A26A; --green: #4CAF50;
+    --red: #E74C3C; --ocean: #5DADE2; --yellow: #F0C040;
+    --mid: #8B7355; --border: rgba(247,243,237,0.1);
+    --text: rgba(247,243,237,0.85); --text-dim: rgba(247,243,237,0.45);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--espresso); color: var(--cream); min-height: 100vh; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
+  button { font-family: inherit; }
+  input, select { font-family: inherit; }
 
   /* LOGIN */
   .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-  .login-box { background: var(--foam); color: var(--espresso); border-radius: 16px; padding: 2.5rem; max-width: 380px; width: 90%; }
-  .login-box h1 { font-size: 1.4rem; margin-bottom: 0.5rem; }
-  .login-box p { font-size: 0.82rem; color: var(--mid); margin-bottom: 1.5rem; }
-  .login-box input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; background: white; }
-  .login-box input:focus { outline: 2px solid var(--ocean); outline-offset: 2px; border-color: var(--ocean); }
-  .login-box button { width: 100%; padding: 0.75rem; background: var(--espresso); color: var(--cream); border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
-  .login-box button:hover { background: #4A2E1A; }
+  .login-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 16px; padding: 2.5rem; max-width: 380px; width: 90%; }
+  .login-box h1 { font-size: 1.4rem; margin-bottom: 0.25rem; color: var(--cream); }
+  .login-box .sub { font-size: 0.82rem; color: var(--text-dim); margin-bottom: 1.5rem; }
+  .login-box input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; background: var(--bg); color: var(--cream); }
+  .login-box input:focus { outline: 2px solid var(--ocean); border-color: transparent; }
+  .login-box button { width: 100%; padding: 0.75rem; background: var(--bronze); color: var(--cream); border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 600; cursor: pointer; }
+  .login-box button:hover { background: var(--bronze-light); }
   .login-error { color: var(--red); font-size: 0.82rem; margin-bottom: 1rem; display: none; }
 
-  /* ADMIN DASHBOARD */
-  .admin { display: none; max-width: 900px; margin: 0 auto; padding: 1.5rem; }
-  .admin.active { display: block; }
+  /* LAYOUT */
+  .app { display: none; }
+  .app.active { display: block; }
   .login-page.hidden { display: none; }
 
-  .admin-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 1.5rem; border-bottom: 1px solid rgba(247,243,237,0.15); margin-bottom: 1.5rem; }
-  .admin-header h1 { font-size: 1.3rem; }
-  .logout-btn { background: none; border: 1px solid rgba(247,243,237,0.3); color: var(--cream); padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer; }
-  .logout-btn:hover { background: rgba(247,243,237,0.1); }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 0.75rem 1.5rem; background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar h1 { font-size: 1rem; color: var(--cream); display: flex; align-items: center; gap: 0.5rem; }
+  .topbar-right { display: flex; align-items: center; gap: 1rem; }
+  .server-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); }
+  .logout-btn { background: none; border: 1px solid var(--border); color: var(--text-dim); padding: 0.35rem 0.85rem; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }
+  .logout-btn:hover { color: var(--cream); border-color: rgba(247,243,237,0.3); }
 
-  /* STATS BAR */
-  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
-  @media (max-width: 600px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
-  .stat { background: rgba(247,243,237,0.08); border: 1px solid rgba(247,243,237,0.1); border-radius: 10px; padding: 1rem; }
-  .stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(247,243,237,0.5); margin-bottom: 4px; }
-  .stat-val { font-size: 1.6rem; font-weight: 700; }
+  /* TABS */
+  .tabs { display: flex; gap: 0; background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 1.5rem; overflow-x: auto; }
+  .tab { padding: 0.75rem 1.25rem; font-size: 0.82rem; color: var(--text-dim); cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: all 0.15s; }
+  .tab:hover { color: var(--text); }
+  .tab.active { color: var(--cream); border-bottom-color: var(--bronze); }
+  @media (max-width: 600px) { .tab { padding: 0.7rem 0.8rem; font-size: 0.78rem; } }
 
-  /* DISPATCH PANEL */
-  .panel { background: rgba(247,243,237,0.06); border: 1px solid rgba(247,243,237,0.12); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
-  .panel h2 { font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-  .panel-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: end; }
+  /* CONTENT */
+  .content { max-width: 1200px; margin: 0 auto; padding: 1.5rem; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* STATS */
+  .stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+  @media (max-width: 900px) { .stats { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 500px) { .stats { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; }
+  .stat-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-dim); margin-bottom: 4px; }
+  .stat-val { font-size: 1.5rem; font-weight: 700; color: var(--cream); }
+  .stat-val.good { color: var(--green); }
+  .stat-val.warn { color: var(--red); }
+
+  /* PANELS */
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; margin-bottom: 1.5rem; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+  .panel-head h2 { font-size: 0.9rem; font-weight: 600; }
+  .panel-body { padding: 1.25rem; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; padding: 0.75rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--surface2); }
+  .toolbar input, .toolbar select { padding: 0.45rem 0.75rem; border: 1px solid var(--border); background: var(--bg); color: var(--cream); border-radius: 6px; font-size: 0.82rem; }
+  .toolbar input:focus, .toolbar select:focus { outline: 2px solid var(--ocean); }
+  .toolbar select option { background: var(--bg); }
+  .toolbar .spacer { flex: 1; }
+
+  /* BUTTONS */
+  .btn { padding: 0.45rem 0.85rem; border: none; border-radius: 6px; font-size: 0.78rem; font-weight: 500; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 0.35rem; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-primary { background: var(--bronze); color: var(--cream); }
+  .btn-primary:hover:not(:disabled) { background: var(--bronze-light); }
+  .btn-ocean { background: var(--ocean); color: white; }
+  .btn-ocean:hover:not(:disabled) { opacity: 0.85; }
+  .btn-danger { background: var(--red); color: white; }
+  .btn-danger:hover:not(:disabled) { opacity: 0.85; }
+  .btn-ghost { background: transparent; border: 1px solid var(--border); color: var(--text-dim); }
+  .btn-ghost:hover { color: var(--cream); border-color: rgba(247,243,237,0.3); }
+  .btn-sm { padding: 0.3rem 0.6rem; font-size: 0.72rem; }
+  .btn-success { background: var(--green); color: white; }
+
+  /* TABLES */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .tbl th { text-align: left; padding: 0.6rem 0.75rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); border-bottom: 1px solid var(--border); font-weight: 500; white-space: nowrap; }
+  .tbl td { padding: 0.6rem 0.75rem; border-bottom: 1px solid rgba(247,243,237,0.05); vertical-align: middle; }
+  .tbl tr:hover { background: rgba(247,243,237,0.03); }
+  .tbl .mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.75rem; }
+  .tbl .truncate { max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  /* BADGES */
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 500; }
+  .badge-completed { background: rgba(76,175,80,0.15); color: var(--green); }
+  .badge-pending { background: rgba(93,173,226,0.15); color: var(--ocean); }
+  .badge-failed, .badge-no_answer { background: rgba(231,76,60,0.15); color: var(--red); }
+  .badge-voicemail { background: rgba(240,192,64,0.15); color: var(--yellow); }
+  .badge-refused, .badge-no_flat_white { background: rgba(139,115,85,0.15); color: var(--mid); }
+  .badge-eligible { background: rgba(76,175,80,0.15); color: var(--green); }
+  .badge-excluded { background: rgba(231,76,60,0.15); color: var(--red); }
+  .badge-discovered { background: rgba(93,173,226,0.15); color: var(--ocean); }
+
+  /* DISPATCH */
+  .dispatch-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: end; }
   .field { display: flex; flex-direction: column; gap: 4px; }
-  .field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(247,243,237,0.5); }
-  .field select, .field input { padding: 0.6rem 0.8rem; border: 1px solid rgba(247,243,237,0.2); background: rgba(247,243,237,0.08); color: var(--cream); border-radius: 6px; font-size: 0.85rem; min-width: 140px; }
+  .field label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-dim); }
+  .field select, .field input { padding: 0.55rem 0.75rem; border: 1px solid var(--border); background: var(--bg); color: var(--cream); border-radius: 6px; font-size: 0.85rem; }
   .field select:focus, .field input:focus { outline: 2px solid var(--ocean); }
-  .field select option { background: var(--espresso); color: var(--cream); }
-
-  .dispatch-btn { padding: 0.6rem 1.5rem; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; min-height: 44px; transition: all 0.15s; }
-  .dispatch-btn.dry { background: var(--ocean); color: white; }
-  .dispatch-btn.dry:hover { background: #3A8AAF; }
-  .dispatch-btn.live { background: var(--red); color: white; }
-  .dispatch-btn.live:hover { background: #D94433; }
-  .dispatch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .field select option { background: var(--bg); }
 
   .toggle-row { display: flex; align-items: center; gap: 0.5rem; }
-  .toggle { position: relative; width: 44px; height: 24px; background: rgba(247,243,237,0.2); border-radius: 12px; cursor: pointer; transition: background 0.2s; border: none; }
+  .toggle { position: relative; width: 40px; height: 22px; background: rgba(247,243,237,0.15); border-radius: 11px; cursor: pointer; border: none; transition: background 0.2s; }
   .toggle.on { background: var(--red); }
-  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; }
-  .toggle.on::after { transform: translateX(20px); }
-  .toggle-label { font-size: 0.82rem; color: rgba(247,243,237,0.7); }
-  .live-warning { font-size: 0.72rem; color: var(--red); font-weight: 500; display: none; }
-  .live-warning.show { display: block; }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 18px; height: 18px; background: white; border-radius: 50%; transition: transform 0.2s; }
+  .toggle.on::after { transform: translateX(18px); }
+  .toggle-label { font-size: 0.78rem; color: var(--text-dim); }
+  .live-warn { font-size: 0.72rem; color: var(--red); font-weight: 500; display: none; margin-top: 0.5rem; }
+  .live-warn.show { display: block; }
 
-  /* JOB STATUS */
-  .job-status { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.82rem; display: none; }
-  .job-status.running { display: block; background: rgba(46,107,138,0.2); border: 1px solid rgba(46,107,138,0.4); }
-  .job-status.done { display: block; background: rgba(58,125,68,0.2); border: 1px solid rgba(58,125,68,0.4); }
-  .job-status.error { display: block; background: rgba(192,57,43,0.2); border: 1px solid rgba(192,57,43,0.4); }
+  .dispatch-btn { padding: 0.55rem 1.5rem; min-height: 40px; }
+  .dispatch-btn.dry { background: var(--ocean); color: white; }
+  .dispatch-btn.live { background: var(--red); color: white; }
 
-  /* LOG VIEWER */
-  .log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
-  .log-header h2 { font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-  .clear-btn { background: none; border: 1px solid rgba(247,243,237,0.2); color: rgba(247,243,237,0.5); padding: 0.3rem 0.75rem; border-radius: 4px; font-size: 0.72rem; cursor: pointer; }
-  .clear-btn:hover { color: var(--cream); border-color: rgba(247,243,237,0.4); }
+  .job-status { margin-top: 0.75rem; padding: 0.6rem 1rem; border-radius: 8px; font-size: 0.82rem; display: none; }
+  .job-status.running { display: flex; gap: 0.5rem; align-items: center; background: rgba(93,173,226,0.1); border: 1px solid rgba(93,173,226,0.3); }
+  .job-status.done { display: flex; gap: 0.5rem; align-items: center; background: rgba(76,175,80,0.1); border: 1px solid rgba(76,175,80,0.3); }
+  .job-status.error { display: flex; gap: 0.5rem; align-items: center; background: rgba(231,76,60,0.1); border: 1px solid rgba(231,76,60,0.3); }
 
-  .log-viewer {
-    background: #1A1008; border: 1px solid rgba(247,243,237,0.1); border-radius: 8px;
-    padding: 1rem; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem;
-    line-height: 1.6; max-height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
-    color: rgba(247,243,237,0.8);
-  }
-  .log-viewer::-webkit-scrollbar { width: 6px; }
-  .log-viewer::-webkit-scrollbar-track { background: transparent; }
-  .log-viewer::-webkit-scrollbar-thumb { background: rgba(247,243,237,0.15); border-radius: 3px; }
+  /* LOG */
+  .log { background: #0D0805; border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace; font-size: 0.75rem; line-height: 1.7; max-height: 400px; overflow-y: auto; white-space: pre-wrap; word-break: break-word; color: rgba(247,243,237,0.65); }
+  .log::-webkit-scrollbar { width: 6px; }
+  .log::-webkit-scrollbar-thumb { background: rgba(247,243,237,0.1); border-radius: 3px; }
+  .log .s { color: var(--green); } .log .w { color: var(--yellow); } .log .e { color: var(--red); } .log .d { color: var(--ocean); }
 
-  .log-line { margin-bottom: 2px; }
-  .log-line.info { color: rgba(247,243,237,0.7); }
-  .log-line.success { color: #6BCB77; }
-  .log-line.warn { color: #F0C040; }
-  .log-line.error { color: #E74C3C; }
-  .log-line.dispatch { color: #5DADE2; }
-  .log-line.timestamp { color: rgba(247,243,237,0.35); }
+  /* MODAL */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 100; align-items: center; justify-content: center; }
+  .modal-bg.open { display: flex; }
+  .modal-box { background: var(--surface2); border: 1px solid var(--border); border-radius: 14px; max-width: 600px; width: 95%; max-height: 85vh; overflow-y: auto; }
+  .modal-head { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); }
+  .modal-head h3 { font-size: 0.95rem; }
+  .modal-close { background: none; border: none; color: var(--text-dim); font-size: 1.2rem; cursor: pointer; padding: 0.25rem; }
+  .modal-body { padding: 1.25rem; }
+  .modal-body .transcript { background: var(--bg); border-radius: 8px; padding: 1rem; font-family: monospace; font-size: 0.78rem; line-height: 1.6; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
+  .modal-body .form-row { display: flex; gap: 0.75rem; margin-bottom: 0.75rem; }
+  .modal-body .form-row .field { flex: 1; }
+  .modal-body .form-row input { width: 100%; padding: 0.5rem 0.75rem; border: 1px solid var(--border); background: var(--bg); color: var(--cream); border-radius: 6px; font-size: 0.85rem; }
+  .modal-foot { display: flex; justify-content: flex-end; gap: 0.5rem; padding: 1rem 1.25rem; border-top: 1px solid var(--border); }
 
-  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
-  .dot.green { background: var(--green); }
-  .dot.red { background: var(--red); }
-  .dot.orange { background: #F0C040; }
-  .dot.blue { background: var(--ocean); animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  /* SYSTEM */
+  .sys-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  @media (max-width: 700px) { .sys-grid { grid-template-columns: 1fr; } }
+  .sys-item { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid rgba(247,243,237,0.05); font-size: 0.82rem; }
+  .sys-item .label { color: var(--text-dim); }
+  .sys-item .val { color: var(--cream); font-weight: 500; }
+  .sys-item .val.ok { color: var(--green); }
+  .sys-item .val.err { color: var(--red); }
+
+  .env-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 0.5rem; }
+  .env-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.78rem; padding: 0.4rem 0.6rem; background: var(--bg); border-radius: 6px; }
+  .env-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .env-dot.set { background: var(--green); }
+  .env-dot.missing { background: var(--red); }
+  .env-name { font-family: monospace; font-size: 0.72rem; color: var(--text-dim); }
+
+  /* EMPTY STATE */
+  .empty { text-align: center; padding: 3rem 1rem; color: var(--text-dim); }
+  .empty-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+
+  /* EDITABLE */
+  .editable { cursor: pointer; border-bottom: 1px dashed rgba(247,243,237,0.2); }
+  .editable:hover { border-bottom-color: var(--ocean); }
+  .edit-input { padding: 0.25rem 0.4rem; border: 1px solid var(--ocean); background: var(--bg); color: var(--cream); border-radius: 4px; font-size: 0.82rem; width: 100%; }
+
+  /* Quick suburb buttons */
+  .quick-suburbs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
+  .quick-sub { padding: 0.3rem 0.65rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; font-size: 0.72rem; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
+  .quick-sub:hover { color: var(--cream); border-color: var(--bronze); }
+
+  /* Count badge on tabs */
+  .tab-count { background: var(--red); color: white; font-size: 0.6rem; padding: 1px 5px; border-radius: 8px; margin-left: 4px; }
 </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
 <div class="login-page" id="loginPage">
   <div class="login-box">
-    <h1>Flat White Index</h1>
-    <p>Admin access — enter your secret key to continue.</p>
+    <h1>☕ Flat White Index</h1>
+    <p class="sub">Admin access — enter your secret key.</p>
     <div class="login-error" id="loginError">Invalid key. Try again.</div>
-    <form onsubmit="login(event)">
+    <form onsubmit="doLogin(event)">
       <input type="password" id="secretInput" placeholder="Admin secret" autocomplete="off" autofocus>
       <button type="submit">Sign in</button>
     </form>
   </div>
 </div>
 
-<!-- ADMIN DASHBOARD -->
-<div class="admin" id="adminDash">
-  <div class="admin-header">
+<div class="app" id="app">
+  <div class="topbar">
     <h1>☕ Admin</h1>
-    <button class="logout-btn" onclick="logout()">Sign out</button>
+    <div class="topbar-right">
+      <div class="server-dot" id="serverDot" title="Server connected"></div>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
   </div>
 
-  <!-- STATS -->
-  <div class="stats-bar" id="statsBar">
-    <div class="stat"><div class="stat-label">Cafes found</div><div class="stat-val" id="sCafes">—</div></div>
-    <div class="stat"><div class="stat-label">Calls made</div><div class="stat-val" id="sCalls">—</div></div>
-    <div class="stat"><div class="stat-label">Prices collected</div><div class="stat-val" id="sPrices">—</div></div>
-    <div class="stat"><div class="stat-label">Avg price</div><div class="stat-val" id="sAvg">—</div></div>
+  <div class="tabs" id="tabs">
+    <div class="tab active" data-tab="dashboard">Dashboard</div>
+    <div class="tab" data-tab="calls">Calls</div>
+    <div class="tab" data-tab="cafes">Cafes</div>
+    <div class="tab" data-tab="review">Review <span class="tab-count" id="reviewCount" style="display:none"></span></div>
+    <div class="tab" data-tab="submissions">Submissions</div>
+    <div class="tab" data-tab="system">System</div>
   </div>
 
-  <!-- DISPATCH -->
-  <div class="panel">
-    <h2>📞 Dispatch Calls</h2>
-    <div class="panel-row">
-      <div class="field">
-        <label>Suburb</label>
-        <select id="suburbSelect">
-          <option value="">All Sydney (grid)</option>
-          <option value="sydney_cbd">Sydney CBD</option>
-          <option value="surry_hills">Surry Hills</option>
-          <option value="newtown">Newtown</option>
-          <option value="glebe">Glebe</option>
-          <option value="balmain">Balmain</option>
-          <option value="paddington">Paddington</option>
-          <option value="darlinghurst">Darlinghurst</option>
-          <option value="redfern">Redfern</option>
-          <option value="chippendale">Chippendale</option>
-          <option value="erskineville">Erskineville</option>
-          <option value="mosman">Mosman</option>
-          <option value="bondi">Bondi</option>
-          <option value="bondi_junction">Bondi Junction</option>
-          <option value="manly">Manly</option>
-          <option value="crows_nest">Crows Nest</option>
-          <option value="neutral_bay">Neutral Bay</option>
-          <option value="marrickville">Marrickville</option>
-          <option value="leichhardt">Leichhardt</option>
-          <option value="kirribilli">Kirribilli</option>
-          <option value="north_sydney">North Sydney</option>
-          <option value="chatswood">Chatswood</option>
-          <option value="lane_cove">Lane Cove</option>
-          <option value="double_bay">Double Bay</option>
-          <option value="woollahra">Woollahra</option>
-          <option value="rose_bay">Rose Bay</option>
-          <option value="bronte">Bronte</option>
-          <option value="coogee">Coogee</option>
-          <option value="randwick">Randwick</option>
-          <option value="annandale">Annandale</option>
-          <option value="rozelle">Rozelle</option>
-          <option value="enmore">Enmore</option>
-          <option value="stanmore">Stanmore</option>
-          <option value="dulwich_hill">Dulwich Hill</option>
-          <option value="ashfield">Ashfield</option>
-          <option value="strathfield">Strathfield</option>
-          <option value="alexandria">Alexandria</option>
-          <option value="waterloo">Waterloo</option>
-          <option value="zetland">Zetland</option>
-          <option value="pyrmont">Pyrmont</option>
-          <option value="ultimo">Ultimo</option>
-          <option value="haymarket">Haymarket</option>
-          <option value="dee_why">Dee Why</option>
-          <option value="brookvale">Brookvale</option>
-          <option value="avalon">Avalon</option>
-          <option value="parramatta">Parramatta</option>
-          <option value="newcastle">Newcastle</option>
-        </select>
+  <div class="content">
+
+    <!-- DASHBOARD TAB -->
+    <div class="tab-panel active" id="panel-dashboard">
+      <div class="stats" id="statsBar">
+        <div class="stat"><div class="stat-label">Cafes found</div><div class="stat-val" id="sCafes">—</div></div>
+        <div class="stat"><div class="stat-label">Eligible</div><div class="stat-val" id="sEligible">—</div></div>
+        <div class="stat"><div class="stat-label">Calls made</div><div class="stat-val" id="sCalls">—</div></div>
+        <div class="stat"><div class="stat-label">Prices</div><div class="stat-val good" id="sPrices">—</div></div>
+        <div class="stat"><div class="stat-label">Avg price</div><div class="stat-val" id="sAvg">—</div></div>
+        <div class="stat"><div class="stat-label">Success rate</div><div class="stat-val" id="sRate">—</div></div>
       </div>
-      <div class="field">
-        <label>Batch size</label>
-        <input type="number" id="batchSize" value="10" min="1" max="50" style="width:80px;">
-      </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <div class="toggle-row">
-          <button type="button" class="toggle" id="liveToggle" onclick="toggleLive()"></button>
-          <span class="toggle-label" id="modeLabel">Dry run</span>
+
+      <div class="panel">
+        <div class="panel-head"><h2>📞 Dispatch Calls</h2></div>
+        <div class="panel-body">
+          <div class="dispatch-row">
+            <div class="field">
+              <label>Suburb</label>
+              <select id="suburbSelect">
+                <option value="">All Sydney (grid)</option>
+                <option value="sydney_cbd">Sydney CBD</option><option value="surry_hills">Surry Hills</option><option value="newtown">Newtown</option><option value="glebe">Glebe</option><option value="balmain">Balmain</option><option value="paddington">Paddington</option><option value="darlinghurst">Darlinghurst</option><option value="redfern">Redfern</option><option value="chippendale">Chippendale</option><option value="erskineville">Erskineville</option><option value="mosman">Mosman</option><option value="bondi">Bondi</option><option value="bondi_junction">Bondi Junction</option><option value="manly">Manly</option><option value="crows_nest">Crows Nest</option><option value="neutral_bay">Neutral Bay</option><option value="marrickville">Marrickville</option><option value="leichhardt">Leichhardt</option><option value="kirribilli">Kirribilli</option><option value="north_sydney">North Sydney</option><option value="chatswood">Chatswood</option><option value="lane_cove">Lane Cove</option><option value="double_bay">Double Bay</option><option value="woollahra">Woollahra</option><option value="rose_bay">Rose Bay</option><option value="bronte">Bronte</option><option value="coogee">Coogee</option><option value="randwick">Randwick</option><option value="annandale">Annandale</option><option value="rozelle">Rozelle</option><option value="enmore">Enmore</option><option value="stanmore">Stanmore</option><option value="dulwich_hill">Dulwich Hill</option><option value="ashfield">Ashfield</option><option value="strathfield">Strathfield</option><option value="alexandria">Alexandria</option><option value="waterloo">Waterloo</option><option value="zetland">Zetland</option><option value="pyrmont">Pyrmont</option><option value="ultimo">Ultimo</option><option value="haymarket">Haymarket</option><option value="dee_why">Dee Why</option><option value="brookvale">Brookvale</option><option value="avalon">Avalon</option><option value="parramatta">Parramatta</option><option value="newcastle">Newcastle</option>
+              </select>
+            </div>
+            <div class="field"><label>Batch</label><input type="number" id="batchSize" value="10" min="1" max="50" style="width:70px;"></div>
+            <div class="field"><label>&nbsp;</label><div class="toggle-row"><button type="button" class="toggle" id="liveToggle" onclick="toggleLive()"></button><span class="toggle-label" id="modeLabel">Dry run</span></div></div>
+            <div class="field"><label>&nbsp;</label><button class="btn dispatch-btn dry" id="dispatchBtn" onclick="dispatch()">🔍 Dry Run</button></div>
+          </div>
+          <div class="live-warn" id="liveWarning">⚠️ LIVE — real calls will be made and billed</div>
+          <div class="quick-suburbs">
+            <span style="font-size:0.68rem;color:var(--text-dim);margin-right:0.25rem;">Quick:</span>
+            <button class="quick-sub" onclick="quickDispatch('sydney_cbd')">CBD</button>
+            <button class="quick-sub" onclick="quickDispatch('surry_hills')">Surry Hills</button>
+            <button class="quick-sub" onclick="quickDispatch('newtown')">Newtown</button>
+            <button class="quick-sub" onclick="quickDispatch('bondi')">Bondi</button>
+            <button class="quick-sub" onclick="quickDispatch('manly')">Manly</button>
+            <button class="quick-sub" onclick="quickDispatch('paddington')">Paddington</button>
+            <button class="quick-sub" onclick="quickDispatch('marrickville')">Marrickville</button>
+            <button class="quick-sub" onclick="quickDispatch('redfern')">Redfern</button>
+            <button class="quick-sub" onclick="quickDispatch('parramatta')">Parramatta</button>
+          </div>
+          <div class="job-status" id="jobStatus"></div>
         </div>
       </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <button class="dispatch-btn dry" id="dispatchBtn" onclick="dispatch()">🔍 Dry Run</button>
+
+      <div class="panel">
+        <div class="panel-head"><h2>📋 Log</h2><button class="btn btn-ghost btn-sm" onclick="clearLog()">Clear</button></div>
+        <div class="log" id="logViewer">Ready.</div>
       </div>
     </div>
-    <div class="live-warning" id="liveWarning">⚠️ LIVE mode — real calls will be made and billed</div>
-    <div class="job-status" id="jobStatus"></div>
-  </div>
 
-  <!-- LOG VIEWER -->
-  <div class="panel">
-    <div class="log-header">
-      <h2><span class="dot green" id="statusDot"></span> Log</h2>
-      <button class="clear-btn" onclick="clearLog()">Clear</button>
+    <!-- CALLS TAB -->
+    <div class="tab-panel" id="panel-calls">
+      <div class="panel">
+        <div class="toolbar">
+          <select id="callStatusFilter" onchange="loadCalls()">
+            <option value="">All statuses</option>
+            <option value="completed">Completed</option>
+            <option value="pending">Pending</option>
+            <option value="no_answer">No Answer</option>
+            <option value="voicemail">Voicemail</option>
+            <option value="failed">Failed</option>
+            <option value="refused">Refused</option>
+            <option value="no_flat_white">No Flat White</option>
+          </select>
+          <div class="spacer"></div>
+          <button class="btn btn-ocean btn-sm" onclick="bulkRetry()">Retry all failed</button>
+          <button class="btn btn-ghost btn-sm" onclick="loadCalls()">Refresh</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead><tr><th>Cafe</th><th>Suburb</th><th>Status</th><th>Small</th><th>Large</th><th>Time</th><th>Actions</th></tr></thead>
+            <tbody id="callsBody"><tr><td colspan="7" class="empty"><div class="empty-icon">📞</div>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
     </div>
-    <div class="log-viewer" id="logViewer">Ready.\n</div>
+
+    <!-- CAFES TAB -->
+    <div class="tab-panel" id="panel-cafes">
+      <div class="panel">
+        <div class="toolbar">
+          <input type="text" id="cafeSearch" placeholder="Search cafes..." oninput="debounce(loadCafes, 300)()" style="min-width:200px;">
+          <select id="cafeStatusFilter" onchange="loadCafes()">
+            <option value="">All statuses</option>
+            <option value="eligible">Eligible</option>
+            <option value="excluded">Excluded</option>
+            <option value="discovered">Discovered</option>
+          </select>
+          <div class="spacer"></div>
+          <button class="btn btn-ghost btn-sm" onclick="loadCafes()">Refresh</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead><tr><th>Name</th><th>Suburb</th><th>Phone</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="cafesBody"><tr><td colspan="6" class="empty"><div class="empty-icon">☕</div>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVIEW TAB -->
+    <div class="tab-panel" id="panel-review">
+      <div class="panel">
+        <div class="panel-head"><h2>🔍 Needs Review</h2><button class="btn btn-ghost btn-sm" onclick="loadReview()">Refresh</button></div>
+        <div id="reviewList"><div class="empty"><div class="empty-icon">✅</div>Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- SUBMISSIONS TAB -->
+    <div class="tab-panel" id="panel-submissions">
+      <div class="panel">
+        <div class="panel-head"><h2>📋 User Submissions</h2><button class="btn btn-ghost btn-sm" onclick="loadSubmissions()">Refresh</button></div>
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead><tr><th>Cafe</th><th>Suburb</th><th>Small</th><th>Large</th><th>Submitted</th><th>Actions</th></tr></thead>
+            <tbody id="subsBody"><tr><td colspan="6" class="empty"><div class="empty-icon">📋</div>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SYSTEM TAB -->
+    <div class="tab-panel" id="panel-system">
+      <div class="sys-grid">
+        <div class="panel">
+          <div class="panel-head"><h2>Server</h2></div>
+          <div class="panel-body" id="sysServer"><div class="empty">Loading...</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Call Window</h2></div>
+          <div class="panel-body" id="sysCallWindow"><div class="empty">Loading...</div></div>
+        </div>
+      </div>
+      <div class="panel" style="margin-top:1rem;">
+        <div class="panel-head"><h2>Environment</h2></div>
+        <div class="panel-body" id="sysEnv"><div class="empty">Loading...</div></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TRANSCRIPT MODAL -->
+<div class="modal-bg" id="transcriptModal" onclick="if(event.target===this)closeModal('transcriptModal')">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="modalTitle">Transcript</h3><button class="modal-close" onclick="closeModal('transcriptModal')">✕</button></div>
+    <div class="modal-body"><div class="transcript" id="modalTranscript"></div></div>
+    <div class="modal-foot" id="modalFoot"></div>
+  </div>
+</div>
+
+<!-- EDIT CAFE MODAL -->
+<div class="modal-bg" id="editCafeModal" onclick="if(event.target===this)closeModal('editCafeModal')">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Edit Cafe</h3><button class="modal-close" onclick="closeModal('editCafeModal')">✕</button></div>
+    <div class="modal-body">
+      <input type="hidden" id="editCafeId">
+      <div class="form-row"><div class="field"><label>Name</label><input id="editCafeName"></div></div>
+      <div class="form-row"><div class="field"><label>Suburb</label><input id="editCafeSuburb"></div><div class="field"><label>Phone</label><input id="editCafePhone"></div></div>
+      <div class="form-row"><div class="field"><label>Status</label><select id="editCafeStatus"><option value="eligible">Eligible</option><option value="excluded">Excluded</option><option value="discovered">Discovered</option></select></div></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal('editCafeModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCafe()">Save</button>
+    </div>
   </div>
 </div>
 
 <script>
-const API = '';
 let token = sessionStorage.getItem('admin_token') || '';
 let isLive = false;
 let jobRunning = false;
 let pollTimer = null;
+let _debounceTimers = {};
 
-// Auto-login if token exists
-if (token) { verifyAndShow(); }
+if (token) verifyAndShow();
 
-async function login(e) {
+// --- AUTH ---
+async function doLogin(e) {
   e.preventDefault();
   token = document.getElementById('secretInput').value.trim();
   if (!token) return;
-
-  const ok = await verifyAndShow();
-  if (!ok) {
+  if (!(await verifyAndShow())) {
     document.getElementById('loginError').style.display = 'block';
     token = '';
   }
@@ -247,52 +413,76 @@ async function login(e) {
 
 async function verifyAndShow() {
   try {
-    const res = await fetch(API + '/api/admin/status', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const res = await api('/api/admin/status');
     if (!res.ok) return false;
     const data = await res.json();
-
     sessionStorage.setItem('admin_token', token);
     document.getElementById('loginPage').classList.add('hidden');
-    document.getElementById('adminDash').classList.add('active');
+    document.getElementById('app').classList.add('active');
     updateStats(data);
-    appendLog('Authenticated. Connected to server.', 'success');
+    log('Connected to server.', 's');
     startPolling();
+    loadReviewCount();
     return true;
-  } catch {
-    return false;
-  }
+  } catch { return false; }
 }
 
 function logout() {
   sessionStorage.removeItem('admin_token');
   token = '';
   stopPolling();
-  document.getElementById('loginPage').classList.remove('hidden');
-  document.getElementById('adminDash').classList.remove('active');
-  document.getElementById('secretInput').value = '';
+  location.reload();
 }
 
-function updateStats(data) {
-  document.getElementById('sCafes').textContent = data.cafes_total || 0;
-  document.getElementById('sCalls').textContent = data.calls_total || 0;
-  document.getElementById('sPrices').textContent = data.completed || 0;
-  document.getElementById('sAvg').textContent = data.avg_price ? '$' + data.avg_price : '—';
+// --- API HELPER ---
+function api(url, opts = {}) {
+  return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...opts.headers } });
 }
 
+// --- TABS ---
+document.getElementById('tabs').addEventListener('click', e => {
+  const tab = e.target.closest('.tab');
+  if (!tab) return;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  tab.classList.add('active');
+  document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+  // Load data for tab
+  const t = tab.dataset.tab;
+  if (t === 'calls') loadCalls();
+  else if (t === 'cafes') loadCafes();
+  else if (t === 'review') loadReview();
+  else if (t === 'submissions') loadSubmissions();
+  else if (t === 'system') loadSystem();
+});
+
+// --- STATS ---
+function updateStats(d) {
+  document.getElementById('sCafes').textContent = d.cafes_total || 0;
+  document.getElementById('sEligible').textContent = d.cafes_eligible || 0;
+  document.getElementById('sCalls').textContent = d.total || 0;
+  document.getElementById('sPrices').textContent = d.completed || 0;
+  document.getElementById('sAvg').textContent = d.avg_price ? '$' + d.avg_price : '—';
+  const rate = d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0;
+  const el = document.getElementById('sRate');
+  el.textContent = d.total > 0 ? rate + '%' : '—';
+  el.className = 'stat-val' + (rate >= 50 ? ' good' : rate > 0 ? ' warn' : '');
+}
+
+// --- DISPATCH ---
 function toggleLive() {
   isLive = !isLive;
-  const toggle = document.getElementById('liveToggle');
-  const label = document.getElementById('modeLabel');
+  document.getElementById('liveToggle').classList.toggle('on', isLive);
+  document.getElementById('modeLabel').textContent = isLive ? 'LIVE' : 'Dry run';
   const btn = document.getElementById('dispatchBtn');
-  const warn = document.getElementById('liveWarning');
-
-  toggle.classList.toggle('on', isLive);
-  label.textContent = isLive ? 'LIVE' : 'Dry run';
   btn.textContent = isLive ? '📞 Dispatch Live' : '🔍 Dry Run';
-  btn.className = 'dispatch-btn ' + (isLive ? 'live' : 'dry');
-  warn.classList.toggle('show', isLive);
+  btn.className = 'btn dispatch-btn ' + (isLive ? 'live' : 'dry');
+  document.getElementById('liveWarning').classList.toggle('show', isLive);
+}
+
+function quickDispatch(suburb) {
+  document.getElementById('suburbSelect').value = suburb;
+  dispatch();
 }
 
 async function dispatch() {
@@ -300,8 +490,7 @@ async function dispatch() {
   const suburb = document.getElementById('suburbSelect').value;
   const batchSize = parseInt(document.getElementById('batchSize').value) || 10;
   const dryRun = !isLive;
-
-  if (isLive && !confirm('This will make REAL phone calls that cost money. Continue?')) return;
+  if (isLive && !confirm('LIVE MODE — real calls will be made. Continue?')) return;
 
   jobRunning = true;
   const btn = document.getElementById('dispatchBtn');
@@ -310,50 +499,34 @@ async function dispatch() {
 
   const status = document.getElementById('jobStatus');
   status.className = 'job-status running';
-  status.innerHTML = '<span class="dot blue"></span> Dispatching ' + (dryRun ? '(dry run)' : '(LIVE)') + '...';
+  status.innerHTML = '⏳ Running ' + (dryRun ? 'dry run' : 'LIVE dispatch') + '...';
 
-  appendLog('', 'info');
-  appendLog('━━━ Dispatch started ━━━', 'dispatch');
-  appendLog(`Suburb: ${suburb || 'all'} | Batch: ${batchSize} | Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}`, 'info');
+  log('', '');
+  log('━━━ Dispatch: ' + (suburb || 'all') + ' | batch=' + batchSize + ' | ' + (dryRun ? 'DRY RUN' : 'LIVE') + ' ━━━', 'd');
 
   try {
-    const res = await fetch(API + '/api/admin/dispatch', {
+    const res = await api('/api/admin/dispatch', {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + token,
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify({ suburb, batchSize, dryRun }),
     });
-
     const data = await res.json();
-
-    if (!res.ok) {
-      throw new Error(data.error || 'Dispatch failed');
-    }
-
-    // Stream the output lines
-    if (data.output) {
-      data.output.split('\n').forEach(line => {
-        if (!line.trim()) return;
-        let cls = 'info';
-        if (line.includes('✓') || line.includes('✅')) cls = 'success';
-        else if (line.includes('⚠️') || line.includes('❌')) cls = 'warn';
-        else if (line.includes('📞') || line.includes('Dispatch')) cls = 'dispatch';
-        appendLog(line, cls);
-      });
-    }
-
+    if (!res.ok) throw new Error(data.error || 'Failed');
+    if (data.output) data.output.split('\n').forEach(l => {
+      if (!l.trim()) return;
+      let c = '';
+      if (l.includes('✓') || l.includes('✅')) c = 's';
+      else if (l.includes('⚠') || l.includes('❌')) c = 'w';
+      else if (l.includes('📞')) c = 'd';
+      log(l, c);
+    });
     status.className = 'job-status done';
-    status.innerHTML = '<span class="dot green"></span> ' + (data.summary || 'Complete');
-    appendLog('━━━ Dispatch complete ━━━', 'success');
-
-    // Refresh stats
+    status.innerHTML = '✅ ' + (data.summary || 'Complete');
+    log('━━━ Done ━━━', 's');
     refreshStats();
   } catch (err) {
     status.className = 'job-status error';
-    status.innerHTML = '<span class="dot red"></span> Error: ' + err.message;
-    appendLog('ERROR: ' + err.message, 'error');
+    status.innerHTML = '❌ ' + err.message;
+    log('ERROR: ' + err.message, 'e');
   } finally {
     jobRunning = false;
     btn.disabled = false;
@@ -361,53 +534,265 @@ async function dispatch() {
   }
 }
 
-function appendLog(text, cls = 'info') {
-  const viewer = document.getElementById('logViewer');
-  const time = new Date().toLocaleTimeString('en-AU', { hour12: false });
+// --- LOG ---
+function log(text, cls) {
+  const el = document.getElementById('logViewer');
+  const t = new Date().toLocaleTimeString('en-AU', { hour12: false });
   const line = document.createElement('div');
-  line.className = 'log-line ' + cls;
-  line.textContent = (text ? `[${time}] ${text}` : '');
-  viewer.appendChild(line);
-  viewer.scrollTop = viewer.scrollHeight;
+  if (cls) line.className = cls;
+  line.textContent = text ? `[${t}] ${text}` : '';
+  el.appendChild(line);
+  el.scrollTop = el.scrollHeight;
+}
+function clearLog() { document.getElementById('logViewer').innerHTML = ''; log('Cleared.', ''); }
+
+// --- CALLS TAB ---
+async function loadCalls() {
+  const status = document.getElementById('callStatusFilter').value;
+  const body = document.getElementById('callsBody');
+  try {
+    const res = await api('/api/admin/calls?limit=100' + (status ? '&status=' + status : ''));
+    const calls = await res.json();
+    if (!calls.length) { body.innerHTML = '<tr><td colspan="7" class="empty"><div class="empty-icon">📞</div>No calls found</td></tr>'; return; }
+    body.innerHTML = calls.map(c => `<tr>
+      <td>${esc(c.cafes?.name || '—')}</td>
+      <td>${esc(c.cafes?.suburb || '—')}</td>
+      <td><span class="badge badge-${c.status}">${c.status}</span></td>
+      <td>${c.price_small ? '$' + c.price_small : '—'}</td>
+      <td>${c.price_large ? '$' + c.price_large : '—'}</td>
+      <td class="mono">${timeAgo(c.completed_at || c.called_at)}</td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="viewTranscript('${esc(c.id)}','${esc(c.cafes?.name||'')}',${JSON.stringify(JSON.stringify(c.raw_transcript||''))})">View</button>
+        ${['failed','no_answer','voicemail'].includes(c.status) ? `<button class="btn btn-ocean btn-sm" onclick="retryCall('${c.id}')">Retry</button>` : ''}
+        <button class="btn btn-ghost btn-sm" onclick="if(confirm('Delete this call?'))deleteCallRow('${c.id}')">✕</button>
+      </td>
+    </tr>`).join('');
+  } catch (err) { body.innerHTML = '<tr><td colspan="7" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
 }
 
-function clearLog() {
-  document.getElementById('logViewer').innerHTML = '';
-  appendLog('Log cleared.', 'info');
+async function retryCall(id) {
+  await api('/api/admin/calls/' + id + '/retry', { method: 'POST' });
+  loadCalls();
+  log('Retried call ' + id.slice(0,8), 'd');
 }
+
+async function deleteCallRow(id) {
+  await api('/api/admin/calls/' + id, { method: 'DELETE' });
+  loadCalls();
+}
+
+async function bulkRetry() {
+  if (!confirm('This will clear all failed/no_answer calls so they get re-queued on next dispatch. Continue?')) return;
+  const res = await api('/api/admin/calls/bulk-retry', { method: 'POST' });
+  const data = await res.json();
+  log('Bulk retry: cleared ' + (data.cleared || 0) + ' failed calls', 's');
+  loadCalls();
+}
+
+function viewTranscript(id, name, transcript) {
+  document.getElementById('modalTitle').textContent = name || 'Transcript';
+  document.getElementById('modalTranscript').textContent = transcript || '(empty)';
+  document.getElementById('modalFoot').innerHTML = '';
+  openModal('transcriptModal');
+}
+
+// --- CAFES TAB ---
+async function loadCafes() {
+  const q = document.getElementById('cafeSearch').value;
+  const status = document.getElementById('cafeStatusFilter').value;
+  const body = document.getElementById('cafesBody');
+  try {
+    const res = await api('/api/admin/cafes?limit=200' + (q ? '&q=' + encodeURIComponent(q) : '') + (status ? '&status=' + status : ''));
+    const cafes = await res.json();
+    if (!cafes.length) { body.innerHTML = '<tr><td colspan="6" class="empty"><div class="empty-icon">☕</div>No cafes found</td></tr>'; return; }
+    body.innerHTML = cafes.map(c => `<tr>
+      <td>${esc(c.name)}</td>
+      <td>${esc(c.suburb || '—')}</td>
+      <td class="mono">${esc(c.phone || '—')}</td>
+      <td>${c.google_rating || '—'}</td>
+      <td><span class="badge badge-${c.status || 'discovered'}">${c.status || 'discovered'}</span></td>
+      <td>
+        <button class="btn btn-ghost btn-sm" onclick="editCafe(${JSON.stringify(JSON.stringify(c))})">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="toggleCafeStatus('${c.id}','${c.status}')">${c.status === 'excluded' ? '✓' : '✕'}</button>
+        <button class="btn btn-ghost btn-sm" onclick="if(confirm('Delete cafe and all its calls?'))deleteCafeRow('${c.id}')">🗑</button>
+      </td>
+    </tr>`).join('');
+  } catch (err) { body.innerHTML = '<tr><td colspan="6" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
+}
+
+function editCafe(json) {
+  const c = JSON.parse(json);
+  document.getElementById('editCafeId').value = c.id;
+  document.getElementById('editCafeName').value = c.name || '';
+  document.getElementById('editCafeSuburb').value = c.suburb || '';
+  document.getElementById('editCafePhone').value = c.phone || '';
+  document.getElementById('editCafeStatus').value = c.status || 'discovered';
+  openModal('editCafeModal');
+}
+
+async function saveCafe() {
+  const id = document.getElementById('editCafeId').value;
+  await api('/api/admin/cafes/' + id, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      name: document.getElementById('editCafeName').value,
+      suburb: document.getElementById('editCafeSuburb').value,
+      phone: document.getElementById('editCafePhone').value,
+      status: document.getElementById('editCafeStatus').value,
+    }),
+  });
+  closeModal('editCafeModal');
+  loadCafes();
+  log('Updated cafe ' + document.getElementById('editCafeName').value, 's');
+}
+
+async function toggleCafeStatus(id, current) {
+  const next = current === 'excluded' ? 'eligible' : 'excluded';
+  await api('/api/admin/cafes/' + id, { method: 'PATCH', body: JSON.stringify({ status: next }) });
+  loadCafes();
+}
+
+async function deleteCafeRow(id) {
+  await api('/api/admin/cafes/' + id, { method: 'DELETE' });
+  loadCafes();
+}
+
+// --- REVIEW TAB ---
+async function loadReview() {
+  const el = document.getElementById('reviewList');
+  try {
+    const res = await api('/api/admin/review');
+    const items = await res.json();
+    loadReviewCountFromData(items.length);
+    if (!items.length) { el.innerHTML = '<div class="empty"><div class="empty-icon">✅</div>No calls need review</div>'; return; }
+    el.innerHTML = items.map(c => `<div style="border-bottom:1px solid var(--border);padding:1rem 1.25rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <div><strong>${esc(c.cafes?.name || '—')}</strong> <span style="color:var(--text-dim);font-size:0.78rem;">${esc(c.cafes?.suburb || '')}</span></div>
+        <div style="display:flex;gap:0.35rem;">
+          <button class="btn btn-success btn-sm" onclick="approveReview('${c.id}',${c.price_small})">✓ Approve $${c.price_small || '?'}</button>
+          <button class="btn btn-ghost btn-sm" onclick="editReviewPrice('${c.id}',${c.price_small||0},${c.price_large||0})">Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="rejectReview('${c.id}')">✕ Reject</button>
+        </div>
+      </div>
+      <div class="transcript" style="font-size:0.72rem;max-height:120px;">${esc(c.raw_transcript || '(empty)').slice(0, 500)}</div>
+    </div>`).join('');
+  } catch (err) { el.innerHTML = '<div class="empty">Error: ' + esc(err.message) + '</div>'; }
+}
+
+async function approveReview(id, price) {
+  await api('/api/admin/calls/' + id + '/price', { method: 'PATCH', body: JSON.stringify({ price_small: price, approve: true }) });
+  loadReview();
+  log('Approved call ' + id.slice(0,8) + ' at $' + price, 's');
+}
+
+async function rejectReview(id) {
+  await api('/api/admin/calls/' + id + '/status', { method: 'PATCH', body: JSON.stringify({ status: 'failed' }) });
+  loadReview();
+  log('Rejected call ' + id.slice(0,8), 'w');
+}
+
+function editReviewPrice(id, small, large) {
+  const newPrice = prompt('Enter correct price (e.g. 4.50):', small || '');
+  if (!newPrice) return;
+  const p = parseFloat(newPrice);
+  if (isNaN(p) || p < 2 || p > 20) { alert('Price must be between $2 and $20'); return; }
+  api('/api/admin/calls/' + id + '/price', { method: 'PATCH', body: JSON.stringify({ price_small: p, approve: true }) }).then(() => { loadReview(); log('Set price to $' + p + ' for ' + id.slice(0,8), 's'); });
+}
+
+async function loadReviewCount() {
+  try {
+    const res = await api('/api/admin/review');
+    const items = await res.json();
+    loadReviewCountFromData(items.length);
+  } catch {}
+}
+
+function loadReviewCountFromData(count) {
+  const el = document.getElementById('reviewCount');
+  if (count > 0) { el.textContent = count; el.style.display = 'inline'; }
+  else { el.style.display = 'none'; }
+}
+
+// --- SUBMISSIONS TAB ---
+async function loadSubmissions() {
+  const body = document.getElementById('subsBody');
+  try {
+    const res = await api('/api/admin/submissions');
+    const items = await res.json();
+    if (!items.length) { body.innerHTML = '<tr><td colspan="6" class="empty"><div class="empty-icon">📋</div>No submissions yet</td></tr>'; return; }
+    body.innerHTML = items.map(s => `<tr>
+      <td>${esc(s.cafe_name)}</td>
+      <td>${esc(s.suburb)}</td>
+      <td>${s.price_small ? '$' + s.price_small : '—'}</td>
+      <td>${s.price_large ? '$' + s.price_large : '—'}</td>
+      <td class="mono">${timeAgo(s.submitted_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="if(confirm('Delete submission?'))deleteSub('${s.id}')">✕</button></td>
+    </tr>`).join('');
+  } catch (err) { body.innerHTML = '<tr><td colspan="6" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
+}
+
+async function deleteSub(id) {
+  await api('/api/admin/submissions/' + id, { method: 'DELETE' });
+  loadSubmissions();
+}
+
+// --- SYSTEM TAB ---
+async function loadSystem() {
+  try {
+    const res = await api('/api/admin/system');
+    const d = await res.json();
+
+    document.getElementById('sysServer').innerHTML = `
+      <div class="sys-item"><span class="label">Database</span><span class="val ${d.database.ok ? 'ok' : 'err'}">${d.database.ok ? 'Connected' : 'Error: ' + d.database.message}</span></div>
+      <div class="sys-item"><span class="label">Uptime</span><span class="val">${d.uptime_human}</span></div>
+      <div class="sys-item"><span class="label">Memory (RSS)</span><span class="val">${d.memory.rss}</span></div>
+      <div class="sys-item"><span class="label">Heap</span><span class="val">${d.memory.heap_used} / ${d.memory.heap_total}</span></div>
+      <div class="sys-item"><span class="label">Node</span><span class="val">${d.node_version}</span></div>
+      <div class="sys-item"><span class="label">Call Provider</span><span class="val">${d.call_provider}</span></div>
+      <div class="sys-item"><span class="label">Active Job</span><span class="val">${d.active_job ? d.active_job.args.join(' ') + ' (' + d.active_job.running_for + ')' : 'None'}</span></div>
+    `;
+
+    document.getElementById('sysCallWindow').innerHTML = `
+      <div class="sys-item"><span class="label">Current AEST</span><span class="val">${d.call_hours.current_aest}</span></div>
+      <div class="sys-item"><span class="label">Window</span><span class="val">${d.call_hours.window}</span></div>
+      <div class="sys-item"><span class="label">In Window</span><span class="val ${d.call_hours.in_window ? 'ok' : 'err'}">${d.call_hours.in_window ? 'Yes — safe to call' : 'No — outside call hours'}</span></div>
+    `;
+
+    document.getElementById('sysEnv').innerHTML = '<div class="env-grid">' + Object.entries(d.env).map(([k, v]) =>
+      `<div class="env-item"><div class="env-dot ${v ? 'set' : 'missing'}"></div><span class="env-name">${k}</span></div>`
+    ).join('') + '</div>';
+  } catch (err) {
+    document.getElementById('sysServer').innerHTML = '<div class="empty">Error: ' + esc(err.message) + '</div>';
+  }
+}
+
+// --- HELPERS ---
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+function timeAgo(ts) {
+  if (!ts) return '—';
+  const d = Date.now() - new Date(ts).getTime();
+  if (d < 60000) return 'just now';
+  if (d < 3600000) return Math.floor(d/60000) + 'm ago';
+  if (d < 86400000) return Math.floor(d/3600000) + 'h ago';
+  return Math.floor(d/86400000) + 'd ago';
+}
+function debounce(fn, ms) { return (...args) => { clearTimeout(_debounceTimers[fn.name]); _debounceTimers[fn.name] = setTimeout(() => fn(...args), ms); }; }
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
 
 async function refreshStats() {
   try {
-    const res = await fetch(API + '/api/admin/status', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (res.ok) updateStats(await res.json());
-  } catch {}
+    const res = await api('/api/admin/status');
+    if (res.ok) { updateStats(await res.json()); document.getElementById('serverDot').style.background = 'var(--green)'; }
+    else { document.getElementById('serverDot').style.background = 'var(--red)'; }
+  } catch { document.getElementById('serverDot').style.background = 'var(--red)'; }
 }
 
-function startPolling() {
-  stopPolling();
-  pollTimer = setInterval(refreshStats, 30000);
-}
+function startPolling() { stopPolling(); pollTimer = setInterval(() => { refreshStats(); loadReviewCount(); }, 30000); }
+function stopPolling() { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } }
 
-function stopPolling() {
-  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-}
-
-// Poll for job logs if a job was started
-async function pollLogs() {
-  try {
-    const res = await fetch(API + '/api/admin/logs', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (res.ok) {
-      const data = await res.json();
-      if (data.lines && data.lines.length > 0) {
-        data.lines.forEach(l => appendLog(l.text, l.level || 'info'));
-      }
-    }
-  } catch {}
-}
+// Escape key closes modals
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { document.querySelectorAll('.modal-bg.open').forEach(m => m.classList.remove('open')); } });
 </script>
 </body>
 </html>

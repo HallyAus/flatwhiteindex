@@ -1,7 +1,7 @@
 import express from "express";
 import { timingSafeEqual } from "node:crypto";
 import { spawn } from "node:child_process";
-import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission } from "./db.js";
+import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission, getRecentCalls, getNeedsReviewCalls, updateCallPrice, updateCallStatus, deleteCall, searchCafes, updateCafe, deleteCafe, getSubscribers, deleteSubscriber, getUserSubmissions, deleteUserSubmission, retryCall, bulkRetryFailed } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -576,6 +576,197 @@ app.post("/api/admin/dispatch", verifyAdmin, async (req, res) => {
     exitCode,
     summary,
     output: output.join('\n'),
+  });
+});
+
+// Admin: list recent calls
+app.get("/api/admin/calls", verifyAdmin, async (req, res) => {
+  try {
+    const status = req.query.status || null;
+    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const data = await getRecentCalls(limit, status);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: update a call's price
+app.patch("/api/admin/calls/:id/price", verifyAdmin, async (req, res) => {
+  try {
+    const { price_small, price_large, approve } = req.body;
+    await updateCallPrice(req.params.id, price_small ?? null, price_large ?? null, approve !== false);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: update a call's status
+app.patch("/api/admin/calls/:id/status", verifyAdmin, async (req, res) => {
+  try {
+    const { status } = req.body;
+    const valid = ["pending", "completed", "no_answer", "voicemail", "refused", "failed", "no_flat_white"];
+    if (!valid.includes(status)) return res.status(400).json({ error: "Invalid status" });
+    await updateCallStatus(req.params.id, status);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: delete a call
+app.delete("/api/admin/calls/:id", verifyAdmin, async (req, res) => {
+  try {
+    await deleteCall(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: retry a failed call (removes it so it gets re-queued)
+app.post("/api/admin/calls/:id/retry", verifyAdmin, async (req, res) => {
+  try {
+    await retryCall(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: bulk retry all failed/no_answer calls
+app.post("/api/admin/calls/bulk-retry", verifyAdmin, async (req, res) => {
+  try {
+    const count = await bulkRetryFailed();
+    res.json({ ok: true, cleared: count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: needs review queue
+app.get("/api/admin/review", verifyAdmin, async (req, res) => {
+  try {
+    const data = await getNeedsReviewCalls();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: search/list cafes
+app.get("/api/admin/cafes", verifyAdmin, async (req, res) => {
+  try {
+    const query = req.query.q || '';
+    const status = req.query.status || null;
+    const limit = Math.min(parseInt(req.query.limit) || 100, 500);
+    const data = await searchCafes(query, status, limit);
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: update a cafe
+app.patch("/api/admin/cafes/:id", verifyAdmin, async (req, res) => {
+  try {
+    await updateCafe(req.params.id, req.body);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: delete a cafe
+app.delete("/api/admin/cafes/:id", verifyAdmin, async (req, res) => {
+  try {
+    await deleteCafe(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: list subscribers
+app.get("/api/admin/subscribers", verifyAdmin, async (req, res) => {
+  try {
+    const data = await getSubscribers();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: delete subscriber
+app.delete("/api/admin/subscribers/:email", verifyAdmin, async (req, res) => {
+  try {
+    await deleteSubscriber(decodeURIComponent(req.params.email));
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: list user price submissions
+app.get("/api/admin/submissions", verifyAdmin, async (req, res) => {
+  try {
+    const data = await getUserSubmissions();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: delete user submission
+app.delete("/api/admin/submissions/:id", verifyAdmin, async (req, res) => {
+  try {
+    await deleteUserSubmission(req.params.id);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Admin: system info
+app.get("/api/admin/system", verifyAdmin, async (req, res) => {
+  const dbStatus = await testConnection();
+  const mem = process.memoryUsage();
+  const uptime = process.uptime();
+
+  // Check call hours (9am-4pm AEST weekdays)
+  const now = new Date();
+  const aest = new Date(now.toLocaleString('en-US', { timeZone: 'Australia/Sydney' }));
+  const hour = aest.getHours();
+  const day = aest.getDay();
+  const inCallHours = day >= 1 && day <= 5 && hour >= 9 && hour < 16;
+
+  // Check which env vars are set (never expose values)
+  const envCheck = {};
+  for (const key of ['SUPABASE_URL', 'SUPABASE_SERVICE_KEY', 'BLAND_AI_API_KEY', 'GOOGLE_PLACES_API_KEY',
+    'TWILIO_ACCOUNT_SID', 'TWILIO_AUTH_TOKEN', 'TWILIO_PHONE_NUMBER', 'OPENAI_API_KEY',
+    'WEBHOOK_BASE_URL', 'WEBHOOK_SECRET', 'ADMIN_SECRET', 'CALL_PROVIDER']) {
+    envCheck[key] = !!process.env[key];
+  }
+
+  res.json({
+    database: dbStatus,
+    uptime_seconds: Math.round(uptime),
+    uptime_human: `${Math.floor(uptime / 3600)}h ${Math.floor((uptime % 3600) / 60)}m`,
+    memory: {
+      rss: Math.round(mem.rss / 1024 / 1024) + ' MB',
+      heap_used: Math.round(mem.heapUsed / 1024 / 1024) + ' MB',
+      heap_total: Math.round(mem.heapTotal / 1024 / 1024) + ' MB',
+    },
+    call_hours: {
+      in_window: inCallHours,
+      current_aest: aest.toLocaleTimeString('en-AU', { hour12: false }),
+      window: '09:00–16:00 AEST, Mon–Fri',
+    },
+    env: envCheck,
+    node_version: process.version,
+    call_provider: process.env.CALL_PROVIDER || 'bland',
+    active_job: activeJob ? { pid: activeJob.pid, args: activeJob.args, running_for: Math.round((Date.now() - activeJob.started) / 1000) + 's' } : null,
   });
 });
 
