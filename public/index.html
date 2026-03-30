@@ -1868,8 +1868,6 @@ function markerRadius(count) {
 // ─── MAP INIT ─────────────────────────────────────────────────────────────────
 function initMap(suburbs) {
   map = L.map('leaflet-map', {
-    center: [-33.87, 151.21],
-    zoom: 12,
     zoomControl: true,
     scrollWheelZoom: false,
   });
@@ -1943,6 +1941,14 @@ function initMap(suburbs) {
     marker.addTo(map);
     markers[s.name] = marker;
   });
+
+  // Fit map to show all markers
+  if (suburbs.length > 0) {
+    const bounds = L.latLngBounds(suburbs.map(s => [s.lat, s.lng]));
+    map.fitBounds(bounds, { padding: [30, 30] });
+  } else {
+    map.setView([-33.87, 151.21], 12);
+  }
 
   // Force Leaflet to recalculate container size
   setTimeout(() => map.invalidateSize(), 100);
