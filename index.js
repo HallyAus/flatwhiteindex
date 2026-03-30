@@ -175,7 +175,9 @@ async function main() {
   console.log("   Monitor: journalctl -u flatwhite-webhook -f");
 }
 
-const isMainModule = import.meta.url === `file:///${process.argv[1]?.replace(/\\/g, "/")}`;
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+const isMainModule = process.argv[1] && pathToFileURL(resolve(process.argv[1])).href === import.meta.url;
 if (isMainModule) {
   main().catch(err => {
     console.error("Fatal error:", err);
