@@ -528,7 +528,18 @@ app.get("/api/admin/review-count", verifyAdmin, async (req, res) => {
   }
 });
 
-// Admin deploy — git pull + syntax check + restart
+// Helper to run a shell command and collect output
+function runCmd(output, cmd, args, opts = {}) {
+  return new Promise((resolve) => {
+    const proc = spawn(cmd, args, { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'], shell: opts.shell || false });
+    proc.stdout.on('data', d => d.toString().split('\n').filter(Boolean).forEach(l => output.push(l.trim())));
+    proc.stderr.on('data', d => d.toString().split('\n').filter(Boolean).forEach(l => output.push(l.trim())));
+    proc.on('close', code => resolve(code));
+    setTimeout(() => { proc.kill(); resolve(-1); }, opts.timeout || 30000);
+  });
+}
+
+// Admin deploy — git pull + npm install + syntax check (NO auto-restart)
 app.post("/api/admin/deploy", verifyAdmin, async (req, res) => {
   if (!rateLimit('admin-deploy', 1)) {
     return res.status(429).json({ error: "Deploy already in progress — wait a moment" });
@@ -537,55 +548,52 @@ app.post("/api/admin/deploy", verifyAdmin, async (req, res) => {
   console.log("\n🚀 Admin deploy triggered");
   const output = [];
 
-  function runCmd(cmd, args, opts = {}) {
-    return new Promise((resolve) => {
-      const proc = spawn(cmd, args, { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'], shell: opts.shell || false });
-      proc.stdout.on('data', d => d.toString().split('\n').filter(Boolean).forEach(l => output.push(l.trim())));
-      proc.stderr.on('data', d => d.toString().split('\n').filter(Boolean).forEach(l => output.push(l.trim())));
-      proc.on('close', code => resolve(code));
-      setTimeout(() => { proc.kill(); resolve(-1); }, opts.timeout || 30000);
-    });
-  }
-
   try {
-    // Step 1: Git pull
     output.push('$ git pull origin master');
-    const pullCode = await runCmd('git', ['pull', 'origin', 'master']);
+    const pullCode = await runCmd(output, 'git', ['pull', 'origin', 'master']);
     if (pullCode !== 0) {
       return res.json({ ok: false, output: output.join('\n'), message: 'git pull failed (code ' + pullCode + ')' });
     }
 
-    // Step 2: npm install
     output.push('$ npm install --omit=dev');
-    const installCode = await runCmd('npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
+    const installCode = await runCmd(output, 'npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
     if (installCode !== 0) {
       output.push('⚠️ npm install failed — rolling back');
-      await runCmd('git', ['checkout', '.']);
+      await runCmd(output, 'git', ['checkout', '.']);
       return res.json({ ok: false, output: output.join('\n'), message: 'npm install failed — rolled back' });
     }
 
-    // Step 3: Syntax check BEFORE restarting
     output.push('$ node --check webhook.js');
-    const checkCode = await runCmd('node', ['--check', 'webhook.js']);
+    const checkCode = await runCmd(output, 'node', ['--check', 'webhook.js']);
     if (checkCode !== 0) {
-      output.push('❌ Syntax error in new code — NOT restarting. Rolling back.');
-      await runCmd('git', ['checkout', '.']);
-      await runCmd('npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
-      return res.json({ ok: false, output: output.join('\n'), message: 'Syntax error — rolled back to previous version' });
+      output.push('❌ Syntax error — rolling back');
+      await runCmd(output, 'git', ['checkout', '.']);
+      await runCmd(output, 'npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
+      return res.json({ ok: false, output: output.join('\n'), message: 'Syntax error — rolled back' });
     }
-    output.push('✅ Syntax OK');
 
-    output.push('🔄 Restarting server...');
-    res.json({ ok: true, output: output.join('\n'), message: 'Deployed. Server restarting in 2s...' });
-
-    // Wait for response to flush before exiting
-    setTimeout(() => {
-      console.log("🔄 Restarting via process exit (systemd will restart)...");
-      process.exit(0);
-    }, 2000);
+    output.push('✅ Code updated and verified. Click Restart to apply.');
+    res.json({ ok: true, needsRestart: true, output: output.join('\n'), message: 'Code updated. Restart to apply.' });
   } catch (err) {
     res.status(500).json({ ok: false, output: output.join('\n'), error: err.message });
   }
+});
+
+// Admin restart — separate from deploy so the response fully flushes first
+app.post("/api/admin/restart", verifyAdmin, (req, res) => {
+  if (!rateLimit('admin-restart', 1)) {
+    return res.status(429).json({ error: "Already restarting" });
+  }
+  console.log("🔄 Admin restart triggered");
+  res.json({ ok: true, message: 'Restarting now...' });
+
+  // Use res.on('finish') to ensure the response is fully sent before exiting
+  res.on('finish', () => {
+    setTimeout(() => {
+      console.log("🔄 Exiting for systemd restart...");
+      process.exit(0);
+    }, 500);
+  });
 });
 
 // Admin logs — fetch recent server logs from journalctl or in-memory ring buffer

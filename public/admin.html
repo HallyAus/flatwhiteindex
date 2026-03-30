@@ -488,28 +488,68 @@ function copyLogs() {
 }
 
 async function deployCode() {
-  if (!confirm('Pull latest code from GitHub and restart the server?')) return;
+  if (!confirm('Pull latest code from GitHub?')) return;
   const btn = document.getElementById('deployBtn');
   btn.disabled = true;
-  btn.textContent = '🚀 Deploying...';
+  btn.textContent = '🚀 Pulling...';
   log('━━━ Deploy started ━━━', 'd');
-  // Switch to dashboard tab to see log
   document.querySelector('.tab[data-tab="dashboard"]').click();
   try {
     const res = await api('/api/admin/deploy', { method: 'POST' });
     const data = await res.json();
-    if (data.output) data.output.split('\n').forEach(l => log(l, l.includes('error') ? 'e' : 's'));
-    log(data.message || (data.ok ? 'Deploy complete' : 'Deploy failed'), data.ok ? 's' : 'e');
-    if (data.ok) {
-      log('Server restarting — page will reconnect in 5s...', 'd');
-      setTimeout(() => location.reload(), 5000);
+    if (data.output) data.output.split('\n').forEach(l => log(l, l.includes('error') || l.includes('❌') ? 'e' : 's'));
+    log(data.message || (data.ok ? 'Code updated' : 'Deploy failed'), data.ok ? 's' : 'e');
+    if (data.ok && data.needsRestart) {
+      btn.textContent = '🔄 Restart';
+      btn.disabled = false;
+      btn.onclick = restartServer;
+      log('Click Restart to apply the new code.', 'd');
+      return; // Don't reset button — it's now the restart button
     }
   } catch (err) {
     log('Deploy error: ' + err.message, 'e');
-  } finally {
-    btn.disabled = false;
-    btn.textContent = '🚀 Deploy';
   }
+  btn.disabled = false;
+  btn.textContent = '🚀 Deploy';
+}
+
+async function restartServer() {
+  if (!confirm('Restart server? The page will briefly disconnect.')) return;
+  const btn = document.getElementById('deployBtn');
+  btn.disabled = true;
+  btn.textContent = '🔄 Restarting...';
+  log('Restarting server...', 'd');
+  try {
+    await api('/api/admin/restart', { method: 'POST' });
+  } catch {} // Expected — server dies
+  log('Server is restarting. Reconnecting...', 'd');
+  btn.textContent = '⏳ Reconnecting...';
+  // Auto-reconnect loop
+  reconnectLoop();
+}
+
+async function reconnectLoop() {
+  const btn = document.getElementById('deployBtn');
+  for (let i = 0; i < 30; i++) { // Try for up to 60 seconds
+    await new Promise(r => setTimeout(r, 2000));
+    try {
+      const res = await fetch('/health', { signal: AbortSignal.timeout(3000) });
+      if (res.ok) {
+        log('✅ Server is back online!', 's');
+        btn.textContent = '🚀 Deploy';
+        btn.disabled = false;
+        btn.onclick = deployCode;
+        refreshStats();
+        loadSuburbProgress();
+        return;
+      }
+    } catch {}
+    log('Waiting for server... (' + (i + 1) * 2 + 's)', '');
+  }
+  log('❌ Server did not come back after 60s. Check manually.', 'e');
+  btn.textContent = '🚀 Deploy';
+  btn.disabled = false;
+  btn.onclick = deployCode;
 }
 
 // --- API HELPER ---
