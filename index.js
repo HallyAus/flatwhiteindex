@@ -42,6 +42,17 @@ const EXCLUDED_VENUES = [
   // Not coffee-focused (dessert, gelato, kids)
   "gelato", "gelateria", "lamington", "kids cafe", "play centre",
   "play center", "playcentre",
+  // Sports / recreation
+  "tennis", "golf", "bowling", "gym", "fitness", "swimming", "pool",
+  "sports centre", "sports center", "recreation",
+  // Restaurants / fine dining (not coffee-focused)
+  "restaurant", "bistro", "brasserie", "steakhouse", "seafood",
+  "24 hour restaurant",
+  // Venues / function spaces
+  "pavilion", "quarter", "precinct",
+  // Dessert-only / not flat white
+  "dessert house", "açai", "acai", "bubble tea", "boba",
+  "juice bar", "smoothie",
 ];
 
 // Short names that need whole-word matching to avoid false positives

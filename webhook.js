@@ -120,9 +120,24 @@ export function extractPrices(transcript) {
     if (dollars !== undefined && cents !== undefined) prices.push(dollars + cents);
   });
 
-  // Pattern 5: "X dollars" without cents (whole dollar price)
+  // Pattern 5: "X dollars" without cents (whole dollar price) — digits
   const wholeDollarMatches = [...transcript.matchAll(/\b(\d+)\s*dollars?\b/gi)];
   wholeDollarMatches.forEach(m => {
+    const val = parseFloat(m[1]);
+    if (val >= 3 && val <= 15) prices.push(val);
+  });
+
+  // Pattern 6: Word dollars — "five dollars", "four dollars fifty"
+  const wordDollarMatches = [...transcript.matchAll(/\b(three|four|five|six|seven|eight|nine|ten)\s+dollars?\s*(?:(?:and\s+)?(ten|twenty|thirty|forty|fifty|sixty|seventy|eighty|ninety)(?:\s+cents?)?)?\b/gi)];
+  wordDollarMatches.forEach(m => {
+    const dollars = WORD_TO_NUM[m[1].toLowerCase()];
+    const cents = m[2] ? WORD_TO_NUM[m[2].toLowerCase()] : 0;
+    if (dollars !== undefined) prices.push(dollars + (cents || 0));
+  });
+
+  // Pattern 7: "X AUD" or "X a u d" (spoken currency code)
+  const audMatches = [...transcript.matchAll(/\b(\d+(?:\.\d{1,2})?)\s*(?:a\s*u\s*d|aud)\b/gi)];
+  audMatches.forEach(m => {
     const val = parseFloat(m[1]);
     if (val >= 3 && val <= 15) prices.push(val);
   });
@@ -170,7 +185,10 @@ function inferStatus(payload) {
     .join(" ")
     .toLowerCase();
 
-  if (/don't do flat white|we don't serve|we don't have/i.test(transcript)) return "no_flat_white";
+  // Voicemail / IVR detection from transcript content
+  if (/please leave (a |us a )?message|leave a detailed message|after the (tone|beep)|cannot get to the phone|isn't available right now|mailbox is full|please hold the line|your call will be answered|please continue to stay on the line|press \d|our operating hours|please call back|you may make your reservations|submit an? (email )?enquir/i.test(transcript)) return "voicemail";
+
+  if (/don't do flat white|we don't serve|we don't have|don't sell flat white|no flat white/i.test(transcript)) return "no_flat_white";
   if (/remove|stop calling|not interested|do not call/i.test(transcript)) return "refused";
 
   return "completed";
