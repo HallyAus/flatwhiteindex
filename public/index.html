@@ -33,7 +33,8 @@
 <link rel="preload" href="fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/playfair-display-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="fonts.css">
-<link rel="stylesheet" href="leaflet.css">
+<link rel="preload" href="leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="leaflet.css"></noscript>
 <link rel="dns-prefetch" href="https://a.basemaps.cartocdn.com">
 <link rel="dns-prefetch" href="https://b.basemaps.cartocdn.com">
 <style>
@@ -2166,7 +2167,16 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
   if (suburbs.length > 0) renderSuburbList(suburbs);
   if (distData.length > 0) renderDist(distData);
   if (gems.length > 0) renderGems(gems);
-  initMap(mappable);
+  // Lazy-init map when it scrolls into view (below fold on most devices)
+  const mapEl = document.getElementById('leaflet-map');
+  if (mapEl && 'IntersectionObserver' in window) {
+    const obs = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) { obs.disconnect(); initMap(mappable); }
+    }, { rootMargin: '300px' });
+    obs.observe(mapEl);
+  } else {
+    initMap(mappable);
+  }
 
   // Show discovered cafes as grey dots
   if (raw && raw.discovered && raw.discovered.length > 0) {

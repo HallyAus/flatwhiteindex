@@ -1,13 +1,14 @@
 import express from "express";
 import { timingSafeEqual } from "node:crypto";
 import { spawn } from "node:child_process";
-import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission, getRecentCalls, getNeedsReviewCalls, updateCallPrice, updateCallStatus, deleteCall, searchCafes, updateCafe, deleteCafe, getSubscribers, deleteSubscriber, getUserSubmissions, deleteUserSubmission, retryCall, bulkRetryFailed } from "./db.js";
+import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission, getRecentCalls, getNeedsReviewCalls, updateCallPrice, updateCallStatus, deleteCall, searchCafes, updateCafe, deleteCafe, getSubscribers, deleteSubscriber, getUserSubmissions, deleteUserSubmission, retryCall, bulkRetryFailed, getAvgPrice, getReviewCount } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
+let _twilioMod; // cached twilio import
 
 // [SECURITY] Trust first proxy (Cloudflare/nginx) for correct req.ip
 app.set('trust proxy', 1);
@@ -209,9 +210,9 @@ async function verifyWebhookOrigin(req, res, next) {
   // Twilio: validate X-Twilio-Signature if auth token is configured
   if (process.env.TWILIO_AUTH_TOKEN && req.headers['x-twilio-signature']) {
     try {
-      const twilio = await import("twilio");
+      if (!_twilioMod) _twilioMod = (await import("twilio")).default;
       const url = process.env.WEBHOOK_BASE_URL + req.originalUrl;
-      const valid = twilio.default.validateRequest(
+      const valid = _twilioMod.validateRequest(
         process.env.TWILIO_AUTH_TOKEN,
         req.headers['x-twilio-signature'],
         url,
@@ -467,21 +468,36 @@ function verifyAdmin(req, res, next) {
   next();
 }
 
-// Admin status — returns stats + avg price
+// Admin status — returns stats + avg price (cached 15s)
+let adminStatusCache = null;
+let adminStatusCacheTime = 0;
+
 app.get("/api/admin/status", verifyAdmin, async (req, res) => {
   try {
-    const [callStats, priceData] = await Promise.all([
+    const now = Date.now();
+    if (adminStatusCache && (now - adminStatusCacheTime) < 15000) {
+      return res.json(adminStatusCache);
+    }
+    const [callStats, avgPrice] = await Promise.all([
       getCallStats(),
-      getPriceStats(),
+      getAvgPrice(),
     ]);
-    const allPrices = priceData.map(r => r.price_small).filter(Boolean);
-    const avgPrice = allPrices.length > 0
-      ? Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length * 100) / 100
-      : 0;
-    res.json({ ...callStats, avg_price: avgPrice });
+    adminStatusCache = { ...callStats, avg_price: avgPrice };
+    adminStatusCacheTime = now;
+    res.json(adminStatusCache);
   } catch (err) {
     console.error("Admin status error:", err.message);
     res.status(500).json({ error: "Failed to load stats" });
+  }
+});
+
+// Admin: review count (lightweight — no transcripts)
+app.get("/api/admin/review-count", verifyAdmin, async (req, res) => {
+  try {
+    const count = await getReviewCount();
+    res.json({ count });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -525,7 +541,7 @@ app.post("/api/admin/dispatch", verifyAdmin, async (req, res) => {
   child.stdout.on('data', (data) => {
     const lines = data.toString().split('\n').filter(Boolean);
     lines.forEach(l => {
-      output.push(l);
+      if (output.length < 1000) output.push(l);
       console.log(`  [dispatch] ${l}`);
     });
   });
@@ -852,8 +868,11 @@ if (isMainModule) {
 
     // Warm the dashboard cache so first visitor gets instant data
     try {
-      const res = await fetch(`http://localhost:${PORT}/api/dashboard`);
-      if (res.ok) console.log(`   📊 Dashboard cache warmed`);
+      const [priceData, callStats, discoveredCafes] = await Promise.all([
+        getPriceStats(), getCallStats(), getDiscoveredCafes(),
+      ]);
+      buildDashboardCache(priceData, callStats, discoveredCafes);
+      console.log(`   📊 Dashboard cache warmed`);
     } catch {}
 
     // Set up Twilio media stream WebSocket if using Twilio provider

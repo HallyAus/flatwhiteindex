@@ -262,6 +262,31 @@ export async function saveUserPriceSubmission({ name, suburb, price_small, price
   if (error) throw new Error(`saveUserPriceSubmission: ${error.message}`);
 }
 
+// --- Lightweight queries ---
+
+export async function getAvgPrice() {
+  const { data, error } = await supabase()
+    .from("price_calls")
+    .select("price_small")
+    .eq("status", "completed")
+    .not("price_small", "is", null);
+  if (error) throw new Error(`getAvgPrice: ${error.message}`);
+  const prices = data.map(r => r.price_small).filter(Boolean);
+  return prices.length > 0
+    ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length * 100) / 100
+    : 0;
+}
+
+export async function getReviewCount() {
+  const { count, error } = await supabase()
+    .from("price_calls")
+    .select("*", { count: "exact", head: true })
+    .eq("needs_review", true)
+    .eq("status", "completed");
+  if (error) throw new Error(`getReviewCount: ${error.message}`);
+  return count || 0;
+}
+
 // --- Admin functions ---
 
 export async function getRecentCalls(limit = 50, statusFilter = null) {

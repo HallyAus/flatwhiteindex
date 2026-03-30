@@ -441,6 +441,9 @@ function api(url, opts = {}) {
 }
 
 // --- TABS ---
+let tabDataAge = {};
+const TAB_CACHE_TTL = 10000; // 10s cache per tab
+
 document.getElementById('tabs').addEventListener('click', e => {
   const tab = e.target.closest('.tab');
   if (!tab) return;
@@ -448,8 +451,10 @@ document.getElementById('tabs').addEventListener('click', e => {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   tab.classList.add('active');
   document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
-  // Load data for tab
   const t = tab.dataset.tab;
+  const now = Date.now();
+  if (tabDataAge[t] && (now - tabDataAge[t]) < TAB_CACHE_TTL) return;
+  tabDataAge[t] = now;
   if (t === 'calls') loadCalls();
   else if (t === 'cafes') loadCafes();
   else if (t === 'review') loadReview();
@@ -702,9 +707,9 @@ function editReviewPrice(id, small, large) {
 
 async function loadReviewCount() {
   try {
-    const res = await api('/api/admin/review');
-    const items = await res.json();
-    loadReviewCountFromData(items.length);
+    const res = await api('/api/admin/review-count');
+    const data = await res.json();
+    loadReviewCountFromData(data.count || 0);
   } catch {}
 }
 
