@@ -27,11 +27,11 @@ app.use((req, res, next) => {
   res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' https://analytics.agenticconsciousness.com.au https://static.cloudflareinsights.com",
+    "script-src 'self' 'unsafe-inline' https://analytics.agenticconsciousness.com.au",
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
-    "connect-src 'self' https://analytics.agenticconsciousness.com.au https://static.cloudflareinsights.com https://cloudflareinsights.com",
+    "connect-src 'self' https://analytics.agenticconsciousness.com.au",
   ].join('; '));
   next();
 });
