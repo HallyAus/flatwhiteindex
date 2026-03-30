@@ -210,6 +210,7 @@
     <h1>☕ Admin</h1>
     <div class="topbar-right">
       <div class="server-dot" id="serverDot" title="Server connected"></div>
+      <button class="btn btn-ghost btn-sm" onclick="showServerLogs()">📋 Logs</button>
       <button class="btn btn-ocean btn-sm" id="deployBtn" onclick="deployCode()">🚀 Deploy</button>
       <button class="logout-btn" onclick="logout()">Sign out</button>
     </div>
@@ -430,6 +431,24 @@
   </div>
 </div>
 
+<!-- SERVER LOGS MODAL -->
+<div class="modal-bg" id="logsModal" onclick="if(event.target===this)closeModal('logsModal')">
+  <div class="modal-box" style="max-width:800px;">
+    <div class="modal-head">
+      <h3>Server Logs</h3>
+      <div style="display:flex;gap:0.5rem;align-items:center;">
+        <button class="btn btn-ghost btn-sm" onclick="fetchLogs('ring')">In-Memory</button>
+        <button class="btn btn-ghost btn-sm" onclick="fetchLogs('journal')">Journalctl</button>
+        <button class="btn btn-ghost btn-sm" onclick="copyLogs()">📋 Copy All</button>
+        <button class="modal-close" onclick="closeModal('logsModal')">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div class="log" id="serverLogViewer" style="max-height:60vh;font-size:0.7rem;line-height:1.5;">Loading...</div>
+    </div>
+  </div>
+</div>
+
 <script>
 let token = sessionStorage.getItem('admin_token') || '';
 let isLive = false;
@@ -474,6 +493,38 @@ function logout() {
 }
 
 // --- DEPLOY ---
+// --- SERVER LOGS ---
+async function showServerLogs() {
+  openModal('logsModal');
+  await fetchLogs('ring');
+}
+
+async function fetchLogs(source) {
+  const viewer = document.getElementById('serverLogViewer');
+  viewer.textContent = 'Loading...';
+  try {
+    const res = await api('/api/admin/logs?source=' + source + '&lines=200');
+    const data = await res.json();
+    if (source === 'journal') {
+      viewer.textContent = (data.lines || []).join('\n') || 'No logs found.';
+    } else {
+      viewer.textContent = (data.lines || []).map(l =>
+        `[${l.t?.slice(11,19) || ''}] ${l.l === 'error' ? '❌' : l.l === 'warn' ? '⚠️' : ''} ${l.m || ''}`
+      ).join('\n') || 'No logs captured yet.';
+    }
+    viewer.scrollTop = viewer.scrollHeight;
+  } catch (err) {
+    viewer.textContent = 'Error: ' + err.message;
+  }
+}
+
+function copyLogs() {
+  const text = document.getElementById('serverLogViewer').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    alert('Logs copied to clipboard (' + text.split('\n').length + ' lines)');
+  });
+}
+
 async function deployCode() {
   if (!confirm('Pull latest code from GitHub and restart the server?')) return;
   const btn = document.getElementById('deployBtn');

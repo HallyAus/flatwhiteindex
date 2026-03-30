@@ -510,7 +510,7 @@ app.get("/api/admin/review-count", verifyAdmin, async (req, res) => {
   }
 });
 
-// Admin deploy — git pull + restart
+// Admin deploy — git pull + syntax check + restart
 app.post("/api/admin/deploy", verifyAdmin, async (req, res) => {
   if (!rateLimit('admin-deploy', 1)) {
     return res.status(429).json({ error: "Deploy already in progress — wait a moment" });
@@ -519,40 +519,95 @@ app.post("/api/admin/deploy", verifyAdmin, async (req, res) => {
   console.log("\n🚀 Admin deploy triggered");
   const output = [];
 
-  try {
-    // Git pull
-    const pull = spawn('git', ['pull', 'origin', 'master'], { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'] });
-    const pullResult = await new Promise((resolve) => {
-      pull.stdout.on('data', d => output.push(d.toString().trim()));
-      pull.stderr.on('data', d => output.push(d.toString().trim()));
-      pull.on('close', code => resolve(code));
-      setTimeout(() => { pull.kill(); resolve(-1); }, 30000);
+  function runCmd(cmd, args, opts = {}) {
+    return new Promise((resolve) => {
+      const proc = spawn(cmd, args, { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'], shell: opts.shell || false });
+      proc.stdout.on('data', d => d.toString().split('\n').filter(Boolean).forEach(l => output.push(l.trim())));
+      proc.stderr.on('data', d => d.toString().split('\n').filter(Boolean).forEach(l => output.push(l.trim())));
+      proc.on('close', code => resolve(code));
+      setTimeout(() => { proc.kill(); resolve(-1); }, opts.timeout || 30000);
     });
+  }
 
-    if (pullResult !== 0) {
-      return res.json({ ok: false, output: output.join('\n'), message: 'git pull failed' });
+  try {
+    // Step 1: Git pull
+    output.push('$ git pull origin master');
+    const pullCode = await runCmd('git', ['pull', 'origin', 'master']);
+    if (pullCode !== 0) {
+      return res.json({ ok: false, output: output.join('\n'), message: 'git pull failed (code ' + pullCode + ')' });
     }
 
-    // npm install (in case deps changed)
-    const install = spawn('npm', ['install', '--omit=dev'], { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'], shell: true });
-    await new Promise((resolve) => {
-      install.stdout.on('data', d => output.push(d.toString().trim()));
-      install.stderr.on('data', d => output.push(d.toString().trim()));
-      install.on('close', code => resolve(code));
-      setTimeout(() => { install.kill(); resolve(-1); }, 60000);
-    });
+    // Step 2: npm install
+    output.push('$ npm install --omit=dev');
+    const installCode = await runCmd('npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
+    if (installCode !== 0) {
+      output.push('⚠️ npm install failed — rolling back');
+      await runCmd('git', ['checkout', '.']);
+      return res.json({ ok: false, output: output.join('\n'), message: 'npm install failed — rolled back' });
+    }
 
-    output.push('Deploy complete — restarting server...');
-    res.json({ ok: true, output: output.join('\n'), message: 'Deployed. Server restarting...' });
+    // Step 3: Syntax check BEFORE restarting
+    output.push('$ node --check webhook.js');
+    const checkCode = await runCmd('node', ['--check', 'webhook.js']);
+    if (checkCode !== 0) {
+      output.push('❌ Syntax error in new code — NOT restarting. Rolling back.');
+      await runCmd('git', ['checkout', '.']);
+      await runCmd('npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
+      return res.json({ ok: false, output: output.join('\n'), message: 'Syntax error — rolled back to previous version' });
+    }
+    output.push('✅ Syntax OK');
 
-    // Restart after response is sent
+    output.push('🔄 Restarting server...');
+    res.json({ ok: true, output: output.join('\n'), message: 'Deployed. Server restarting in 2s...' });
+
+    // Wait for response to flush before exiting
     setTimeout(() => {
       console.log("🔄 Restarting via process exit (systemd will restart)...");
       process.exit(0);
-    }, 500);
+    }, 2000);
   } catch (err) {
     res.status(500).json({ ok: false, output: output.join('\n'), error: err.message });
   }
+});
+
+// Admin logs — fetch recent server logs from journalctl or in-memory ring buffer
+const LOG_RING = [];
+const LOG_RING_MAX = 500;
+const _origLog = console.log;
+const _origWarn = console.warn;
+const _origErr = console.error;
+function captureLog(level, args) {
+  const line = { t: new Date().toISOString(), l: level, m: args.map(a => typeof a === 'string' ? a : JSON.stringify(a)).join(' ') };
+  LOG_RING.push(line);
+  if (LOG_RING.length > LOG_RING_MAX) LOG_RING.shift();
+}
+console.log = (...args) => { captureLog('info', args); _origLog.apply(console, args); };
+console.warn = (...args) => { captureLog('warn', args); _origWarn.apply(console, args); };
+console.error = (...args) => { captureLog('error', args); _origErr.apply(console, args); };
+
+app.get("/api/admin/logs", verifyAdmin, async (req, res) => {
+  const source = req.query.source || 'ring';
+  const lines = parseInt(req.query.lines) || 100;
+
+  if (source === 'journal') {
+    // Try journalctl for historical logs
+    try {
+      const journal = spawn('journalctl', ['-u', 'flatwhite-webhook', '-n', String(Math.min(lines, 500)), '--no-pager', '-o', 'short-iso'], { stdio: ['ignore', 'pipe', 'pipe'] });
+      let out = '';
+      journal.stdout.on('data', d => { out += d.toString(); });
+      journal.stderr.on('data', d => { out += d.toString(); });
+      await new Promise(resolve => {
+        journal.on('close', resolve);
+        setTimeout(() => { journal.kill(); resolve(); }, 5000);
+      });
+      return res.json({ source: 'journal', lines: out.split('\n').filter(Boolean) });
+    } catch {
+      return res.json({ source: 'journal', lines: ['journalctl not available'], error: true });
+    }
+  }
+
+  // Default: in-memory ring buffer
+  res.json({ source: 'ring', lines: LOG_RING.slice(-lines) });
 });
 
 // Admin dispatch — spawns index.js as child process
