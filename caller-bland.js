@@ -71,6 +71,8 @@ async function dispatchSingleCall(cafe) {
       voice: "maya",
       language: "en-AU",
       max_duration: 2,
+      voice_settings: { speed: 1.0, stability: 0.7 },
+      volume: 1.5,
       answered_by_enabled: true,
       wait_for_greeting: true,
       analysis_schema: {

@@ -322,14 +322,14 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
   });
 
   const suburbs = Object.values(suburbMap).map(s => {
-    const prices = s.prices.filter(Boolean).sort((a, b) => a - b);
+    const prices = s.prices.filter(p => p != null && p > 0).sort((a, b) => a - b);
     const avg = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
     return {
       suburb: s.suburb, avg_price: Math.round(avg * 100) / 100,
       sample_size: prices.length, min_price: prices[0] || null,
       max_price: prices[prices.length - 1] || null, lat: s.lat, lng: s.lng,
     };
-  }).sort((a, b) => a.avg_price - b.avg_price);
+  }).filter(s => s.sample_size > 0).sort((a, b) => a.avg_price - b.avg_price);
 
   const allCafes = Object.values(suburbMap).flatMap(s => s.cafes).filter(c => c.price);
   allCafes.sort((a, b) => a.price - b.price);
@@ -369,6 +369,12 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
     avg_price: avgPrice, suburbs, gems, distribution, discovered,
   };
   dashboardCacheTime = Date.now();
+
+  // Warn if cafe join is broken (all prices landing in Unknown)
+  if (suburbs.length === 1 && suburbs[0]?.suburb === 'Unknown' && actualPrices > 0) {
+    console.warn(`⚠️  All ${actualPrices} prices are grouped under 'Unknown' suburb — Supabase foreign-key join may be broken. Check that price_calls.cafe_id FK to cafes(id) is registered in the Supabase schema cache.`);
+  }
+
   return dashboardCache;
 }
 
@@ -608,6 +614,8 @@ app.post("/api/admin/dispatch", verifyAdmin, async (req, res) => {
     activeJob = null;
   });
 
+  const jobStarted = activeJob.started;
+
   // Wait for the process to finish (up to 5 minutes)
   const exitCode = await new Promise((resolve) => {
     const timeout = setTimeout(() => {
@@ -620,9 +628,10 @@ app.post("/api/admin/dispatch", verifyAdmin, async (req, res) => {
     });
   });
 
+  const elapsed = ((Date.now() - jobStarted) / 1000).toFixed(1);
   const summary = exitCode === 0
-    ? `Completed in ${((Date.now() - Date.now()) / 1000).toFixed(1)}s`
-    : `Exited with code ${exitCode}`;
+    ? `Completed in ${elapsed}s`
+    : `Exited with code ${exitCode} after ${elapsed}s`;
 
   res.json({
     ok: exitCode === 0,

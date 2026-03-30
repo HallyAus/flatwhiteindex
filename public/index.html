@@ -2057,7 +2057,7 @@ function renderSuburbList(suburbs) {
   const list = document.getElementById('suburbList');
   list.innerHTML = sorted.map((s, i) => `
     <div class="suburb-row" id="row-${esc(s.name).replace(/\s/g,'-')}" onclick="clickSuburb('${esc(s.name).replace(/'/g, "\\'")}')">
-      <div class="price-bar-bg" style="width:${((s.price - 4) / 3.5 * 100).toFixed(0)}%"></div>
+      <div class="price-bar-bg" style="width:${Math.max(0, Math.min(100, ((s.price - 4) / 3.5 * 100))).toFixed(0)}%"></div>
       <span class="suburb-rank">${i + 1}</span>
       <span class="suburb-name">${esc(s.name)}</span>
       <span class="sample-badge">${s.count} cafés</span>
