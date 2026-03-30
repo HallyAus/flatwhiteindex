@@ -210,6 +210,7 @@
     <h1>☕ Admin</h1>
     <div class="topbar-right">
       <div class="server-dot" id="serverDot" title="Server connected"></div>
+      <button class="btn btn-ocean btn-sm" id="deployBtn" onclick="deployCode()">🚀 Deploy</button>
       <button class="logout-btn" onclick="logout()">Sign out</button>
     </div>
   </div>
@@ -433,6 +434,32 @@ function logout() {
   token = '';
   stopPolling();
   location.reload();
+}
+
+// --- DEPLOY ---
+async function deployCode() {
+  if (!confirm('Pull latest code from GitHub and restart the server?')) return;
+  const btn = document.getElementById('deployBtn');
+  btn.disabled = true;
+  btn.textContent = '🚀 Deploying...';
+  log('━━━ Deploy started ━━━', 'd');
+  // Switch to dashboard tab to see log
+  document.querySelector('.tab[data-tab="dashboard"]').click();
+  try {
+    const res = await api('/api/admin/deploy', { method: 'POST' });
+    const data = await res.json();
+    if (data.output) data.output.split('\n').forEach(l => log(l, l.includes('error') ? 'e' : 's'));
+    log(data.message || (data.ok ? 'Deploy complete' : 'Deploy failed'), data.ok ? 's' : 'e');
+    if (data.ok) {
+      log('Server restarting — page will reconnect in 5s...', 'd');
+      setTimeout(() => location.reload(), 5000);
+    }
+  } catch (err) {
+    log('Deploy error: ' + err.message, 'e');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🚀 Deploy';
+  }
 }
 
 // --- API HELPER ---

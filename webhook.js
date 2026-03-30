@@ -504,6 +504,51 @@ app.get("/api/admin/review-count", verifyAdmin, async (req, res) => {
   }
 });
 
+// Admin deploy — git pull + restart
+app.post("/api/admin/deploy", verifyAdmin, async (req, res) => {
+  if (!rateLimit('admin-deploy', 1)) {
+    return res.status(429).json({ error: "Deploy already in progress — wait a moment" });
+  }
+
+  console.log("\n🚀 Admin deploy triggered");
+  const output = [];
+
+  try {
+    // Git pull
+    const pull = spawn('git', ['pull', 'origin', 'master'], { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'] });
+    const pullResult = await new Promise((resolve) => {
+      pull.stdout.on('data', d => output.push(d.toString().trim()));
+      pull.stderr.on('data', d => output.push(d.toString().trim()));
+      pull.on('close', code => resolve(code));
+      setTimeout(() => { pull.kill(); resolve(-1); }, 30000);
+    });
+
+    if (pullResult !== 0) {
+      return res.json({ ok: false, output: output.join('\n'), message: 'git pull failed' });
+    }
+
+    // npm install (in case deps changed)
+    const install = spawn('npm', ['install', '--omit=dev'], { cwd: __dirname, stdio: ['ignore', 'pipe', 'pipe'], shell: true });
+    await new Promise((resolve) => {
+      install.stdout.on('data', d => output.push(d.toString().trim()));
+      install.stderr.on('data', d => output.push(d.toString().trim()));
+      install.on('close', code => resolve(code));
+      setTimeout(() => { install.kill(); resolve(-1); }, 60000);
+    });
+
+    output.push('Deploy complete — restarting server...');
+    res.json({ ok: true, output: output.join('\n'), message: 'Deployed. Server restarting...' });
+
+    // Restart after response is sent
+    setTimeout(() => {
+      console.log("🔄 Restarting via process exit (systemd will restart)...");
+      process.exit(0);
+    }, 500);
+  } catch (err) {
+    res.status(500).json({ ok: false, output: output.join('\n'), error: err.message });
+  }
+});
+
 // Admin dispatch — spawns index.js as child process
 let activeJob = null;
 
