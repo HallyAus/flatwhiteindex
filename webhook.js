@@ -333,7 +333,7 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
 
   const allCafes = Object.values(suburbMap).flatMap(s => s.cafes).filter(c => c.price);
   allCafes.sort((a, b) => a.price - b.price);
-  const gems = allCafes.slice(0, 12).map(c => ({ name: c.name, suburb: c.suburb, price: c.price, note: '' }));
+  const gems = allCafes.map(c => ({ name: c.name, suburb: c.suburb, price: c.price, note: '' }));
 
   const allPrices = priceData.map(r => r.price_small).filter(Boolean);
   const buckets = [
