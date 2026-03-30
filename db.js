@@ -229,12 +229,12 @@ export async function getCallStats() {
     db.from("price_calls").select("*", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
-  const total = cafesTotal.count || 0;
-  const excluded = cafesExcluded.count || 0;
+  const total = cafesTotal.count ?? 0;
+  const excluded = cafesExcluded.count ?? 0;
   const eligible = total - excluded;
-  const calls = callsTotal.count || 0;
-  const completed = callsCompleted.count || 0;
-  const pending = callsPending.count || 0;
+  const calls = callsTotal.count ?? 0;
+  const completed = callsCompleted.count ?? 0;
+  const pending = callsPending.count ?? 0;
   const failed = calls - completed - pending;
 
   return { total: calls, completed, pending, failed, cafes_total: total, cafes_eligible: eligible, cafes_excluded: excluded };

@@ -355,13 +355,16 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
     .filter(c => c.lat && c.lng && !pricedCafeIds.has(c.id))
     .map(c => ({ name: c.name, suburb: c.suburb, lat: c.lat, lng: c.lng, rating: c.google_rating, status: 'discovered' }));
 
+  // prices_collected = calls with an actual extracted price, not just status=completed
+  const actualPrices = priceData.filter(r => r.price_small != null).length;
+
   dashboardCache = {
     generated_at: new Date().toISOString(),
     total_cafes: callStats.cafes_total || discoveredCafes.length,
     total_eligible: callStats.cafes_eligible || discoveredCafes.length,
     total_excluded: callStats.cafes_excluded || 0,
     total_discovered: discoveredCafes.length,
-    prices_collected: callStats.completed,
+    prices_collected: actualPrices,
     calls_total: callStats.total,
     avg_price: avgPrice, suburbs, gems, distribution, discovered,
   };

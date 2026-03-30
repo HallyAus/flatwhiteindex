@@ -2254,22 +2254,20 @@ async function init() {
   // Use server-injected data if available (instant render, no fetch)
   const injected = window.__LIVE_DATA__;
   const raw = injected || await loadData();
-  const hasCalls = raw && raw.calls_total > 0;
-  const hasDiscovered = raw && raw.total_discovered > 0;
-  const isLive = hasCalls || hasDiscovered;
+  const isLive = raw && (raw.prices_collected > 0 || raw.total_discovered > 0);
 
   if (isLive) {
-    const suburbs = hasCalls ? normaliseMockSuburbs(raw.suburbs || []) : [];
-    const gems = hasCalls && raw.gems && raw.gems.length > 0 ? raw.gems : DEMO_GEMS;
-    const distData = hasCalls && raw.distribution && raw.distribution.length > 0 ? raw.distribution : DEMO_DIST;
+    const suburbs = normaliseMockSuburbs(raw.suburbs || []);
+    const gems = raw.gems && raw.gems.length > 0 ? raw.gems : DEMO_GEMS;
+    const distData = raw.distribution && raw.distribution.length > 0 ? raw.distribution : DEMO_DIST;
 
     renderAll(
       suburbs.length > 0 ? suburbs : DEMO_SUBURBS,
       gems,
       distData,
       raw.total_cafes ?? 0,
-      hasCalls ? (raw.prices_collected ?? 0) : 0,
-      hasCalls ? (raw.avg_price ?? 0) : 0,
+      raw.prices_collected ?? 0,
+      raw.avg_price ?? 0,
       raw
     );
   } else {
