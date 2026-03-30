@@ -14,8 +14,8 @@
 <meta property="og:title" content="Flat White Index — Sydney Coffee Prices 2026">
 <meta property="og:description" content="An AI voice agent is calling every Sydney café to find the real price of a flat white. Live data, updated as calls come in.">
 <meta property="og:url" content="https://flatwhiteindex.com.au/">
-<meta property="og:image" content="https://flatwhiteindex.com.au/og-image-1200x630.svg">
-<meta property="og:image:type" content="image/svg+xml">
+<meta property="og:image" content="https://flatwhiteindex.com.au/og-image-1200x630.png">
+<meta property="og:image:type" content="image/png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_AU">
@@ -24,7 +24,7 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="Flat White Index — Sydney Coffee Prices 2026">
 <meta name="twitter:description" content="An AI voice agent is calling every Sydney café to find the real price of a flat white. Live data, updated as calls come in.">
-<meta name="twitter:image" content="https://flatwhiteindex.com.au/og-image-1200x630.svg">
+<meta name="twitter:image" content="https://flatwhiteindex.com.au/og-image-1200x630.png">
 
 <!-- Favicon -->
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%232C1A0E'/><path d='M3 24c4-4 10 4 16-2s8-2 12 2' stroke='%23F7F3ED' stroke-width='1.2' fill='none' opacity='.3'/><g transform='translate(8,5) rotate(-10,8,10)'><path d='M1 6h14l-1.5 9a1.5 1.5 0 01-1.5 1.2H4a1.5 1.5 0 01-1.5-1.2L1 6z' fill='%23F7F3ED' opacity='.9'/><path d='M15 8h1.2a2 2 0 010 4H15' stroke='%23F7F3ED' stroke-width='1.2' fill='none' opacity='.8'/></g></svg>">
@@ -1271,6 +1271,35 @@
   @media (max-width: 780px) {
     .grain { display: none; }
   }
+
+  /* COMPARE SUBURBS */
+  .compare-section { margin-top: 1.5rem; }
+  .compare-row { display: flex; gap: 0.75rem; align-items: end; flex-wrap: wrap; }
+  .compare-vs { font-size: 0.85rem; color: var(--mid); font-weight: 500; padding-bottom: 0.6rem; }
+  .compare-result { margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .compare-card { background: var(--milk); border-radius: 10px; padding: 1.25rem; text-align: center; }
+  .compare-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 0.5rem; }
+  .compare-price { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; }
+  .compare-meta { font-size: 0.78rem; color: var(--mid); margin-top: 0.25rem; }
+  .compare-diff { grid-column: 1 / -1; text-align: center; padding: 1rem; background: var(--espresso); color: var(--cream); border-radius: 10px; font-size: 0.9rem; line-height: 1.6; }
+  .compare-diff strong { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
+  .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
+  .field label { font-size: 0.8rem; font-weight: 500; color: var(--mid); text-transform: uppercase; letter-spacing: 0.06em; }
+  .field select { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); background: white; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--espresso); }
+  .field select:focus { outline: none; border-color: var(--ocean); }
+  @media (max-width: 540px) { .compare-row { flex-direction: column; } .compare-vs { padding: 0; text-align: center; } }
+
+  /* CHEAPEST NEAR ME */
+  .nearme-section { margin-top: 1.5rem; }
+  .nearme-list { display: flex; flex-direction: column; gap: 0.5rem; }
+  .nearme-item { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--milk); border-radius: 10px; cursor: pointer; transition: background 0.15s; }
+  .nearme-item:hover { background: var(--cream); }
+  .nearme-rank { font-size: 1.2rem; font-weight: 700; color: var(--mid); width: 24px; text-align: center; flex-shrink: 0; }
+  .nearme-info { flex: 1; }
+  .nearme-name { font-size: 0.9rem; font-weight: 500; }
+  .nearme-sub { font-size: 0.78rem; color: var(--mid); }
+  .nearme-price { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--green); flex-shrink: 0; }
+  .nearme-dist { font-size: 0.72rem; color: var(--mid); text-align: right; flex-shrink: 0; min-width: 50px; }
 </style>
 
 <script type="application/ld+json">
@@ -1634,6 +1663,41 @@
     </div>
   </section>
 
+  <!-- COMPARE SUBURBS -->
+  <section class="compare-section">
+    <div class="panel">
+      <div class="panel-header"><h2 class="panel-title">Compare Suburbs</h2></div>
+      <div style="padding: 1.25rem;">
+        <p style="font-size:0.85rem; color:var(--mid); margin-bottom:1rem;">See how coffee prices compare between two suburbs.</p>
+        <div class="compare-row">
+          <div class="field">
+            <label>Suburb 1</label>
+            <select id="compare1"></select>
+          </div>
+          <div class="compare-vs">vs</div>
+          <div class="field">
+            <label>Suburb 2</label>
+            <select id="compare2"></select>
+          </div>
+          <button class="newsletter-btn" onclick="compareSuburbs()" style="align-self:flex-end;">Compare</button>
+        </div>
+        <div id="compareResult" style="display:none;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CHEAPEST NEAR ME -->
+  <section class="nearme-section">
+    <div class="panel">
+      <div class="panel-header"><h2 class="panel-title">Cheapest Near Me</h2></div>
+      <div style="padding: 1.25rem;">
+        <p style="font-size:0.85rem; color:var(--mid); margin-bottom:1rem;">Find the cheapest flat whites near your location.</p>
+        <button class="newsletter-btn" id="nearmeBtn" onclick="findNearMe()">📍 Find cheapest near me</button>
+        <div id="nearmeResult" style="display:none; margin-top:1rem;"></div>
+      </div>
+    </div>
+  </section>
+
   <!-- ABOUT / METHODOLOGY -->
   <section class="about" id="about">
     <h2>How we built this</h2>
@@ -1835,6 +1899,7 @@ const DEMO_DIST = [
 ];
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
+let currentSuburbs = [];
 let map = null;
 let markers = {};         // suburb name → Leaflet marker
 let activeSuburb = null;
@@ -2156,6 +2221,7 @@ function normaliseMockSuburbs(rawSuburbs) {
 
 // ─── BOOTSTRAP ────────────────────────────────────────────────────────────────
 function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPrice, raw) {
+  currentSuburbs = suburbs;
   const isLive = totalCafes != null;
 
   // Filter out any suburbs without coordinates (can't place on map)
@@ -2248,6 +2314,7 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
     const el = document.getElementById('statAnswerRate');
     if (el) el.textContent = rate + '% answer rate';
   }
+  populateCompareDropdowns();
 }
 
 async function init() {
@@ -2436,6 +2503,129 @@ function calcSalary() {
     `Switching to the cheapest suburb would save you <strong>$${yearSaving.toFixed(0)}/year</strong>.`;
 
   document.getElementById('salaryResult').style.display = 'block';
+}
+
+// ─── COMPARE SUBURBS ─────────────────────────────────────────────────────────
+function populateCompareDropdowns() {
+  const s1 = document.getElementById('compare1');
+  const s2 = document.getElementById('compare2');
+  if (!s1 || !s2 || currentSuburbs.length === 0) return;
+  const opts = currentSuburbs.map(s => `<option value="${esc(s.name)}">${esc(s.name)} — $${s.price.toFixed(2)}</option>`).join('');
+  s1.innerHTML = opts;
+  s2.innerHTML = opts;
+  if (currentSuburbs.length > 1) s2.selectedIndex = s2.options.length - 1;
+}
+
+function compareSuburbs() {
+  const name1 = document.getElementById('compare1').value;
+  const name2 = document.getElementById('compare2').value;
+  const s1 = currentSuburbs.find(s => s.name === name1);
+  const s2 = currentSuburbs.find(s => s.name === name2);
+  if (!s1 || !s2) return;
+
+  const diff = Math.abs(s1.price - s2.price);
+  const annual = diff * 365;
+  const cheaper = s1.price < s2.price ? s1 : s2;
+  const dearer = s1.price < s2.price ? s2 : s1;
+
+  const el = document.getElementById('compareResult');
+  el.style.display = '';
+  el.innerHTML = `
+    <div class="compare-result">
+      <div class="compare-card">
+        <h3>${esc(s1.name)}</h3>
+        <div class="compare-price" style="color:${s1.price <= s2.price ? 'var(--green)' : 'var(--red-price)'}">$${s1.price.toFixed(2)}</div>
+        <div class="compare-meta">${s1.count} cafes · $${(s1.min||s1.price).toFixed(2)}–$${(s1.max||s1.price).toFixed(2)}</div>
+      </div>
+      <div class="compare-card">
+        <h3>${esc(s2.name)}</h3>
+        <div class="compare-price" style="color:${s2.price <= s1.price ? 'var(--green)' : 'var(--red-price)'}">$${s2.price.toFixed(2)}</div>
+        <div class="compare-meta">${s2.count} cafes · $${(s2.min||s2.price).toFixed(2)}–$${(s2.max||s2.price).toFixed(2)}</div>
+      </div>
+      <div class="compare-diff">
+        ${diff < 0.01 ? 'Same price!' : `<strong>${esc(dearer.name)}</strong> costs <strong>$${diff.toFixed(2)}</strong> more per flat white<br>That's <strong>$${annual.toFixed(0)}</strong> more per year at one coffee a day`}
+      </div>
+    </div>`;
+}
+
+// ─── CHEAPEST NEAR ME ─────────────────────────────────────────────────────────
+function findNearMe() {
+  const btn = document.getElementById('nearmeBtn');
+  const result = document.getElementById('nearmeResult');
+
+  if (!navigator.geolocation) {
+    result.style.display = '';
+    result.innerHTML = '<p style="color:var(--red-price);font-size:0.85rem;">Geolocation not supported by your browser.</p>';
+    return;
+  }
+
+  btn.textContent = '📍 Finding...';
+  btn.disabled = true;
+
+  navigator.geolocation.getCurrentPosition(
+    (pos) => {
+      const userLat = pos.coords.latitude;
+      const userLng = pos.coords.longitude;
+
+      // Calculate distance to each suburb (haversine)
+      const withDist = currentSuburbs
+        .filter(s => s.lat && s.lng)
+        .map(s => ({
+          ...s,
+          dist: haversine(userLat, userLng, s.lat, s.lng),
+        }))
+        .sort((a, b) => a.price - b.price); // sort by price, cheapest first
+
+      // Get 5 nearest that are within 10km, sorted by price
+      const nearby = withDist.filter(s => s.dist <= 10).slice(0, 8);
+
+      // If none within 10km, show closest 5 regardless
+      const toShow = nearby.length > 0 ? nearby : withDist.sort((a, b) => a.dist - b.dist).slice(0, 5);
+
+      result.style.display = '';
+      if (toShow.length === 0) {
+        result.innerHTML = '<p style="font-size:0.85rem;color:var(--mid);">No cafes found near you yet. We\'re still calling!</p>';
+      } else {
+        result.innerHTML = `
+          <div class="nearme-list">
+            ${toShow.map((s, i) => `
+              <div class="nearme-item" onclick="clickSuburb('${esc(s.name).replace(/'/g, "\\'")}')">
+                <div class="nearme-rank">${i + 1}</div>
+                <div class="nearme-info">
+                  <div class="nearme-name">${esc(s.name)}</div>
+                  <div class="nearme-sub">${s.count} cafe${s.count !== 1 ? 's' : ''} sampled</div>
+                </div>
+                <div class="nearme-price">$${s.price.toFixed(2)}</div>
+                <div class="nearme-dist">${formatDist(s.dist)}</div>
+              </div>
+            `).join('')}
+          </div>`;
+      }
+
+      btn.textContent = '📍 Find cheapest near me';
+      btn.disabled = false;
+    },
+    (err) => {
+      result.style.display = '';
+      result.innerHTML = `<p style="color:var(--red-price);font-size:0.85rem;">${err.code === 1 ? 'Location access denied. Enable it in your browser settings.' : 'Could not get your location. Try again.'}</p>`;
+      btn.textContent = '📍 Find cheapest near me';
+      btn.disabled = false;
+    },
+    { enableHighAccuracy: false, timeout: 10000 }
+  );
+}
+
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371; // km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
+function formatDist(km) {
+  if (km < 1) return Math.round(km * 1000) + 'm';
+  return km.toFixed(1) + 'km';
 }
 
 // ─── EMBED ────────────────────────────────────────────────────────────────────

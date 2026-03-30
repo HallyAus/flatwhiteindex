@@ -8,16 +8,29 @@
     "start": "node index.js",
     "webhook": "node webhook.js",
     "dry-run": "node index.js --suburb=sydney_cbd --dry-run",
-    "test": "node --test --test-force-exit ./test/webhook.test.js ./test/cafes.test.js ./test/caller.test.js ./test/index.test.js"
+    "test": "node --test --test-force-exit ./test/webhook.test.js ./test/cafes.test.js ./test/caller.test.js ./test/index.test.js",
+    "og-image": "node scripts/generate-og-image.js",
+    "digest": "node scripts/send-weekly-digest.js"
   },
-  "keywords": ["coffee", "flat-white", "sydney", "voice-agent", "bland-ai", "price-index"],
+  "keywords": [
+    "coffee",
+    "flat-white",
+    "sydney",
+    "voice-agent",
+    "bland-ai",
+    "price-index"
+  ],
   "author": "Daniel <printforge.com.au>",
   "license": "MIT",
   "dependencies": {
     "@supabase/supabase-js": "^2.45.0",
     "dotenv": "^16.4.0",
     "express": "^4.21.0",
+    "nodemailer": "^8.0.4",
     "twilio": "^5.4.0",
     "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "sharp": "^0.34.5"
   }
 }
