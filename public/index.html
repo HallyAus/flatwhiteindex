@@ -2242,29 +2242,28 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
 }
 
 async function init() {
-  // Render demo data instantly so the page isn't blank
-  renderAll(DEMO_SUBURBS, DEMO_GEMS, DEMO_DIST, null, null, null, null);
-
-  // Then fetch live data and re-render if available
-  const raw = await loadData();
+  // Use server-injected data if available (instant render, no fetch)
+  const injected = window.__LIVE_DATA__;
+  const raw = injected || await loadData();
   const isLive = raw && (raw.prices_collected > 0 || raw.total_discovered > 0);
 
   if (isLive) {
     const suburbs = normaliseMockSuburbs(raw.suburbs || []);
-    const gems = raw.gems && raw.gems.length > 0 ? raw.gems : [];
-    const distData = raw.distribution || [];
+    const gems = raw.gems && raw.gems.length > 0 ? raw.gems : DEMO_GEMS;
+    const distData = raw.distribution && raw.distribution.length > 0 ? raw.distribution : DEMO_DIST;
 
-    // Clear existing map and re-render with live data
-    if (map) { map.remove(); map = null; markers = {}; }
     renderAll(
       suburbs.length > 0 ? suburbs : DEMO_SUBURBS,
-      gems.length > 0 ? gems : DEMO_GEMS,
-      distData.length > 0 ? distData : DEMO_DIST,
+      gems,
+      distData,
       raw.total_cafes ?? 0,
       raw.prices_collected ?? 0,
       raw.avg_price ?? 0,
       raw
     );
+  } else {
+    // No live data at all — show demo data
+    renderAll(DEMO_SUBURBS, DEMO_GEMS, DEMO_DIST, null, null, null, null);
   }
 }
 

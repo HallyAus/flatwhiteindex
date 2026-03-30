@@ -4,6 +4,7 @@ import { spawn } from "node:child_process";
 import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission, getRecentCalls, getNeedsReviewCalls, updateCallPrice, updateCallStatus, deleteCall, searchCafes, updateCafe, deleteCafe, getSubscribers, deleteSubscriber, getUserSubmissions, deleteUserSubmission, retryCall, bulkRetryFailed } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { readFileSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -44,6 +45,33 @@ app.use((req, res, next) => {
     res.setHeader('Cache-Control', 'public, max-age=300');
   }
   next();
+});
+
+// Server-rendered index with live data injected (no demo data flash)
+let indexHtml = null;
+try { indexHtml = readFileSync(join(__dirname, 'public', 'index.html'), 'utf-8'); } catch {}
+
+app.get("/", async (req, res) => {
+  if (!indexHtml) return res.sendFile(join(__dirname, 'public', 'index.html'));
+  try {
+    // Reuse the dashboard cache for zero-cost injection
+    const now = Date.now();
+    if (!dashboardCache || (now - dashboardCacheTime) >= CACHE_TTL) {
+      // Warm cache inline — same logic as /api/dashboard
+      const [priceData, callStats, discoveredCafes] = await Promise.all([
+        getPriceStats(), getCallStats(), getDiscoveredCafes(),
+      ]);
+      // Build cache (reuse from /api/dashboard handler)
+      buildDashboardCache(priceData, callStats, discoveredCafes);
+    }
+    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};</script>`;
+    const html = indexHtml.replace('</head>', inject + '</head>');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.send(html);
+  } catch {
+    res.sendFile(join(__dirname, 'public', 'index.html'));
+  }
 });
 
 // [SECURITY] Serve ONLY the public/ directory — never the project root
@@ -277,6 +305,69 @@ let dashboardCache = null;
 let dashboardCacheTime = 0;
 const CACHE_TTL = 60000; // 60 seconds
 
+function buildDashboardCache(priceData, callStats, discoveredCafes) {
+  const suburbMap = {};
+  priceData.forEach(row => {
+    const suburb = row.cafes?.suburb || 'Unknown';
+    if (!suburbMap[suburb]) {
+      suburbMap[suburb] = { suburb, lat: row.cafes?.lat, lng: row.cafes?.lng, prices: [], cafes: [] };
+    }
+    suburbMap[suburb].prices.push(row.price_small);
+    suburbMap[suburb].cafes.push({
+      name: row.cafes?.name, suburb,
+      price: row.price_small, price_large: row.price_large,
+      rating: row.cafes?.google_rating,
+    });
+  });
+
+  const suburbs = Object.values(suburbMap).map(s => {
+    const prices = s.prices.filter(Boolean).sort((a, b) => a - b);
+    const avg = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
+    return {
+      suburb: s.suburb, avg_price: Math.round(avg * 100) / 100,
+      sample_size: prices.length, min_price: prices[0] || null,
+      max_price: prices[prices.length - 1] || null, lat: s.lat, lng: s.lng,
+    };
+  }).sort((a, b) => a.avg_price - b.avg_price);
+
+  const allCafes = Object.values(suburbMap).flatMap(s => s.cafes).filter(c => c.price);
+  allCafes.sort((a, b) => a.price - b.price);
+  const gems = allCafes.slice(0, 12).map(c => ({ name: c.name, suburb: c.suburb, price: c.price, note: '' }));
+
+  const allPrices = priceData.map(r => r.price_small).filter(Boolean);
+  const buckets = [
+    { label: '$3–3.99', min: 3, max: 4 }, { label: '$4–4.49', min: 4, max: 4.5 },
+    { label: '$4.50–4.99', min: 4.5, max: 5 }, { label: '$5–5.49', min: 5, max: 5.5 },
+    { label: '$5.50–5.99', min: 5.5, max: 6 }, { label: '$6–6.49', min: 6, max: 6.5 },
+    { label: '$6.50+', min: 6.5, max: 99 },
+  ];
+  const maxCount = Math.max(...buckets.map(b => allPrices.filter(p => p >= b.min && p < b.max).length), 1);
+  const distribution = buckets.map(b => ({
+    label: b.label, count: allPrices.filter(p => p >= b.min && p < b.max).length, max: maxCount,
+  }));
+
+  const avgPrice = allPrices.length > 0
+    ? Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length * 100) / 100 : 0;
+
+  const pricedCafeIds = new Set(priceData.map(r => r.cafe_id).filter(Boolean));
+  const discovered = discoveredCafes
+    .filter(c => c.lat && c.lng && !pricedCafeIds.has(c.id))
+    .map(c => ({ name: c.name, suburb: c.suburb, lat: c.lat, lng: c.lng, rating: c.google_rating, status: 'discovered' }));
+
+  dashboardCache = {
+    generated_at: new Date().toISOString(),
+    total_cafes: callStats.cafes_total || discoveredCafes.length,
+    total_eligible: callStats.cafes_eligible || discoveredCafes.length,
+    total_excluded: callStats.cafes_excluded || 0,
+    total_discovered: discoveredCafes.length,
+    prices_collected: callStats.completed,
+    calls_total: callStats.total,
+    avg_price: avgPrice, suburbs, gems, distribution, discovered,
+  };
+  dashboardCacheTime = Date.now();
+  return dashboardCache;
+}
+
 app.get("/api/dashboard", async (req, res) => {
   if (!rateLimit('dashboard:' + (req.ip || 'unknown'), 60)) {
     return res.status(429).json({ error: "Too many requests" });
@@ -286,112 +377,10 @@ app.get("/api/dashboard", async (req, res) => {
     if (dashboardCache && (now - dashboardCacheTime) < CACHE_TTL) {
       return res.json(dashboardCache);
     }
-
     const [priceData, callStats, discoveredCafes] = await Promise.all([
-      getPriceStats(),
-      getCallStats(),
-      getDiscoveredCafes(),
+      getPriceStats(), getCallStats(), getDiscoveredCafes(),
     ]);
-
-    // Group by suburb
-    const suburbMap = {};
-    priceData.forEach(row => {
-      const suburb = row.cafes?.suburb || 'Unknown';
-      if (!suburbMap[suburb]) {
-        suburbMap[suburb] = {
-          suburb,
-          lat: row.cafes?.lat,
-          lng: row.cafes?.lng,
-          prices: [],
-          cafes: [],
-        };
-      }
-      suburbMap[suburb].prices.push(row.price_small);
-      suburbMap[suburb].cafes.push({
-        name: row.cafes?.name,
-        suburb,
-        price: row.price_small,
-        price_large: row.price_large,
-        rating: row.cafes?.google_rating,
-      });
-    });
-
-    const suburbs = Object.values(suburbMap).map(s => {
-      const prices = s.prices.filter(Boolean).sort((a, b) => a - b);
-      const avg = prices.length > 0 ? prices.reduce((a, b) => a + b, 0) / prices.length : 0;
-      return {
-        suburb: s.suburb,
-        avg_price: Math.round(avg * 100) / 100,
-        sample_size: prices.length,
-        min_price: prices[0] || null,
-        max_price: prices[prices.length - 1] || null,
-        lat: s.lat,
-        lng: s.lng,
-      };
-    }).sort((a, b) => a.avg_price - b.avg_price);
-
-    // Top cheapest cafes
-    const allCafes = Object.values(suburbMap).flatMap(s => s.cafes).filter(c => c.price);
-    allCafes.sort((a, b) => a.price - b.price);
-    const gems = allCafes.slice(0, 12).map(c => ({
-      name: c.name,
-      suburb: c.suburb,
-      price: c.price,
-      note: '',
-    }));
-
-    // Distribution
-    const allPrices = priceData.map(r => r.price_small).filter(Boolean);
-    const buckets = [
-      { label: '$3–3.99', min: 3, max: 4 },
-      { label: '$4–4.49', min: 4, max: 4.5 },
-      { label: '$4.50–4.99', min: 4.5, max: 5 },
-      { label: '$5–5.49', min: 5, max: 5.5 },
-      { label: '$5.50–5.99', min: 5.5, max: 6 },
-      { label: '$6–6.49', min: 6, max: 6.5 },
-      { label: '$6.50+', min: 6.5, max: 99 },
-    ];
-    const maxCount = Math.max(...buckets.map(b => allPrices.filter(p => p >= b.min && p < b.max).length), 1);
-    const distribution = buckets.map(b => ({
-      label: b.label,
-      count: allPrices.filter(p => p >= b.min && p < b.max).length,
-      max: maxCount,
-    }));
-
-    const avgPrice = allPrices.length > 0
-      ? Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length * 100) / 100
-      : 0;
-
-    // Build discovered cafes list (found but not yet priced) — filter by ID, not name
-    const pricedCafeIds = new Set(priceData.map(r => r.cafe_id).filter(Boolean));
-    const discovered = discoveredCafes
-      .filter(c => c.lat && c.lng && !pricedCafeIds.has(c.id))
-      .map(c => ({
-        name: c.name,
-        suburb: c.suburb,
-        lat: c.lat,
-        lng: c.lng,
-        rating: c.google_rating,
-        status: 'discovered',
-      }));
-
-    dashboardCache = {
-      generated_at: new Date().toISOString(),
-      total_cafes: callStats.cafes_total || discoveredCafes.length,
-      total_eligible: callStats.cafes_eligible || discoveredCafes.length,
-      total_excluded: callStats.cafes_excluded || 0,
-      total_discovered: discoveredCafes.length,
-      prices_collected: callStats.completed,
-      calls_total: callStats.total,
-      avg_price: avgPrice,
-      suburbs,
-      gems,
-      distribution,
-      discovered,
-    };
-    dashboardCacheTime = now;
-
-    res.json(dashboardCache);
+    res.json(buildDashboardCache(priceData, callStats, discoveredCafes));
   } catch (err) {
     console.error("Dashboard API error:", err);
     res.status(500).json({ error: "Failed to load dashboard data" });
