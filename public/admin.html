@@ -605,8 +605,6 @@ function toggleLive() {
 
 function quickDispatch(suburb) {
   document.getElementById('suburbSelect').value = suburb;
-  // Quick dispatch always goes live — no dry run
-  if (!isLive) toggleLive();
   dispatch();
 }
 
