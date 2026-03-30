@@ -181,10 +181,17 @@
   .editable:hover { border-bottom-color: var(--ocean); }
   .edit-input { padding: 0.25rem 0.4rem; border: 1px solid var(--ocean); background: var(--bg); color: var(--cream); border-radius: 4px; font-size: 0.82rem; width: 100%; }
 
-  /* Quick suburb buttons */
-  .quick-suburbs { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.75rem; }
-  .quick-sub { padding: 0.3rem 0.65rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 6px; font-size: 0.72rem; color: var(--text-dim); cursor: pointer; transition: all 0.15s; }
+  /* Quick suburb buttons with progress */
+  .quick-suburbs { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.75rem; }
+  .quick-sub { position: relative; padding: 0.4rem 0.7rem 0.55rem; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; font-size: 0.72rem; color: var(--text-dim); cursor: pointer; transition: all 0.15s; overflow: hidden; min-width: 70px; text-align: left; }
   .quick-sub:hover { color: var(--cream); border-color: var(--bronze); }
+  .quick-sub .qs-name { position: relative; z-index: 1; display: block; font-weight: 500; }
+  .quick-sub .qs-stats { position: relative; z-index: 1; display: block; font-size: 0.6rem; color: var(--text-dim); margin-top: 1px; }
+  .quick-sub .qs-bar { position: absolute; bottom: 0; left: 0; height: 3px; border-radius: 0 0 8px 8px; transition: width 0.3s; }
+  .quick-sub.done { border-color: rgba(76,175,80,0.4); }
+  .quick-sub.done .qs-name { color: var(--green); }
+  .quick-sub.partial { border-color: rgba(142,90,40,0.4); }
+  .quick-sub.none { }
 
   /* Count badge on tabs */
   .tab-count { background: var(--red); color: white; font-size: 0.6rem; padding: 1px 5px; border-radius: 8px; margin-left: 4px; }
@@ -254,54 +261,8 @@
             <div class="field"><label>&nbsp;</label><button class="btn dispatch-btn dry" id="dispatchBtn" onclick="dispatch()">🔍 Dry Run</button></div>
           </div>
           <div class="live-warn" id="liveWarning">⚠️ LIVE — real calls will be made and billed</div>
-          <div class="quick-suburbs">
-            <span style="font-size:0.68rem;color:var(--text-dim);margin-right:0.25rem;">Suburbs:</span>
-            <button class="quick-sub" onclick="quickDispatch('sydney_cbd')">CBD</button>
-            <button class="quick-sub" onclick="quickDispatch('surry_hills')">Surry Hills</button>
-            <button class="quick-sub" onclick="quickDispatch('newtown')">Newtown</button>
-            <button class="quick-sub" onclick="quickDispatch('glebe')">Glebe</button>
-            <button class="quick-sub" onclick="quickDispatch('balmain')">Balmain</button>
-            <button class="quick-sub" onclick="quickDispatch('paddington')">Paddington</button>
-            <button class="quick-sub" onclick="quickDispatch('darlinghurst')">Darlinghurst</button>
-            <button class="quick-sub" onclick="quickDispatch('redfern')">Redfern</button>
-            <button class="quick-sub" onclick="quickDispatch('chippendale')">Chippendale</button>
-            <button class="quick-sub" onclick="quickDispatch('erskineville')">Erskineville</button>
-            <button class="quick-sub" onclick="quickDispatch('mosman')">Mosman</button>
-            <button class="quick-sub" onclick="quickDispatch('bondi')">Bondi</button>
-            <button class="quick-sub" onclick="quickDispatch('bondi_junction')">Bondi Jn</button>
-            <button class="quick-sub" onclick="quickDispatch('manly')">Manly</button>
-            <button class="quick-sub" onclick="quickDispatch('crows_nest')">Crows Nest</button>
-            <button class="quick-sub" onclick="quickDispatch('neutral_bay')">Neutral Bay</button>
-            <button class="quick-sub" onclick="quickDispatch('marrickville')">Marrickville</button>
-            <button class="quick-sub" onclick="quickDispatch('leichhardt')">Leichhardt</button>
-            <button class="quick-sub" onclick="quickDispatch('kirribilli')">Kirribilli</button>
-            <button class="quick-sub" onclick="quickDispatch('north_sydney')">North Sydney</button>
-            <button class="quick-sub" onclick="quickDispatch('chatswood')">Chatswood</button>
-            <button class="quick-sub" onclick="quickDispatch('lane_cove')">Lane Cove</button>
-            <button class="quick-sub" onclick="quickDispatch('double_bay')">Double Bay</button>
-            <button class="quick-sub" onclick="quickDispatch('woollahra')">Woollahra</button>
-            <button class="quick-sub" onclick="quickDispatch('rose_bay')">Rose Bay</button>
-            <button class="quick-sub" onclick="quickDispatch('bronte')">Bronte</button>
-            <button class="quick-sub" onclick="quickDispatch('coogee')">Coogee</button>
-            <button class="quick-sub" onclick="quickDispatch('randwick')">Randwick</button>
-            <button class="quick-sub" onclick="quickDispatch('annandale')">Annandale</button>
-            <button class="quick-sub" onclick="quickDispatch('rozelle')">Rozelle</button>
-            <button class="quick-sub" onclick="quickDispatch('enmore')">Enmore</button>
-            <button class="quick-sub" onclick="quickDispatch('stanmore')">Stanmore</button>
-            <button class="quick-sub" onclick="quickDispatch('dulwich_hill')">Dulwich Hill</button>
-            <button class="quick-sub" onclick="quickDispatch('ashfield')">Ashfield</button>
-            <button class="quick-sub" onclick="quickDispatch('strathfield')">Strathfield</button>
-            <button class="quick-sub" onclick="quickDispatch('alexandria')">Alexandria</button>
-            <button class="quick-sub" onclick="quickDispatch('waterloo')">Waterloo</button>
-            <button class="quick-sub" onclick="quickDispatch('zetland')">Zetland</button>
-            <button class="quick-sub" onclick="quickDispatch('pyrmont')">Pyrmont</button>
-            <button class="quick-sub" onclick="quickDispatch('ultimo')">Ultimo</button>
-            <button class="quick-sub" onclick="quickDispatch('haymarket')">Haymarket</button>
-            <button class="quick-sub" onclick="quickDispatch('dee_why')">Dee Why</button>
-            <button class="quick-sub" onclick="quickDispatch('brookvale')">Brookvale</button>
-            <button class="quick-sub" onclick="quickDispatch('avalon')">Avalon</button>
-            <button class="quick-sub" onclick="quickDispatch('parramatta')">Parramatta</button>
-            <button class="quick-sub" onclick="quickDispatch('newcastle')">Newcastle</button>
+          <div class="quick-suburbs" id="suburbButtons">
+            <span style="font-size:0.68rem;color:var(--text-dim);">Loading suburbs...</span>
           </div>
           <div class="job-status" id="jobStatus"></div>
         </div>
@@ -481,6 +442,7 @@ async function verifyAndShow() {
     log('Connected to server.', 's');
     startPolling();
     loadReviewCount();
+    loadSuburbProgress();
     return true;
   } catch { return false; }
 }
@@ -603,7 +565,58 @@ function toggleLive() {
 
 function quickDispatch(suburb) {
   document.getElementById('suburbSelect').value = suburb;
+  // Quick dispatch always goes live — no dry run
+  if (!isLive) toggleLive();
   dispatch();
+}
+
+// Suburb buttons with progress
+const SUBURB_MAP = {
+  sydney_cbd:'CBD',surry_hills:'Surry Hills',newtown:'Newtown',glebe:'Glebe',balmain:'Balmain',
+  paddington:'Paddington',darlinghurst:'Darlinghurst',redfern:'Redfern',chippendale:'Chippendale',
+  erskineville:'Erskineville',mosman:'Mosman',bondi:'Bondi',bondi_junction:'Bondi Jn',manly:'Manly',
+  crows_nest:'Crows Nest',neutral_bay:'Neutral Bay',marrickville:'Marrickville',leichhardt:'Leichhardt',
+  kirribilli:'Kirribilli',north_sydney:'North Sydney',chatswood:'Chatswood',lane_cove:'Lane Cove',
+  double_bay:'Double Bay',woollahra:'Woollahra',rose_bay:'Rose Bay',bronte:'Bronte',coogee:'Coogee',
+  randwick:'Randwick',annandale:'Annandale',rozelle:'Rozelle',enmore:'Enmore',stanmore:'Stanmore',
+  dulwich_hill:'Dulwich Hill',ashfield:'Ashfield',strathfield:'Strathfield',alexandria:'Alexandria',
+  waterloo:'Waterloo',zetland:'Zetland',pyrmont:'Pyrmont',ultimo:'Ultimo',haymarket:'Haymarket',
+  dee_why:'Dee Why',brookvale:'Brookvale',avalon:'Avalon',parramatta:'Parramatta',newcastle:'Newcastle'
+};
+
+async function loadSuburbProgress() {
+  const container = document.getElementById('suburbButtons');
+  try {
+    const res = await api('/api/admin/suburb-progress');
+    const progress = await res.json();
+
+    // Index by suburb name for lookup
+    const byName = {};
+    progress.forEach(s => { byName[s.suburb] = s; });
+
+    container.innerHTML = Object.entries(SUBURB_MAP).map(([key, label]) => {
+      // Match suburb key to DB suburb name (DB uses Title Case, keys use snake_case)
+      const dbName = label; // The display name matches the DB suburb name
+      const s = byName[dbName] || { eligible: 0, called: 0, priced: 0, voicemail: 0, no_answer: 0 };
+
+      const pct = s.eligible > 0 ? Math.round(s.priced / s.eligible * 100) : 0;
+      const cls = pct >= 80 ? 'done' : s.called > 0 ? 'partial' : 'none';
+      const barColor = pct >= 80 ? 'var(--green)' : pct > 0 ? 'var(--bronze)' : 'transparent';
+      const stats = s.eligible > 0
+        ? `${s.priced}/${s.eligible}` + (s.voicemail ? ` · ${s.voicemail}vm` : '')
+        : '—';
+
+      return `<button class="quick-sub ${cls}" onclick="quickDispatch('${key}')" title="${label}: ${s.priced} priced, ${s.called} called, ${s.eligible} eligible, ${s.voicemail} voicemail">
+        <span class="qs-name">${label}</span>
+        <span class="qs-stats">${stats}</span>
+        <div class="qs-bar" style="width:${pct}%;background:${barColor};"></div>
+      </button>`;
+    }).join('');
+  } catch {
+    container.innerHTML = Object.entries(SUBURB_MAP).map(([key, label]) =>
+      `<button class="quick-sub" onclick="quickDispatch('${key}')"><span class="qs-name">${label}</span></button>`
+    ).join('');
+  }
 }
 
 async function dispatch() {
@@ -644,6 +657,7 @@ async function dispatch() {
     status.innerHTML = '✅ ' + (data.summary || 'Complete');
     log('━━━ Done ━━━', 's');
     refreshStats();
+    loadSuburbProgress();
   } catch (err) {
     status.className = 'job-status error';
     status.innerHTML = '❌ ' + err.message;

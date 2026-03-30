@@ -262,6 +262,43 @@ export async function saveUserPriceSubmission({ name, suburb, price_small, price
   if (error) throw new Error(`saveUserPriceSubmission: ${error.message}`);
 }
 
+// --- Suburb progress ---
+
+export async function getSuburbProgress() {
+  // Get all eligible cafes grouped by suburb
+  const { data: cafes, error: cafeErr } = await supabase()
+    .from("cafes")
+    .select("id, suburb, status")
+    .eq("status", "eligible");
+  if (cafeErr) throw new Error(`getSuburbProgress: ${cafeErr.message}`);
+
+  // Get all calls with their cafe's suburb
+  const { data: calls, error: callErr } = await supabase()
+    .from("price_calls")
+    .select("cafe_id, status, price_small, cafes(suburb)");
+  if (callErr) throw new Error(`getSuburbProgress: ${callErr.message}`);
+
+  // Build per-suburb stats
+  const suburbs = {};
+  cafes.forEach(c => {
+    const s = c.suburb || 'Unknown';
+    if (!suburbs[s]) suburbs[s] = { suburb: s, eligible: 0, called: 0, priced: 0, voicemail: 0, no_answer: 0, failed: 0 };
+    suburbs[s].eligible++;
+  });
+
+  calls.forEach(c => {
+    const s = c.cafes?.suburb || 'Unknown';
+    if (!suburbs[s]) suburbs[s] = { suburb: s, eligible: 0, called: 0, priced: 0, voicemail: 0, no_answer: 0, failed: 0 };
+    suburbs[s].called++;
+    if (c.status === 'completed' && c.price_small != null) suburbs[s].priced++;
+    else if (c.status === 'voicemail') suburbs[s].voicemail++;
+    else if (c.status === 'no_answer') suburbs[s].no_answer++;
+    else if (c.status === 'failed') suburbs[s].failed++;
+  });
+
+  return Object.values(suburbs).sort((a, b) => a.suburb.localeCompare(b.suburb));
+}
+
 // --- Lightweight queries ---
 
 export async function getAvgPrice() {

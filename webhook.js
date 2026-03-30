@@ -1,7 +1,7 @@
 import express from "express";
 import { timingSafeEqual } from "node:crypto";
 import { spawn } from "node:child_process";
-import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission, getRecentCalls, getNeedsReviewCalls, updateCallPrice, updateCallStatus, deleteCall, searchCafes, updateCafe, deleteCafe, getSubscribers, deleteSubscriber, getUserSubmissions, deleteUserSubmission, retryCall, bulkRetryFailed, getAvgPrice, getReviewCount } from "./db.js";
+import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission, getRecentCalls, getNeedsReviewCalls, updateCallPrice, updateCallStatus, deleteCall, searchCafes, updateCafe, deleteCafe, getSubscribers, deleteSubscriber, getUserSubmissions, deleteUserSubmission, retryCall, bulkRetryFailed, getAvgPrice, getReviewCount, getSuburbProgress } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync } from "node:fs";
@@ -626,6 +626,24 @@ app.get("/api/admin/logs", verifyAdmin, async (req, res) => {
 
   // Default: in-memory ring buffer
   res.json({ source: 'ring', lines: LOG_RING.slice(-lines) });
+});
+
+// Admin suburb progress — per-suburb call stats (cached 30s)
+let suburbProgressCache = null;
+let suburbProgressCacheTime = 0;
+
+app.get("/api/admin/suburb-progress", verifyAdmin, async (req, res) => {
+  try {
+    const now = Date.now();
+    if (suburbProgressCache && (now - suburbProgressCacheTime) < 30000) {
+      return res.json(suburbProgressCache);
+    }
+    suburbProgressCache = await getSuburbProgress();
+    suburbProgressCacheTime = now;
+    res.json(suburbProgressCache);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Admin dispatch — spawns index.js as child process
