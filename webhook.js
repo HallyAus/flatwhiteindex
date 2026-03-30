@@ -1,5 +1,6 @@
 import express from "express";
 import { timingSafeEqual } from "node:crypto";
+import { spawn } from "node:child_process";
 import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -462,6 +463,125 @@ app.post("/api/submit-price", async (req, res) => {
     console.error("Price submission error:", err.message);
     res.status(500).json({ error: "Failed to save submission" });
   }
+});
+
+// --- Admin panel (protected by ADMIN_SECRET) ---
+
+function verifyAdmin(req, res, next) {
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret) return res.status(503).json({ error: "Admin not configured" });
+
+  const provided = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+  if (!provided || !safeCompare(provided, secret)) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
+  next();
+}
+
+// Admin status — returns stats + avg price
+app.get("/api/admin/status", verifyAdmin, async (req, res) => {
+  try {
+    const [callStats, priceData] = await Promise.all([
+      getCallStats(),
+      getPriceStats(),
+    ]);
+    const allPrices = priceData.map(r => r.price_small).filter(Boolean);
+    const avgPrice = allPrices.length > 0
+      ? Math.round(allPrices.reduce((a, b) => a + b, 0) / allPrices.length * 100) / 100
+      : 0;
+    res.json({ ...callStats, avg_price: avgPrice });
+  } catch (err) {
+    console.error("Admin status error:", err.message);
+    res.status(500).json({ error: "Failed to load stats" });
+  }
+});
+
+// Admin dispatch — spawns index.js as child process
+let activeJob = null;
+
+app.post("/api/admin/dispatch", verifyAdmin, async (req, res) => {
+  if (!rateLimit('admin-dispatch', 2)) {
+    return res.status(429).json({ error: "Too many requests — wait a moment" });
+  }
+
+  if (activeJob) {
+    return res.status(409).json({ error: "A job is already running" });
+  }
+
+  const { suburb, batchSize, dryRun } = req.body;
+  const args = [];
+
+  if (suburb && typeof suburb === 'string' && /^[a-z_]+$/.test(suburb)) {
+    args.push(`--suburb=${suburb}`);
+  }
+
+  const size = Math.min(Math.max(parseInt(batchSize) || 10, 1), 50);
+  args.push(`--batch-size=${size}`);
+
+  if (dryRun !== false) {
+    args.push('--dry-run');
+  }
+
+  console.log(`\n🔧 Admin dispatch: node index.js ${args.join(' ')}`);
+
+  const output = [];
+  const child = spawn('node', ['index.js', ...args], {
+    cwd: __dirname,
+    env: { ...process.env },
+    stdio: ['ignore', 'pipe', 'pipe'],
+  });
+
+  activeJob = { pid: child.pid, started: Date.now(), args };
+
+  child.stdout.on('data', (data) => {
+    const lines = data.toString().split('\n').filter(Boolean);
+    lines.forEach(l => {
+      output.push(l);
+      console.log(`  [dispatch] ${l}`);
+    });
+  });
+
+  child.stderr.on('data', (data) => {
+    const lines = data.toString().split('\n').filter(Boolean);
+    lines.forEach(l => {
+      output.push(`[stderr] ${l}`);
+      console.warn(`  [dispatch:err] ${l}`);
+    });
+  });
+
+  child.on('close', (code) => {
+    const duration = ((Date.now() - activeJob.started) / 1000).toFixed(1);
+    console.log(`  [dispatch] Exited with code ${code} in ${duration}s`);
+    activeJob = null;
+  });
+
+  // Wait for the process to finish (up to 5 minutes)
+  const exitCode = await new Promise((resolve) => {
+    const timeout = setTimeout(() => {
+      child.kill();
+      resolve(-1);
+    }, 300000);
+    child.on('close', (code) => {
+      clearTimeout(timeout);
+      resolve(code);
+    });
+  });
+
+  const summary = exitCode === 0
+    ? `Completed in ${((Date.now() - Date.now()) / 1000).toFixed(1)}s`
+    : `Exited with code ${exitCode}`;
+
+  res.json({
+    ok: exitCode === 0,
+    exitCode,
+    summary,
+    output: output.join('\n'),
+  });
+});
+
+// Redirect /admin to admin.html
+app.get("/admin", (req, res) => {
+  res.sendFile(join(__dirname, 'public', 'admin.html'));
 });
 
 // [SECURITY] Health endpoint — verifies DB connectivity

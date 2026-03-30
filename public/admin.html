@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Flat White Index</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --cream: #F7F3ED; --espresso: #2C1A0E; --foam: #FAF8F4;
+    --milk: #EDE8E0; --bronze: #8E5A28; --green: #3A7D44;
+    --red: #C0392B; --ocean: #2E6B8A; --mid: #6B5840;
+    --border: rgba(107, 58, 31, 0.18); --text-muted: #6A5238;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--espresso); color: var(--cream); min-height: 100vh; }
+
+  /* LOGIN */
+  .login-page { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+  .login-box { background: var(--foam); color: var(--espresso); border-radius: 16px; padding: 2.5rem; max-width: 380px; width: 90%; }
+  .login-box h1 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .login-box p { font-size: 0.82rem; color: var(--mid); margin-bottom: 1.5rem; }
+  .login-box input { width: 100%; padding: 0.75rem 1rem; border: 1px solid var(--border); border-radius: 8px; font-size: 0.9rem; margin-bottom: 1rem; background: white; }
+  .login-box input:focus { outline: 2px solid var(--ocean); outline-offset: 2px; border-color: var(--ocean); }
+  .login-box button { width: 100%; padding: 0.75rem; background: var(--espresso); color: var(--cream); border: none; border-radius: 8px; font-size: 0.9rem; font-weight: 500; cursor: pointer; }
+  .login-box button:hover { background: #4A2E1A; }
+  .login-error { color: var(--red); font-size: 0.82rem; margin-bottom: 1rem; display: none; }
+
+  /* ADMIN DASHBOARD */
+  .admin { display: none; max-width: 900px; margin: 0 auto; padding: 1.5rem; }
+  .admin.active { display: block; }
+  .login-page.hidden { display: none; }
+
+  .admin-header { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0 1.5rem; border-bottom: 1px solid rgba(247,243,237,0.15); margin-bottom: 1.5rem; }
+  .admin-header h1 { font-size: 1.3rem; }
+  .logout-btn { background: none; border: 1px solid rgba(247,243,237,0.3); color: var(--cream); padding: 0.4rem 1rem; border-radius: 6px; font-size: 0.78rem; cursor: pointer; }
+  .logout-btn:hover { background: rgba(247,243,237,0.1); }
+
+  /* STATS BAR */
+  .stats-bar { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+  @media (max-width: 600px) { .stats-bar { grid-template-columns: repeat(2, 1fr); } }
+  .stat { background: rgba(247,243,237,0.08); border: 1px solid rgba(247,243,237,0.1); border-radius: 10px; padding: 1rem; }
+  .stat-label { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(247,243,237,0.5); margin-bottom: 4px; }
+  .stat-val { font-size: 1.6rem; font-weight: 700; }
+
+  /* DISPATCH PANEL */
+  .panel { background: rgba(247,243,237,0.06); border: 1px solid rgba(247,243,237,0.12); border-radius: 12px; padding: 1.5rem; margin-bottom: 1.5rem; }
+  .panel h2 { font-size: 1rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .panel-row { display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: end; }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(247,243,237,0.5); }
+  .field select, .field input { padding: 0.6rem 0.8rem; border: 1px solid rgba(247,243,237,0.2); background: rgba(247,243,237,0.08); color: var(--cream); border-radius: 6px; font-size: 0.85rem; min-width: 140px; }
+  .field select:focus, .field input:focus { outline: 2px solid var(--ocean); }
+  .field select option { background: var(--espresso); color: var(--cream); }
+
+  .dispatch-btn { padding: 0.6rem 1.5rem; border: none; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; min-height: 44px; transition: all 0.15s; }
+  .dispatch-btn.dry { background: var(--ocean); color: white; }
+  .dispatch-btn.dry:hover { background: #3A8AAF; }
+  .dispatch-btn.live { background: var(--red); color: white; }
+  .dispatch-btn.live:hover { background: #D94433; }
+  .dispatch-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .toggle-row { display: flex; align-items: center; gap: 0.5rem; }
+  .toggle { position: relative; width: 44px; height: 24px; background: rgba(247,243,237,0.2); border-radius: 12px; cursor: pointer; transition: background 0.2s; border: none; }
+  .toggle.on { background: var(--red); }
+  .toggle::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; background: white; border-radius: 50%; transition: transform 0.2s; }
+  .toggle.on::after { transform: translateX(20px); }
+  .toggle-label { font-size: 0.82rem; color: rgba(247,243,237,0.7); }
+  .live-warning { font-size: 0.72rem; color: var(--red); font-weight: 500; display: none; }
+  .live-warning.show { display: block; }
+
+  /* JOB STATUS */
+  .job-status { margin-top: 1rem; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.82rem; display: none; }
+  .job-status.running { display: block; background: rgba(46,107,138,0.2); border: 1px solid rgba(46,107,138,0.4); }
+  .job-status.done { display: block; background: rgba(58,125,68,0.2); border: 1px solid rgba(58,125,68,0.4); }
+  .job-status.error { display: block; background: rgba(192,57,43,0.2); border: 1px solid rgba(192,57,43,0.4); }
+
+  /* LOG VIEWER */
+  .log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+  .log-header h2 { font-size: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+  .clear-btn { background: none; border: 1px solid rgba(247,243,237,0.2); color: rgba(247,243,237,0.5); padding: 0.3rem 0.75rem; border-radius: 4px; font-size: 0.72rem; cursor: pointer; }
+  .clear-btn:hover { color: var(--cream); border-color: rgba(247,243,237,0.4); }
+
+  .log-viewer {
+    background: #1A1008; border: 1px solid rgba(247,243,237,0.1); border-radius: 8px;
+    padding: 1rem; font-family: 'SF Mono', 'Fira Code', monospace; font-size: 0.78rem;
+    line-height: 1.6; max-height: 500px; overflow-y: auto; white-space: pre-wrap; word-break: break-word;
+    color: rgba(247,243,237,0.8);
+  }
+  .log-viewer::-webkit-scrollbar { width: 6px; }
+  .log-viewer::-webkit-scrollbar-track { background: transparent; }
+  .log-viewer::-webkit-scrollbar-thumb { background: rgba(247,243,237,0.15); border-radius: 3px; }
+
+  .log-line { margin-bottom: 2px; }
+  .log-line.info { color: rgba(247,243,237,0.7); }
+  .log-line.success { color: #6BCB77; }
+  .log-line.warn { color: #F0C040; }
+  .log-line.error { color: #E74C3C; }
+  .log-line.dispatch { color: #5DADE2; }
+  .log-line.timestamp { color: rgba(247,243,237,0.35); }
+
+  .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+  .dot.green { background: var(--green); }
+  .dot.red { background: var(--red); }
+  .dot.orange { background: #F0C040; }
+  .dot.blue { background: var(--ocean); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-page" id="loginPage">
+  <div class="login-box">
+    <h1>Flat White Index</h1>
+    <p>Admin access — enter your secret key to continue.</p>
+    <div class="login-error" id="loginError">Invalid key. Try again.</div>
+    <form onsubmit="login(event)">
+      <input type="password" id="secretInput" placeholder="Admin secret" autocomplete="off" autofocus>
+      <button type="submit">Sign in</button>
+    </form>
+  </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div class="admin" id="adminDash">
+  <div class="admin-header">
+    <h1>☕ Admin</h1>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-bar" id="statsBar">
+    <div class="stat"><div class="stat-label">Cafes found</div><div class="stat-val" id="sCafes">—</div></div>
+    <div class="stat"><div class="stat-label">Calls made</div><div class="stat-val" id="sCalls">—</div></div>
+    <div class="stat"><div class="stat-label">Prices collected</div><div class="stat-val" id="sPrices">—</div></div>
+    <div class="stat"><div class="stat-label">Avg price</div><div class="stat-val" id="sAvg">—</div></div>
+  </div>
+
+  <!-- DISPATCH -->
+  <div class="panel">
+    <h2>📞 Dispatch Calls</h2>
+    <div class="panel-row">
+      <div class="field">
+        <label>Suburb</label>
+        <select id="suburbSelect">
+          <option value="">All Sydney (grid)</option>
+          <option value="sydney_cbd">Sydney CBD</option>
+          <option value="surry_hills">Surry Hills</option>
+          <option value="newtown">Newtown</option>
+          <option value="glebe">Glebe</option>
+          <option value="balmain">Balmain</option>
+          <option value="paddington">Paddington</option>
+          <option value="darlinghurst">Darlinghurst</option>
+          <option value="redfern">Redfern</option>
+          <option value="chippendale">Chippendale</option>
+          <option value="erskineville">Erskineville</option>
+          <option value="mosman">Mosman</option>
+          <option value="bondi">Bondi</option>
+          <option value="bondi_junction">Bondi Junction</option>
+          <option value="manly">Manly</option>
+          <option value="crows_nest">Crows Nest</option>
+          <option value="neutral_bay">Neutral Bay</option>
+          <option value="marrickville">Marrickville</option>
+          <option value="leichhardt">Leichhardt</option>
+          <option value="kirribilli">Kirribilli</option>
+          <option value="north_sydney">North Sydney</option>
+          <option value="chatswood">Chatswood</option>
+          <option value="lane_cove">Lane Cove</option>
+          <option value="double_bay">Double Bay</option>
+          <option value="woollahra">Woollahra</option>
+          <option value="rose_bay">Rose Bay</option>
+          <option value="bronte">Bronte</option>
+          <option value="coogee">Coogee</option>
+          <option value="randwick">Randwick</option>
+          <option value="annandale">Annandale</option>
+          <option value="rozelle">Rozelle</option>
+          <option value="enmore">Enmore</option>
+          <option value="stanmore">Stanmore</option>
+          <option value="dulwich_hill">Dulwich Hill</option>
+          <option value="ashfield">Ashfield</option>
+          <option value="strathfield">Strathfield</option>
+          <option value="alexandria">Alexandria</option>
+          <option value="waterloo">Waterloo</option>
+          <option value="zetland">Zetland</option>
+          <option value="pyrmont">Pyrmont</option>
+          <option value="ultimo">Ultimo</option>
+          <option value="haymarket">Haymarket</option>
+          <option value="dee_why">Dee Why</option>
+          <option value="brookvale">Brookvale</option>
+          <option value="avalon">Avalon</option>
+          <option value="parramatta">Parramatta</option>
+          <option value="newcastle">Newcastle</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Batch size</label>
+        <input type="number" id="batchSize" value="10" min="1" max="50" style="width:80px;">
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <div class="toggle-row">
+          <button type="button" class="toggle" id="liveToggle" onclick="toggleLive()"></button>
+          <span class="toggle-label" id="modeLabel">Dry run</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>&nbsp;</label>
+        <button class="dispatch-btn dry" id="dispatchBtn" onclick="dispatch()">🔍 Dry Run</button>
+      </div>
+    </div>
+    <div class="live-warning" id="liveWarning">⚠️ LIVE mode — real calls will be made and billed</div>
+    <div class="job-status" id="jobStatus"></div>
+  </div>
+
+  <!-- LOG VIEWER -->
+  <div class="panel">
+    <div class="log-header">
+      <h2><span class="dot green" id="statusDot"></span> Log</h2>
+      <button class="clear-btn" onclick="clearLog()">Clear</button>
+    </div>
+    <div class="log-viewer" id="logViewer">Ready.\n</div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let token = sessionStorage.getItem('admin_token') || '';
+let isLive = false;
+let jobRunning = false;
+let pollTimer = null;
+
+// Auto-login if token exists
+if (token) { verifyAndShow(); }
+
+async function login(e) {
+  e.preventDefault();
+  token = document.getElementById('secretInput').value.trim();
+  if (!token) return;
+
+  const ok = await verifyAndShow();
+  if (!ok) {
+    document.getElementById('loginError').style.display = 'block';
+    token = '';
+  }
+}
+
+async function verifyAndShow() {
+  try {
+    const res = await fetch(API + '/api/admin/status', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+
+    sessionStorage.setItem('admin_token', token);
+    document.getElementById('loginPage').classList.add('hidden');
+    document.getElementById('adminDash').classList.add('active');
+    updateStats(data);
+    appendLog('Authenticated. Connected to server.', 'success');
+    startPolling();
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('admin_token');
+  token = '';
+  stopPolling();
+  document.getElementById('loginPage').classList.remove('hidden');
+  document.getElementById('adminDash').classList.remove('active');
+  document.getElementById('secretInput').value = '';
+}
+
+function updateStats(data) {
+  document.getElementById('sCafes').textContent = data.cafes_total || 0;
+  document.getElementById('sCalls').textContent = data.calls_total || 0;
+  document.getElementById('sPrices').textContent = data.completed || 0;
+  document.getElementById('sAvg').textContent = data.avg_price ? '$' + data.avg_price : '—';
+}
+
+function toggleLive() {
+  isLive = !isLive;
+  const toggle = document.getElementById('liveToggle');
+  const label = document.getElementById('modeLabel');
+  const btn = document.getElementById('dispatchBtn');
+  const warn = document.getElementById('liveWarning');
+
+  toggle.classList.toggle('on', isLive);
+  label.textContent = isLive ? 'LIVE' : 'Dry run';
+  btn.textContent = isLive ? '📞 Dispatch Live' : '🔍 Dry Run';
+  btn.className = 'dispatch-btn ' + (isLive ? 'live' : 'dry');
+  warn.classList.toggle('show', isLive);
+}
+
+async function dispatch() {
+  if (jobRunning) return;
+  const suburb = document.getElementById('suburbSelect').value;
+  const batchSize = parseInt(document.getElementById('batchSize').value) || 10;
+  const dryRun = !isLive;
+
+  if (isLive && !confirm('This will make REAL phone calls that cost money. Continue?')) return;
+
+  jobRunning = true;
+  const btn = document.getElementById('dispatchBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Running...';
+
+  const status = document.getElementById('jobStatus');
+  status.className = 'job-status running';
+  status.innerHTML = '<span class="dot blue"></span> Dispatching ' + (dryRun ? '(dry run)' : '(LIVE)') + '...';
+
+  appendLog('', 'info');
+  appendLog('━━━ Dispatch started ━━━', 'dispatch');
+  appendLog(`Suburb: ${suburb || 'all'} | Batch: ${batchSize} | Mode: ${dryRun ? 'DRY RUN' : 'LIVE'}`, 'info');
+
+  try {
+    const res = await fetch(API + '/api/admin/dispatch', {
+      method: 'POST',
+      headers: {
+        'Authorization': 'Bearer ' + token,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ suburb, batchSize, dryRun }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data.error || 'Dispatch failed');
+    }
+
+    // Stream the output lines
+    if (data.output) {
+      data.output.split('\n').forEach(line => {
+        if (!line.trim()) return;
+        let cls = 'info';
+        if (line.includes('✓') || line.includes('✅')) cls = 'success';
+        else if (line.includes('⚠️') || line.includes('❌')) cls = 'warn';
+        else if (line.includes('📞') || line.includes('Dispatch')) cls = 'dispatch';
+        appendLog(line, cls);
+      });
+    }
+
+    status.className = 'job-status done';
+    status.innerHTML = '<span class="dot green"></span> ' + (data.summary || 'Complete');
+    appendLog('━━━ Dispatch complete ━━━', 'success');
+
+    // Refresh stats
+    refreshStats();
+  } catch (err) {
+    status.className = 'job-status error';
+    status.innerHTML = '<span class="dot red"></span> Error: ' + err.message;
+    appendLog('ERROR: ' + err.message, 'error');
+  } finally {
+    jobRunning = false;
+    btn.disabled = false;
+    btn.textContent = isLive ? '📞 Dispatch Live' : '🔍 Dry Run';
+  }
+}
+
+function appendLog(text, cls = 'info') {
+  const viewer = document.getElementById('logViewer');
+  const time = new Date().toLocaleTimeString('en-AU', { hour12: false });
+  const line = document.createElement('div');
+  line.className = 'log-line ' + cls;
+  line.textContent = (text ? `[${time}] ${text}` : '');
+  viewer.appendChild(line);
+  viewer.scrollTop = viewer.scrollHeight;
+}
+
+function clearLog() {
+  document.getElementById('logViewer').innerHTML = '';
+  appendLog('Log cleared.', 'info');
+}
+
+async function refreshStats() {
+  try {
+    const res = await fetch(API + '/api/admin/status', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) updateStats(await res.json());
+  } catch {}
+}
+
+function startPolling() {
+  stopPolling();
+  pollTimer = setInterval(refreshStats, 30000);
+}
+
+function stopPolling() {
+  if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+}
+
+// Poll for job logs if a job was started
+async function pollLogs() {
+  try {
+    const res = await fetch(API + '/api/admin/logs', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data.lines && data.lines.length > 0) {
+        data.lines.forEach(l => appendLog(l.text, l.level || 'info'));
+      }
+    }
+  } catch {}
+}
+</script>
+</body>
+</html>
