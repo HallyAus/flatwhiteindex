@@ -1869,7 +1869,7 @@ function markerRadius(count) {
 function initMap(suburbs) {
   map = L.map('leaflet-map', {
     zoomControl: true,
-    scrollWheelZoom: false,
+    scrollWheelZoom: true,
   });
 
   // CartoDB Positron — light, clean, warmed via CSS filter
@@ -1942,16 +1942,16 @@ function initMap(suburbs) {
     markers[s.name] = marker;
   });
 
-  // Fit map to show all markers
-  if (suburbs.length > 0) {
-    const bounds = L.latLngBounds(suburbs.map(s => [s.lat, s.lng]));
-    map.fitBounds(bounds, { padding: [30, 30] });
-  } else {
-    map.setView([-33.87, 151.21], 12);
-  }
-
-  // Force Leaflet to recalculate container size
-  setTimeout(() => map.invalidateSize(), 100);
+  // Force Leaflet to recalculate container size, then fit to all markers
+  setTimeout(() => {
+    map.invalidateSize();
+    if (suburbs.length > 0) {
+      const bounds = L.latLngBounds(suburbs.map(s => [s.lat, s.lng]));
+      map.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
+    } else {
+      map.setView([-33.87, 151.21], 12);
+    }
+  }, 100);
 }
 
 // Add discovered (unprice) cafes as grey pulsing dots
