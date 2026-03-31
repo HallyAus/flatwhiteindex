@@ -1725,14 +1725,20 @@
 
   <!-- BOTTOM GRID -->
   <section class="bottom-grid">
-    <!-- PRICE DISTRIBUTION -->
+    <!-- PRICE DISTRIBUTION + METHODOLOGY -->
     <div class="panel">
       <h2 class="section-title">Price distribution</h2>
-      <div class="dist-chart" id="distChart">
-        <!-- populated by JS -->
-      </div>
-      <div id="priceInsights" style="padding:0.6rem 1rem; border-top:1px solid var(--border); font-size:0.78rem; color:var(--mid); line-height:1.7;">
-        <!-- populated by JS -->
+      <div class="dist-chart" id="distChart"></div>
+      <div id="priceInsights" style="padding:0.5rem 1rem; border-top:1px solid var(--border); font-size:0.78rem; color:var(--mid); line-height:1.6;"></div>
+
+      <div style="border-top:1px solid var(--border); padding:0.75rem 1rem;">
+        <h3 style="font-family:'Playfair Display',serif; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">How we collect this data</h3>
+        <div style="font-size:0.78rem; color:var(--mid); line-height:1.6;">
+          <p style="margin-bottom:0.4rem;"><strong>📞 AI voice calls.</strong> An AI agent phones each café and asks one question: "How much is a regular flat white?" Handles voicemail, hang-ups, and cafés that don't serve them.</p>
+          <p style="margin-bottom:0.4rem;"><strong>🔍 Auto-discovery.</strong> Cafés found via public business listings. Calls go out in batches during business hours, weekdays only. Prices verified before publishing.</p>
+          <p style="margin-bottom:0.4rem;"><strong>🚫 Chains excluded.</strong> Only independent cafés. <span style="font-size:0.7rem; opacity:0.7;">Starbucks, McCafé, Gloria Jean's, The Coffee Club, Hudson's, Zarraffa's, Boost Juice, Donut King, Michel's, Jamaica Blue, Coffee Guru, Muzz Buzz, Soul Origin.</span></p>
+          <p style="margin-bottom:0;"><strong>🗺️ What's next.</strong> Expanding across Greater Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal(); return false;" style="color:var(--bronze);">Request a suburb →</a></p>
+        </div>
       </div>
     </div>
 
@@ -1812,29 +1818,8 @@
     </div>
   </section>
 
-  <!-- ABOUT / METHODOLOGY -->
-  <section class="about" id="about">
-    <h2>How we built this</h2>
-    <div class="about-grid">
-      <div class="about-block">
-        <h3>The calls</h3>
-        <p>An AI voice agent phones each café directly and asks one question: "How much is a regular flat white?" It handles voicemail, cafés that don't serve them, and the occasional hang-up. Each call averages 45 seconds.</p>
-      </div>
-      <div class="about-block">
-        <h3>The process</h3>
-        <p>Cafés are discovered automatically from public business listings. Calls go out in small batches during business hours, weekdays only. Prices are extracted from the call transcripts and verified before publishing.</p>
-      </div>
-      <div class="about-block">
-        <h3>The data</h3>
-        <p>Only independent cafés — chains are excluded. Prices updated live as calls complete. Sample sizes shown per suburb.</p>
-        <p style="font-size:0.75rem; color:var(--mid); margin-top:0.5rem;"><strong>Excluded chains:</strong> Starbucks, McCafé, Gloria Jean's, Hudson's, Zarraffa's, The Coffee Club, Boost Juice, Donut King, Michel's Patisserie, Jamaica Blue, Coffee Guru, Muzz Buzz, Soul Origin.</p>
-      </div>
-      <div class="about-block">
-        <h3>What's next</h3>
-        <p>Phase 2 expands to Greater Sydney — Eastern Suburbs, North Shore, Northern Beaches. Phase 3 hits <a href="/melbourne.html">Melbourne</a>. The goal: every independent café in Australia's major cities, priced and mapped. Got a suburb you want us to call? <a href="#" onclick="openReconModal(); return false;">Request it here.</a></p>
-      </div>
-    </div>
-  </section>
+  <!-- About anchor for nav links -->
+  <div id="about"></div>
 
   <!-- EMBED -->
   <details class="embed-section">
@@ -1887,7 +1872,7 @@
     </div>
     <div style="border-top:1px solid var(--border); margin-top:0.75rem; padding-top:0.75rem; text-align:center;">
       <span class="footer-muted" style="font-size:0.72rem;">Created by
-        <a href="https://www.linkedin.com/in/danielhallau/" target="_blank" rel="noopener">Daniel Hallau</a> ·
+        <a href="https://www.linkedin.com/in/danielhallau/" target="_blank" rel="noopener">Daniel Hall</a> ·
         <a href="https://www.linkedin.com/in/richardkelsey/" target="_blank" rel="noopener">Richard Kelsey</a> ·
         <a href="https://www.linkedin.com/in/geoffhuens/" target="_blank" rel="noopener">Geoff Huens</a>
       </span>
