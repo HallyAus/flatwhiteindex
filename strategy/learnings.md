@@ -11,6 +11,14 @@ Each entry: `[YYYY-MM-DD] Learning — Context`
 
 <!-- Claude: add new entries at the top -->
 
+- [2026-03-31] process.exit(0) in deploy endpoint kills the HTTP connection before response flushes — use res.on('finish') + setTimeout, or separate deploy from restart
+- [2026-03-31] Leaflet CSS preload onload trick fails on Firefox Android — use sync stylesheet link instead
+- [2026-03-31] initMap variable scope: renamed param from 'suburbs' to 'items' but fitBounds still referenced 'suburbs' — always check variable names after refactoring function signatures
+- [2026-03-31] Supabase FK join returns null after migration drops/recreates FK — run NOTIFY pgrst, 'reload schema' to refresh PostgREST cache
+- [2026-03-31] prices_collected should count rows with price_small != null, not just status=completed — many completed calls have no extracted price
+- [2026-03-31] Voice prompt needs explicit "STOP and WAIT" instructions — without them the AI agent rushes through steps and asks price before cafe confirms identity
+- [2026-03-31] X-Frame-Options: SAMEORIGIN blocks embedding via iframe — need frame-ancestors * in CSP instead
+- [2026-03-31] Guinndex.ai inspiration: crowdsourced contributions, regional grouping, premium vs budget framing, transparent methodology
 - [2026-03-29] specs/ directory is gitignored — must use `git add -f` to add files in specs/migrations/
 - [2026-03-29] Supabase silently truncates results at 1000 rows without pagination — always use .range() loop for any query that could exceed 1000
 - [2026-03-29] String `===` comparison for secrets is vulnerable to timing attacks — use crypto.timingSafeEqual
