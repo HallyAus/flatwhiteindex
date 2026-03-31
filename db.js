@@ -397,7 +397,7 @@ export async function deleteCall(callId) {
 export async function searchCafes(query = '', statusFilter = null, limit = 100) {
   let q = supabase()
     .from("cafes")
-    .select("id, google_place_id, name, address, suburb, phone, lat, lng, google_rating, status, exclude_reason, created_at")
+    .select("id, google_place_id, name, address, suburb, phone, lat, lng, google_rating, status, exclude_reason, created_at, price_calls(id, price_small, price_large, status)")
     .order("name")
     .limit(limit);
 

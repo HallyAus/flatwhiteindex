@@ -849,7 +849,7 @@ app.post("/api/admin/dispatch", verifyAdmin, async (req, res) => {
 app.get("/api/admin/calls", verifyAdmin, async (req, res) => {
   try {
     const status = req.query.status || null;
-    const limit = Math.min(parseInt(req.query.limit) || 50, 200);
+    const limit = Math.min(parseInt(req.query.limit) || 200, 500);
     const data = await getRecentCalls(limit, status);
     res.json(data);
   } catch (err) {

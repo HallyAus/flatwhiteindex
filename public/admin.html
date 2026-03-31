@@ -317,7 +317,7 @@
         </div>
         <div style="overflow-x:auto;">
           <table class="tbl">
-            <thead><tr><th>Name</th><th>Suburb</th><th>Phone</th><th>Rating</th><th>Status</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Name</th><th>Suburb</th><th>Phone</th><th>Rating</th><th>Price</th><th>Status</th><th>Actions</th></tr></thead>
             <tbody id="cafesBody"><tr><td colspan="6" class="empty"><div class="empty-icon">☕</div>Loading...</td></tr></tbody>
           </table>
         </div>
@@ -785,7 +785,7 @@ async function loadCalls() {
   const status = document.getElementById('callStatusFilter').value;
   const body = document.getElementById('callsBody');
   try {
-    const res = await api('/api/admin/calls?limit=100' + (status ? '&status=' + status : ''));
+    const res = await api('/api/admin/calls?limit=500' + (status ? '&status=' + status : ''));
     const calls = await res.json();
     if (!calls.length) { body.innerHTML = '<tr><td colspan="7" class="empty"><div class="empty-icon">📞</div>No calls found</td></tr>'; return; }
     body.innerHTML = calls.map(c => `<tr>
@@ -850,21 +850,27 @@ async function loadCafes() {
   try {
     const res = await api('/api/admin/cafes?limit=200' + (q ? '&q=' + encodeURIComponent(q) : '') + (status ? '&status=' + status : ''));
     const cafes = await res.json();
-    if (!cafes.length) { body.innerHTML = '<tr><td colspan="6" class="empty"><div class="empty-icon">☕</div>No cafes found</td></tr>'; return; }
+    if (!cafes.length) { body.innerHTML = '<tr><td colspan="7" class="empty"><div class="empty-icon">☕</div>No cafes found</td></tr>'; return; }
     cafes.forEach(c => cafeCache[c.id] = c);
-    body.innerHTML = cafes.map(c => `<tr>
+    body.innerHTML = cafes.map(c => {
+      const call = (c.price_calls || []).find(p => p.status === 'completed' && p.price_small);
+      const price = call ? '$' + call.price_small : '—';
+      const callId = call ? call.id : null;
+      return `<tr>
       <td>${esc(c.name)}</td>
       <td>${esc(c.suburb || '—')}</td>
       <td class="mono">${esc(c.phone || '—')}</td>
       <td>${c.google_rating || '—'}</td>
+      <td>${price} ${callId ? `<button class="btn btn-ghost btn-sm" onclick="editCallPrice('${callId}',${call.price_small})">✏</button>` : ''}</td>
       <td><span class="badge badge-${c.status || 'discovered'}">${c.status || 'discovered'}</span></td>
       <td>
         <button class="btn btn-ghost btn-sm" onclick="editCafe('${c.id}')">Edit</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleCafeStatus('${c.id}','${c.status}')">${c.status === 'excluded' ? '✓' : '✕'}</button>
         <button class="btn btn-ghost btn-sm" onclick="if(confirm('Delete cafe and all its calls?'))deleteCafeRow('${c.id}')">🗑</button>
       </td>
-    </tr>`).join('');
-  } catch (err) { body.innerHTML = '<tr><td colspan="6" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
+    </tr>`;
+    }).join('');
+  } catch (err) { body.innerHTML = '<tr><td colspan="7" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
 }
 
 function editCafe(id) {
