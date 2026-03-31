@@ -61,6 +61,7 @@
 
   body {
     font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
     background: var(--cream);
     color: var(--espresso);
     min-height: 100vh;
@@ -250,7 +251,7 @@
 
   .finding-icon { font-size: 1.2rem; flex-shrink: 0; line-height: 1.5; }
 
-  .finding-text {
+  .finding-text { font-size: 0.92rem;
     font-size: 0.88rem;
     line-height: 1.55;
     color: var(--espresso);
@@ -467,9 +468,9 @@
     width: 18px; flex-shrink: 0; text-align: right;
   }
 
-  .suburb-name { flex: 1; font-size: 0.88rem; font-weight: 400; }
+  .suburb-name { flex: 1; font-size: 0.92rem; font-weight: 400; }
 
-  .suburb-price {
+  .suburb-price { font-size: 1.05rem;
     font-family: 'Playfair Display', serif;
     font-size: 1rem; font-weight: 600;
   }
@@ -572,7 +573,7 @@
     flex-shrink: 0;
   }
 
-  .find-name {
+  .find-name { font-size: 0.9rem;
     flex: 1; font-size: 0.85rem; font-weight: 400;
   }
   .find-suburb { font-size: 0.75rem; color: var(--text-muted); }
@@ -593,7 +594,7 @@
     border-radius: 0;
   }
 
-  .find-price {
+  .find-price { font-size: 1.05rem;
     font-family: 'Playfair Display', serif;
     font-size: 1rem; font-weight: 600;
     color: var(--green);
@@ -1225,25 +1226,25 @@
   /* UX DENSITY — tighten all spacing */
   header { padding: 1rem 0 0.75rem; align-items: center; gap: 0.5rem; }
   .cup-icon, .cup-icon svg { width: 72px; height: 72px; }
-  h1 { font-size: 2rem; }
-  .tagline { font-size: 0.72rem; margin-top: 1px; }
+  h1 { font-size: 2.2rem; }
+  .tagline { font-size: 0.78rem; margin-top: 1px; }
   .updated-badge { font-size: 0.65rem; padding: 4px 10px; }
   .hero { padding: 0.6rem 0 0.25rem; }
-  .hero-lede { font-size: 0.92rem; color: var(--mid); }
+  .hero-lede { font-size: 1.05rem; color: var(--mid); }
   .hero-insight { margin-top: 0.6rem; padding: 0.5rem 1rem; gap: 0.6rem; }
   .insight-number { font-size: 1.8rem; }
   .insight-text { font-size: 0.82rem; }
   .stats-row { gap: 0.6rem; padding: 0.75rem 0; }
   .stat-card { padding: 0.85rem 1rem 0.7rem; border-radius: 10px; }
-  .stat-value { font-size: 1.6rem; }
-  .stat-card.hero-stat .stat-value { font-size: 2.2rem; }
-  .stat-label { margin-bottom: 3px; }
+  .stat-value { font-size: 1.8rem; }
+  .stat-card.hero-stat .stat-value { font-size: 2.5rem; }
+  .stat-label { margin-bottom: 3px; font-size: 0.72rem; }
   .findings { padding: 1rem 0 0.5rem; }
   .findings-title { font-size: 1rem; margin-bottom: 0.75rem; }
   .finding { padding: 0.85rem; gap: 0.5rem; }
   .main-grid { gap: 1rem; padding-top: 1rem; }
   .panel-header { padding: 0.6rem 1rem; }
-  .section-title { padding: 0.6rem 1rem; font-size: 0.9rem; }
+  .section-title { padding: 0.6rem 1rem; font-size: 0.95rem; }
   .bottom-grid { gap: 1rem; padding-top: 1rem; }
   .about { padding: 1.25rem 0 0.75rem; }
   .about h2 { font-size: 1rem; margin-bottom: 0.75rem; }
@@ -1340,7 +1341,7 @@
   .compare-result { margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .compare-card { background: var(--milk); border-radius: 8px; padding: 0.75rem; text-align: center; }
   .compare-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 0.5rem; }
-  .compare-price { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; }
+  .compare-price { font-size: 2.2rem; font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; }
   .compare-meta { font-size: 0.78rem; color: var(--mid); margin-top: 0.25rem; }
   .compare-diff { grid-column: 1 / -1; text-align: center; padding: 0.75rem; background: var(--espresso); color: var(--cream); border-radius: 8px; font-size: 0.85rem; line-height: 1.5; }
   .compare-diff strong { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
@@ -1357,9 +1358,9 @@
   .nearme-item:hover { background: var(--cream); }
   .nearme-rank { font-size: 1.2rem; font-weight: 700; color: var(--mid); width: 24px; text-align: center; flex-shrink: 0; }
   .nearme-info { flex: 1; }
-  .nearme-name { font-size: 0.9rem; font-weight: 500; }
+  .nearme-name { font-size: 0.95rem; font-size: 0.9rem; font-weight: 500; }
   .nearme-sub { font-size: 0.78rem; color: var(--mid); }
-  .nearme-price { font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--green); flex-shrink: 0; }
+  .nearme-price { font-size: 1.4rem; font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--green); flex-shrink: 0; }
   .nearme-dist { font-size: 0.72rem; color: var(--mid); text-align: right; flex-shrink: 0; min-width: 50px; }
 </style>
 
@@ -1738,23 +1739,23 @@
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem;">
           <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
             <div style="font-size:0.9rem; margin-bottom:0.2rem;">📞</div>
-            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">AI voice calls</div>
-            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">An AI agent calls each café: "How much is a flat white?" Handles voicemail and hang-ups.</div>
+            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">AI voice calls</div>
+            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">An AI agent calls each café: "How much is a flat white?" Handles voicemail and hang-ups.</div>
           </div>
           <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
             <div style="font-size:0.9rem; margin-bottom:0.2rem;">🔍</div>
-            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Auto-discovery</div>
-            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">Cafés found via public listings. Calls in batches during business hours. Prices verified.</div>
+            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Auto-discovery</div>
+            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">Cafés found via public listings. Calls in batches during business hours. Prices verified.</div>
           </div>
           <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
             <div style="font-size:0.9rem; margin-bottom:0.2rem;">🚫</div>
-            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Chains excluded</div>
-            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">Only independents. No Starbucks, McCafé, Gloria Jean's, The Coffee Club, or 10 others.</div>
+            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Chains excluded</div>
+            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">Only independents. No Starbucks, McCafé, Gloria Jean's, The Coffee Club, or 10 others.</div>
           </div>
           <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
             <div style="font-size:0.9rem; margin-bottom:0.2rem;">🗺️</div>
-            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">What's next</div>
-            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">Expanding across Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal();return false;" style="color:var(--bronze);">Request a suburb →</a></div>
+            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">What's next</div>
+            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">Expanding across Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal();return false;" style="color:var(--bronze);">Request a suburb →</a></div>
           </div>
         </div>
       </div>
@@ -2261,8 +2262,8 @@ function renderPriceInsights(suburbs, gems, avgPrice, pricesCollected) {
     <div style="background:var(--milk); border-radius:8px; padding:0.5rem 0.65rem; display:flex; align-items:center; gap:0.5rem;">
       <span style="font-size:0.85rem;">${i.icon}</span>
       <div>
-        <div style="font-size:0.85rem; font-weight:700; color:var(--espresso); line-height:1.1;">${i.stat}</div>
-        <div style="font-size:0.62rem; color:var(--mid); line-height:1.2;">${i.label}</div>
+        <div style="font-size:0.95rem; font-weight:700; color:var(--espresso); line-height:1.1;">${i.stat}</div>
+        <div style="font-size:0.7rem; color:var(--mid); line-height:1.2;">${i.label}</div>
       </div>
     </div>`).join('');
 }
