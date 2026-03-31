@@ -1224,7 +1224,7 @@
 
   /* UX DENSITY — tighten all spacing */
   header { padding: 1rem 0 0.75rem; align-items: center; gap: 0.5rem; }
-  .cup-icon, .cup-icon svg { width: 60px; height: 60px; }
+  .cup-icon, .cup-icon svg { width: 72px; height: 72px; }
   h1 { font-size: 2rem; }
   .tagline { font-size: 0.72rem; margin-top: 1px; }
   .updated-badge { font-size: 0.65rem; padding: 4px 10px; }
@@ -1520,93 +1520,78 @@
   <header>
     <div class="logo-area">
       <div class="cup-icon" aria-hidden="true">
-        <svg viewBox="0 0 72 72" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <!-- Ground shadow -->
-          <ellipse cx="36" cy="66" rx="18" ry="3" fill="#2C1A0E" opacity="0.12"/>
+        <svg viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <!-- Soft glow behind bean -->
+          <circle cx="40" cy="40" r="34" fill="#F7F3ED" opacity="0.08"/>
 
-          <!-- Cape — flowing behind the bean -->
-          <path d="M28 22 Q18 20 12 32 Q8 42 14 56 Q18 62 24 60 Q20 48 22 38 Q24 28 30 26Z" fill="#E74C3C"/>
-          <path d="M28 22 Q18 20 12 32 Q8 42 14 56 Q18 62 24 60" stroke="#C0392B" stroke-width="0.8" fill="none"/>
-          <!-- Cape inner fold -->
-          <path d="M22 30 Q18 40 20 52" stroke="#FF6B6B" stroke-width="0.6" fill="none" opacity="0.4"/>
-          <!-- Cape wind ripple -->
-          <path d="M14 40 Q10 44 12 50" stroke="#FF6B6B" stroke-width="0.5" fill="none" opacity="0.3">
-            <animate attributeName="d" values="M14 40 Q10 44 12 50;M14 40 Q8 44 10 50;M14 40 Q10 44 12 50" dur="2s" repeatCount="indefinite"/>
-          </path>
-          <!-- Cape right side -->
-          <path d="M44 22 Q54 20 58 32 Q62 42 56 56 Q52 62 48 60 Q52 48 50 38 Q48 28 42 26Z" fill="#D63031"/>
-          <path d="M44 22 Q54 20 58 32 Q62 42 56 56 Q52 62 48 60" stroke="#C0392B" stroke-width="0.8" fill="none"/>
-          <!-- Cape right fold -->
-          <path d="M50 30 Q54 40 52 52" stroke="#FF6B6B" stroke-width="0.6" fill="none" opacity="0.4"/>
-          <path d="M56 38 Q60 42 58 48" stroke="#FF6B6B" stroke-width="0.5" fill="none" opacity="0.3">
-            <animate attributeName="d" values="M56 38 Q60 42 58 48;M56 38 Q62 42 60 48;M56 38 Q60 42 58 48" dur="2.2s" repeatCount="indefinite"/>
-          </path>
+          <!-- Shadow -->
+          <ellipse cx="40" cy="72" rx="20" ry="3" fill="#2C1A0E" opacity="0.1"/>
 
-          <!-- Cape collar / clasp -->
-          <circle cx="36" cy="20" r="3" fill="#FFD700" stroke="#DAA520" stroke-width="0.8"/>
-          <circle cx="36" cy="20" r="1.2" fill="#FFF8DC"/>
-
-          <!-- Bean body — rich coffee with warm gradient -->
+          <!-- Bean body with rich gradient -->
           <defs>
-            <radialGradient id="beanGrad" cx="40%" cy="35%" r="60%">
-              <stop offset="0%" stop-color="#5C3520"/>
-              <stop offset="60%" stop-color="#3A1E10"/>
+            <radialGradient id="bg" cx="38%" cy="32%" r="65%">
+              <stop offset="0%" stop-color="#6B3A1F"/>
+              <stop offset="40%" stop-color="#4A2512"/>
               <stop offset="100%" stop-color="#1A0D05"/>
             </radialGradient>
           </defs>
-          <ellipse cx="36" cy="38" rx="12" ry="18" fill="url(#beanGrad)"/>
-          <!-- Bean 3D shading -->
-          <ellipse cx="33" cy="36" rx="8" ry="14" fill="#3D2516" opacity="0.5"/>
-          <!-- Bean highlight (top left) -->
-          <ellipse cx="31" cy="28" rx="4" ry="7" fill="#4A2E1A" opacity="0.6" transform="rotate(-10, 31, 28)"/>
-          <!-- Bean secondary highlight -->
-          <ellipse cx="40" cy="44" rx="3" ry="5" fill="#1A0F08" opacity="0.3"/>
+          <ellipse cx="40" cy="40" rx="22" ry="28" fill="url(#bg)"/>
 
-          <!-- Bean crease (signature coffee bean line) -->
-          <path d="M34 22 Q38 32 36 38 Q34 44 36 54" stroke="#6B3A1F" stroke-width="2.2" fill="none" stroke-linecap="round"/>
-          <!-- Crease shadow -->
-          <path d="M35 23 Q39 33 37 39 Q35 45 37 53" stroke="#1A0F08" stroke-width="1" fill="none" stroke-linecap="round" opacity="0.3"/>
+          <!-- Rim highlight (top edge catch light) -->
+          <ellipse cx="36" cy="16" rx="12" ry="4" fill="#7A4A2A" opacity="0.4" transform="rotate(-5,36,16)"/>
 
-          <!-- Arms — heroic pose, fists on hips -->
-          <path d="M24 34 Q20 32 18 36 Q16 40 20 40 Q22 40 24 38" fill="#2C1A0E"/>
-          <circle cx="18" cy="38" r="2.5" fill="#2C1A0E"/><!-- Left fist -->
-          <path d="M48 34 Q52 32 54 36 Q56 40 52 40 Q50 40 48 38" fill="#2C1A0E"/>
-          <circle cx="54" cy="38" r="2.5" fill="#2C1A0E"/><!-- Right fist -->
+          <!-- Side highlight (left) -->
+          <ellipse cx="24" cy="36" rx="4" ry="14" fill="#5C3018" opacity="0.35" transform="rotate(8,24,36)"/>
 
-          <!-- Legs — standing heroically -->
-          <path d="M32 54 L30 62 L28 63 L33 63 L33 56" fill="#2C1A0E"/>
-          <path d="M40 54 L42 62 L44 63 L39 63 L39 56" fill="#2C1A0E"/>
-          <!-- Boots -->
-          <path d="M28 62 Q27 64 29 64 L33 64 L33 62" fill="#1A0F08"/>
-          <path d="M39 62 L39 64 L43 64 Q45 64 44 62" fill="#1A0F08"/>
+          <!-- Bean crease — the iconic line -->
+          <path d="M36 14 Q42 28 40 40 Q38 52 40 66" stroke="#8B5A30" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+          <!-- Crease depth shadow -->
+          <path d="M37 15 Q43 29 41 41 Q39 53 41 65" stroke="#1A0D05" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.4"/>
 
-          <!-- Eyes — determined, heroic look -->
-          <ellipse cx="32" cy="30" rx="2.8" ry="3" fill="#F7F3ED"/>
-          <ellipse cx="40" cy="30" rx="2.8" ry="3" fill="#F7F3ED"/>
-          <circle cx="33" cy="30" r="1.5" fill="#2C1A0E"/>
-          <circle cx="41" cy="30" r="1.5" fill="#2C1A0E"/>
-          <!-- Eye glint -->
-          <circle cx="33.5" cy="29.2" r="0.7" fill="white"/>
-          <circle cx="41.5" cy="29.2" r="0.7" fill="white"/>
-          <!-- Sparkle -->
-          <circle cx="34" cy="28.5" r="0.3" fill="white" opacity="0.6"/>
-          <circle cx="42" cy="28.5" r="0.3" fill="white" opacity="0.6"/>
-          <!-- Eyebrows — determined -->
-          <path d="M29 27 Q32 25.5 35 27" stroke="#1A0F08" stroke-width="1.2" fill="none" stroke-linecap="round"/>
-          <path d="M37 27 Q40 25.5 43 27" stroke="#1A0F08" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <!-- EYES — big, friendly, expressive -->
+          <!-- Left eye white -->
+          <ellipse cx="32" cy="34" rx="6" ry="6.5" fill="white"/>
+          <!-- Right eye white -->
+          <ellipse cx="50" cy="34" rx="6" ry="6.5" fill="white"/>
 
-          <!-- Confident smile -->
-          <path d="M33 34 Q36 37 39 34" stroke="#8B5A3A" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+          <!-- Eye outlines -->
+          <ellipse cx="32" cy="34" rx="6" ry="6.5" fill="none" stroke="#1A0D05" stroke-width="0.8" opacity="0.3"/>
+          <ellipse cx="50" cy="34" rx="6" ry="6.5" fill="none" stroke="#1A0D05" stroke-width="0.8" opacity="0.3"/>
 
-          <!-- Steam rising from bean (it's hot coffee after all) -->
-          <path d="M30 14 Q28 10 30 6" stroke="#8B7355" stroke-width="1" stroke-linecap="round" opacity="0.3">
-            <animate attributeName="d" values="M30 14 Q28 10 30 6;M30 14 Q32 10 30 6;M30 14 Q28 10 30 6" dur="2s" repeatCount="indefinite"/>
+          <!-- Irises — warm brown -->
+          <circle cx="33" cy="35" r="3.5" fill="#5C3018"/>
+          <circle cx="51" cy="35" r="3.5" fill="#5C3018"/>
+
+          <!-- Pupils -->
+          <circle cx="33.5" cy="35.5" r="2" fill="#1A0D05"/>
+          <circle cx="51.5" cy="35.5" r="2" fill="#1A0D05"/>
+
+          <!-- Eye highlights — big gleam -->
+          <circle cx="35" cy="33" r="1.5" fill="white"/>
+          <circle cx="53" cy="33" r="1.5" fill="white"/>
+          <!-- Secondary gleam -->
+          <circle cx="31.5" cy="36.5" r="0.8" fill="white" opacity="0.6"/>
+          <circle cx="49.5" cy="36.5" r="0.8" fill="white" opacity="0.6"/>
+
+          <!-- Eyebrows — friendly, slightly raised -->
+          <path d="M26 27 Q32 23 38 26" stroke="#3A1E10" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <path d="M44 26 Q50 23 56 27" stroke="#3A1E10" stroke-width="2" fill="none" stroke-linecap="round"/>
+
+          <!-- Friendly smile -->
+          <path d="M34 46 Q41 52 48 46" stroke="#3A1E10" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+          <!-- Smile cheeks -->
+          <circle cx="30" cy="44" r="3" fill="#C0785A" opacity="0.2"/>
+          <circle cx="52" cy="44" r="3" fill="#C0785A" opacity="0.2"/>
+
+          <!-- Little steam wisps -->
+          <path d="M32 8 Q30 4 32 0" stroke="#B5763A" stroke-width="1" stroke-linecap="round" opacity="0.25">
+            <animate attributeName="d" values="M32 8 Q30 4 32 0;M32 8 Q34 4 32 0;M32 8 Q30 4 32 0" dur="2s" repeatCount="indefinite"/>
           </path>
-          <path d="M36 12 Q34 8 36 4" stroke="#8B7355" stroke-width="1.2" stroke-linecap="round" opacity="0.25">
-            <animate attributeName="d" values="M36 12 Q34 8 36 4;M36 12 Q38 8 36 4;M36 12 Q34 8 36 4" dur="2.5s" repeatCount="indefinite"/>
+          <path d="M40 6 Q38 2 40 -2" stroke="#B5763A" stroke-width="1.2" stroke-linecap="round" opacity="0.2">
+            <animate attributeName="d" values="M40 6 Q38 2 40 -2;M40 6 Q42 2 40 -2;M40 6 Q38 2 40 -2" dur="2.5s" repeatCount="indefinite"/>
           </path>
-          <path d="M42 14 Q40 10 42 6" stroke="#8B7355" stroke-width="1" stroke-linecap="round" opacity="0.2">
-            <animate attributeName="d" values="M42 14 Q40 10 42 6;M42 14 Q44 10 42 6;M42 14 Q40 10 42 6" dur="3s" repeatCount="indefinite"/>
+          <path d="M48 8 Q46 4 48 0" stroke="#B5763A" stroke-width="1" stroke-linecap="round" opacity="0.15">
+            <animate attributeName="d" values="M48 8 Q46 4 48 0;M48 8 Q50 4 48 0;M48 8 Q46 4 48 0" dur="3s" repeatCount="indefinite"/>
           </path>
         </svg>
       </div>
