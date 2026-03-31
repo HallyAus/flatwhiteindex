@@ -608,9 +608,10 @@ function updateStats(d) {
   document.getElementById('sCafes').textContent = d.cafes_total || 0;
   document.getElementById('sEligible').textContent = d.cafes_eligible || 0;
   document.getElementById('sCalls').textContent = d.total || 0;
-  document.getElementById('sPrices').textContent = d.completed || 0;
+  document.getElementById('sPrices').textContent = d.prices_extracted ?? d.completed ?? 0;
   document.getElementById('sAvg').textContent = d.avg_price ? '$' + d.avg_price : '—';
-  const rate = d.total > 0 ? Math.round((d.completed / d.total) * 100) : 0;
+  const priced = d.prices_extracted ?? d.completed ?? 0;
+  const rate = d.total > 0 ? Math.round((priced / d.total) * 100) : 0;
   const el = document.getElementById('sRate');
   el.textContent = d.total > 0 ? rate + '%' : '—';
   el.className = 'stat-val' + (rate >= 50 ? ' good' : rate > 0 ? ' warn' : '');

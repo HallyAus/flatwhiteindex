@@ -309,9 +309,10 @@ export async function getAvgPrice() {
     .not("price_small", "is", null);
   if (error) throw new Error(`getAvgPrice: ${error.message}`);
   const prices = data.map(r => r.price_small).filter(Boolean);
-  return prices.length > 0
+  const avg = prices.length > 0
     ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length * 100) / 100
     : 0;
+  return { avg, count: prices.length };
 }
 
 export async function getReviewCount() {

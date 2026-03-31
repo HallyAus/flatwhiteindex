@@ -562,11 +562,11 @@ app.get("/api/admin/status", verifyAdmin, async (req, res) => {
     if (adminStatusCache && (now - adminStatusCacheTime) < 15000) {
       return res.json(adminStatusCache);
     }
-    const [callStats, avgPrice] = await Promise.all([
+    const [callStats, priceInfo] = await Promise.all([
       getCallStats(),
       getAvgPrice(),
     ]);
-    adminStatusCache = { ...callStats, avg_price: avgPrice };
+    adminStatusCache = { ...callStats, avg_price: priceInfo.avg, prices_extracted: priceInfo.count };
     adminStatusCacheTime = now;
     res.json(adminStatusCache);
   } catch (err) {
