@@ -336,6 +336,7 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
       name: row.cafes?.name, suburb,
       price: row.price_small, price_large: row.price_large,
       rating: row.cafes?.google_rating,
+      lat: row.cafes?.lat, lng: row.cafes?.lng,
     });
   });
 
@@ -351,7 +352,7 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
 
   const allCafes = Object.values(suburbMap).flatMap(s => s.cafes).filter(c => c.price);
   allCafes.sort((a, b) => a.price - b.price);
-  const gems = allCafes.map(c => ({ name: c.name, suburb: c.suburb, price: c.price, note: '' }));
+  const gems = allCafes.map(c => ({ name: c.name, suburb: c.suburb, price: c.price, lat: c.lat, lng: c.lng, note: '' }));
 
   const allPrices = priceData.map(r => r.price_small).filter(Boolean);
   const buckets = [

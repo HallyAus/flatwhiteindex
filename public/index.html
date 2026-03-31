@@ -1939,25 +1939,24 @@ function markerRadius(count) {
 }
 
 // ─── MAP INIT ─────────────────────────────────────────────────────────────────
-function initMap(suburbs) {
+function initMap(items, mode) {
+  mode = mode || 'suburb';
   map = L.map('leaflet-map', {
     zoomControl: true,
     scrollWheelZoom: true,
   });
 
-  // CartoDB Positron — light, clean, warmed via CSS filter
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
     subdomains: 'abcd',
     maxZoom: 19,
   }).addTo(map);
 
-  // Legend control
   const legend = L.control({ position: 'bottomleft' });
   legend.onAdd = function() {
     const div = L.DomUtil.create('div', 'map-legend');
     div.innerHTML = `
-      <div class="legend-title">Avg. flat white price</div>
+      <div class="legend-title">Flat white price</div>
       <div class="legend-row"><div class="legend-dot" style="background:#3A7D44"></div> Under $4.50</div>
       <div class="legend-row"><div class="legend-dot" style="background:#B5763A"></div> $4.50 – $5.50</div>
       <div class="legend-row"><div class="legend-dot" style="background:#C0392B"></div> Over $5.50</div>
@@ -1967,10 +1966,13 @@ function initMap(suburbs) {
   };
   legend.addTo(map);
 
-  // Place markers
-  suburbs.forEach(s => {
-    const colour = markerColour(s.price);
-    const radius = markerRadius(s.count);
+  items.forEach(s => {
+    const price = s.price || s.avg_price || 0;
+    const colour = markerColour(price);
+    const isCafe = mode === 'cafe';
+    const radius = isCafe ? 7 : markerRadius(s.count || 1);
+    const name = s.name || s.suburb || 'Unknown';
+    const suburb = s.suburb || '';
 
     const marker = L.circleMarker([s.lat, s.lng], {
       radius: radius,
@@ -1980,39 +1982,32 @@ function initMap(suburbs) {
       weight: 1.5,
     });
 
-    // Hover tooltip
     marker.bindTooltip(
-      `<strong style="font-family:'DM Sans',sans-serif">${esc(s.name)}</strong><br>
-       <span style="font-family:'Playfair Display',serif;font-size:1rem">$${s.price.toFixed(2)}</span>`,
-      {
-        permanent: false,
-        direction: 'top',
-        offset: [0, -radius],
-        className: '',
-        opacity: 1,
-      }
+      `<strong style="font-family:'DM Sans',sans-serif">${esc(name)}</strong><br>
+       <span style="font-family:'Playfair Display',serif;font-size:1rem">$${price.toFixed(2)}</span>
+       ${isCafe && suburb ? '<br><span style="font-size:0.75rem;opacity:0.7">' + esc(suburb) + '</span>' : ''}`,
+      { permanent: false, direction: 'top', offset: [0, -radius], opacity: 1 }
     );
 
-    // Click popup + sidebar highlight
     marker.on('click', () => {
-      highlightSuburb(s.name);
-      document.getElementById('selectedInfo').textContent = `${s.name} · avg $${s.price.toFixed(2)}`;
-
-      const minMax = (s.min != null && s.max != null)
-        ? `<div class="popup-minmax">Range: $${s.min.toFixed(2)} – $${s.max.toFixed(2)}</div>`
-        : '';
+      const suburbName = suburb || name;
+      highlightSuburb(suburbName);
+      document.getElementById('selectedInfo').textContent = isCafe
+        ? `${name} · ${suburb} · $${price.toFixed(2)}`
+        : `${name} · avg $${price.toFixed(2)}`;
 
       marker.bindPopup(`
-        <div class="popup-suburb">${esc(s.name)}</div>
-        <div class="popup-price ${popupPriceClass(s.price)}">$${s.price.toFixed(2)}</div>
-        <div class="popup-meta">${s.count} café${s.count !== 1 ? 's' : ''} sampled</div>
-        ${minMax}
-        <button class="popup-share" onclick="shareSuburb('${esc(s.name).replace(/'/g, "\\'")}', ${s.price}, this)">Share this suburb</button>
-      `, { maxWidth: 200 }).openPopup();
+        <div class="popup-suburb">${esc(name)}</div>
+        ${isCafe ? '<div class="popup-meta">' + esc(suburb) + '</div>' : ''}
+        <div class="popup-price ${popupPriceClass(price)}">$${price.toFixed(2)}</div>
+        ${!isCafe && s.count ? '<div class="popup-meta">' + s.count + ' café' + (s.count !== 1 ? 's' : '') + ' sampled</div>' : ''}
+        ${!isCafe && s.min != null && s.max != null ? '<div class="popup-minmax">Range: $' + s.min.toFixed(2) + ' – $' + s.max.toFixed(2) + '</div>' : ''}
+        <button class="popup-share" onclick="shareSuburb('${esc(suburbName).replace(/'/g, "\\'")}', ${price}, this)">Share</button>
+      `, { maxWidth: 220 }).openPopup();
     });
 
     marker.addTo(map);
-    markers[s.name] = marker;
+    markers[name] = marker;
   });
 
   // Force Leaflet to recalculate container size, then fit to all markers
@@ -2239,15 +2234,20 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
   if (suburbs.length > 0) renderSuburbList(suburbs);
   if (distData.length > 0) renderDist(distData);
   if (gems.length > 0) renderGems(gems);
+  // Use individual cafe markers if available, fall back to suburb averages
+  const cafeMarkers = gems.filter(g => g.lat != null && g.lng != null);
+  const mapData = cafeMarkers.length > 0 ? cafeMarkers : suburbs.filter(s => s.lat != null && s.lng != null);
+  const mapMode = cafeMarkers.length > 0 ? 'cafe' : 'suburb';
+
   // Lazy-init map when it scrolls into view (below fold on most devices)
   const mapEl = document.getElementById('leaflet-map');
   if (mapEl && 'IntersectionObserver' in window) {
     const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) { obs.disconnect(); initMap(mappable); }
+      if (entries[0].isIntersecting) { obs.disconnect(); initMap(mapData, mapMode); }
     }, { rootMargin: '300px' });
     obs.observe(mapEl);
   } else {
-    initMap(mappable);
+    initMap(mapData, mapMode);
   }
 
   // Show discovered cafes as grey dots
