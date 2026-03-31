@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="en-AU" class="scroll-smooth">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Flat White Index — Sydney Coffee Prices 2026</title>
+<meta name="description" content="An AI voice agent calls every Sydney café to find the real price of a flat white. Live data from 494+ calls across 38 suburbs.">
+<meta name="theme-color" content="#FAFAF8">
+<link rel="canonical" href="https://flatwhiteindex.com.au/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="The Flat White Index — Sydney Coffee Prices 2026">
+<meta property="og:description" content="An AI voice agent calls every Sydney café to find the real price of a flat white. Live data, updated as calls come in.">
+<meta property="og:url" content="https://flatwhiteindex.com.au/">
+<meta property="og:image" content="https://flatwhiteindex.com.au/og-image-1200x630.png">
+<meta property="og:locale" content="en_AU">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,700;0,8..60,900;1,8..60,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="leaflet.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='24' font-size='24'>☕</text></svg>">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        canvas: '#FAFAF8',
+        ink: '#1A1A1A',
+        muted: '#6B6B6B',
+        faint: '#9A9A96',
+        rule: '#E8E8E4',
+        terra: '#C4654A',
+        'terra-light': '#FDF0EC',
+        'terra-dark': '#A8503A',
+        cheap: '#2D8F4E',
+        'cheap-light': '#EDF7F0',
+        expensive: '#C4654A',
+        'expensive-light': '#FDF0EC',
+        mid: '#D4A04A',
+        'mid-light': '#FDF8EC',
+      },
+      fontFamily: {
+        serif: ['"Source Serif 4"', 'Georgia', 'serif'],
+        sans: ['Inter', 'system-ui', 'sans-serif'],
+      },
+    }
+  }
+}
+</script>
+<style>
+  body { background: #FAFAF8; }
+  .leaflet-tile-pane { filter: saturate(0.85) brightness(1.02); }
+  .leaflet-control-zoom a { background: #FAFAF8 !important; color: #1A1A1A !important; border-color: #E8E8E4 !important; }
+  .leaflet-popup-content-wrapper { background: #1A1A1A; color: #FAFAF8; border-radius: 8px; }
+  .leaflet-popup-tip { background: #1A1A1A; }
+  .leaflet-popup-close-button { color: rgba(250,250,248,0.5) !important; }
+  .price-label { background: none !important; border: none !important; box-shadow: none !important; font-weight: 600 !important; padding: 0 !important; text-shadow: 0 0 4px white, 0 0 4px white, 0 0 8px white; font-family: Inter, sans-serif !important; font-size: 12px !important; }
+  .price-label::before { display: none !important; }
+  @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .stat-animate { animation: countUp 0.6s ease-out forwards; }
+</style>
+</head>
+<body class="font-sans text-ink antialiased">
+
+<!-- NAV -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-canvas/90 backdrop-blur-md border-b border-rule/60 transition-all duration-300" id="mainNav">
+  <div class="max-w-6xl mx-auto px-5 md:px-8 flex items-center justify-between h-14">
+    <a href="/" class="flex items-center gap-2.5 text-ink no-underline">
+      <span class="text-xl">☕</span>
+      <span class="font-serif font-bold text-lg tracking-tight">The Flat White Index</span>
+    </a>
+    <div class="hidden md:flex items-center gap-8">
+      <a href="#data" class="text-muted hover:text-ink text-sm transition-colors">Data</a>
+      <a href="#map" class="text-muted hover:text-ink text-sm transition-colors">Map</a>
+      <a href="#suburbs" class="text-muted hover:text-ink text-sm transition-colors">Suburbs</a>
+      <a href="#methodology" class="text-muted hover:text-ink text-sm transition-colors">Methodology</a>
+    </div>
+    <div class="flex items-center gap-2">
+      <span class="w-2 h-2 bg-cheap rounded-full animate-pulse"></span>
+      <span class="text-xs font-medium text-cheap uppercase tracking-wider">Live</span>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="pt-28 pb-16 md:pt-36 md:pb-24 px-5 md:px-8 max-w-6xl mx-auto">
+  <div class="max-w-3xl">
+    <p class="text-terra font-medium text-sm tracking-wide uppercase mb-5">Sydney's definitive coffee price tracker</p>
+    <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl font-900 leading-[0.95] tracking-tight text-ink mb-6">
+      An AI is calling<br>every Sydney café<br>to ask one question.
+    </h1>
+    <p class="text-lg md:text-xl text-muted leading-relaxed max-w-xl mb-10">
+      <em class="font-serif text-ink not-italic">"How much is a flat white?"</em> — Our voice agent Mia has called <strong class="text-ink font-semibold" id="heroCalls">494</strong> cafés across <strong class="text-ink font-semibold" id="heroSuburbs">38</strong> suburbs. This is what she found.
+    </p>
+  </div>
+
+  <!-- STAT STRIP -->
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-rule rounded-xl overflow-hidden border border-rule">
+    <div class="bg-canvas p-5 md:p-6">
+      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Sydney Average</p>
+      <p class="font-serif text-3xl md:text-4xl font-bold text-ink" id="statAvg">$5.42</p>
+      <p class="text-faint text-xs mt-1">regular flat white</p>
+    </div>
+    <div class="bg-canvas p-5 md:p-6">
+      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Cheapest Suburb</p>
+      <p class="font-serif text-3xl md:text-4xl font-bold text-cheap" id="statCheapPrice">$4.10</p>
+      <p class="text-faint text-xs mt-1" id="statCheapName">Marrickville</p>
+    </div>
+    <div class="bg-canvas p-5 md:p-6">
+      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Most Expensive</p>
+      <p class="font-serif text-3xl md:text-4xl font-bold text-expensive" id="statExpPrice">$6.50</p>
+      <p class="text-faint text-xs mt-1" id="statExpName">Double Bay</p>
+    </div>
+    <div class="bg-canvas p-5 md:p-6">
+      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Cafés Called</p>
+      <p class="font-serif text-3xl md:text-4xl font-bold text-ink" id="statCafes">494</p>
+      <p class="text-faint text-xs mt-1">and counting</p>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
+
+<!-- REGION BREAKDOWN -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto" id="data">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+    <div>
+      <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">Regional breakdown</p>
+      <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink">Where's your money going?</h2>
+    </div>
+    <p class="text-muted text-sm max-w-xs">Average flat white price by Sydney region. Ranked cheapest to most expensive.</p>
+  </div>
+
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="regionCards">
+    <!-- Populated by JS -->
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
+
+<!-- KEY FINDINGS -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto" id="findingsSection" style="display:none;">
+  <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">Key findings</p>
+  <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink mb-10">What the data tells us</h2>
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="findingsGrid"></div>
+</section>
+
+<!-- MAP -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto" id="map">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+    <div>
+      <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">Geographic view</p>
+      <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink">The price map</h2>
+    </div>
+    <div class="flex items-center gap-5 text-xs text-muted">
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-cheap"></span> Under $4.50</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-mid"></span> $4.50–$5.50</span>
+      <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-expensive"></span> Over $5.50</span>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div class="lg:col-span-2 rounded-xl border border-rule overflow-hidden bg-white">
+      <div id="leaflet-map" style="height:480px;"></div>
+    </div>
+    <div class="rounded-xl border border-rule bg-white overflow-hidden flex flex-col">
+      <div class="px-4 py-3 border-b border-rule flex items-center justify-between">
+        <h3 class="font-serif font-bold text-sm">Suburbs by price</h3>
+        <span class="text-xs text-faint" id="suburbCount">38 suburbs</span>
+      </div>
+      <div class="flex-1 overflow-y-auto divide-y divide-rule" id="suburbList" style="max-height:440px;">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Near me button -->
+  <div class="mt-4 flex items-center gap-3">
+    <button onclick="findNearMe()" class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-rule hover:border-terra hover:text-terra text-sm text-muted transition-colors">
+      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      Find cheapest near me
+    </button>
+    <div id="nearMeResult" class="text-sm text-muted"></div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
+
+<!-- DISTRIBUTION + CHEAPEST -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Distribution -->
+    <div>
+      <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">Price distribution</p>
+      <h2 class="font-serif text-2xl font-bold text-ink mb-6">Where do prices cluster?</h2>
+      <div id="distBars" class="space-y-2.5"></div>
+    </div>
+    <!-- Cheapest -->
+    <div>
+      <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">Best value</p>
+      <h2 class="font-serif text-2xl font-bold text-ink mb-6">Sydney's cheapest flat whites</h2>
+      <div id="gemsList" class="divide-y divide-rule rounded-xl border border-rule overflow-hidden bg-white"></div>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
+
+<!-- SYDNEY IN COFFEES -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto">
+  <div class="max-w-2xl mb-10">
+    <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">The flat white as a unit of measurement</p>
+    <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink mb-3">Sydney, measured in coffees</h2>
+    <p class="text-muted">How far does a $5.42 flat white go? We did the maths on Sydney's cost of living.</p>
+  </div>
+  <div id="coffeesGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+</section>
+
+<!-- DIVIDER -->
+<div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
+
+<!-- COMPARE + SALARY -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Compare -->
+    <div class="rounded-xl border border-rule bg-white p-6">
+      <h3 class="font-serif text-xl font-bold text-ink mb-1">Compare suburbs</h3>
+      <p class="text-muted text-sm mb-5">Side-by-side price comparison</p>
+      <div class="flex gap-3 mb-4">
+        <div class="flex-1">
+          <label for="compare1" class="text-xs text-faint uppercase tracking-wider mb-1 block">Suburb 1</label>
+          <select id="compare1" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas focus:outline-none focus:border-terra"></select>
+        </div>
+        <div class="flex-1">
+          <label for="compare2" class="text-xs text-faint uppercase tracking-wider mb-1 block">Suburb 2</label>
+          <select id="compare2" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas focus:outline-none focus:border-terra"></select>
+        </div>
+      </div>
+      <button onclick="compareSuburbs()" class="px-4 py-2 bg-ink text-canvas rounded-lg text-sm font-medium hover:bg-ink/80 transition-colors">Compare</button>
+      <div id="compareResult" class="mt-4"></div>
+    </div>
+    <!-- Salary calc -->
+    <div class="rounded-xl border border-rule bg-white p-6">
+      <h3 class="font-serif text-xl font-bold text-ink mb-1">The flat white test</h3>
+      <p class="text-muted text-sm mb-5">How many minutes of work does your daily coffee cost?</p>
+      <label for="salaryInput" class="text-xs text-faint uppercase tracking-wider mb-1 block">Annual salary ($)</label>
+      <input type="text" id="salaryInput" value="85,000" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas mb-4 focus:outline-none focus:border-terra" oninput="calcSalary()">
+      <div id="salaryResult" class="rounded-lg bg-canvas p-4 border border-rule">
+        <div class="flex items-baseline gap-2">
+          <span class="font-serif text-3xl font-bold text-ink" id="salaryMinutes">—</span>
+          <span class="text-muted text-sm">minutes of work per flat white</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
+
+<!-- HOW IT WORKS -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto" id="methodology">
+  <div class="max-w-2xl mb-10">
+    <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">Methodology</p>
+    <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink">How we collect this data</h2>
+  </div>
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div class="border-t-2 border-terra pt-6">
+      <p class="font-serif text-5xl font-bold text-rule mb-4">01</p>
+      <h3 class="font-serif text-lg font-bold text-ink mb-2">Mia calls every café</h3>
+      <p class="text-muted text-sm leading-relaxed">Our AI voice agent phones each café during business hours and asks a simple question: "How much is a regular flat white?" Real conversations, real prices.</p>
+    </div>
+    <div class="border-t-2 border-terra pt-6">
+      <p class="font-serif text-5xl font-bold text-rule mb-4">02</p>
+      <h3 class="font-serif text-lg font-bold text-ink mb-2">Prices are verified</h3>
+      <p class="text-muted text-sm leading-relaxed">Every response is transcribed and parsed. We extract prices from natural speech — "$4.50", "four fifty", "about five bucks" — and flag ambiguous answers for human review.</p>
+    </div>
+    <div class="border-t-2 border-terra pt-6">
+      <p class="font-serif text-5xl font-bold text-rule mb-4">03</p>
+      <h3 class="font-serif text-lg font-bold text-ink mb-2">Data goes live</h3>
+      <p class="text-muted text-sm leading-relaxed">Verified prices are published instantly. Every data point links to a real café and a real phone call. No scraping, no guessing. Chains excluded — independents only.</p>
+    </div>
+  </div>
+</section>
+
+<!-- DIVIDER -->
+<div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
+
+<!-- CTA -->
+<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto text-center">
+  <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink mb-3">The Flat White Index, monthly.</h2>
+  <p class="text-muted mb-8 max-w-md mx-auto">Every suburb. Verified prices. Free.</p>
+  <form onsubmit="subscribeCTA(event)" class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto" id="ctaForm">
+    <input type="email" id="ctaEmail" placeholder="your@email.com" required class="flex-1 w-full px-4 py-3 border border-rule rounded-lg text-sm bg-white focus:outline-none focus:border-terra">
+    <button type="submit" class="px-6 py-3 bg-terra text-white rounded-lg text-sm font-semibold hover:bg-terra-dark transition-colors whitespace-nowrap">Subscribe</button>
+  </form>
+  <p id="ctaSuccess" class="text-sm text-cheap mt-4" style="display:none;">Thanks! You'll get the first report soon.</p>
+</section>
+
+<!-- FOOTER -->
+<footer class="border-t border-rule py-12 px-5 md:px-8">
+  <div class="max-w-6xl mx-auto">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+      <div>
+        <p class="font-serif font-bold text-lg mb-2">The Flat White Index</p>
+        <p class="text-muted text-sm leading-relaxed">Independent coffee price data for Sydney. Built by an AI that makes phone calls.</p>
+      </div>
+      <div class="space-y-2 text-sm">
+        <p class="font-semibold text-ink mb-3">About & Press</p>
+        <a href="#" onclick="openModal();return false" class="block text-muted hover:text-terra transition-colors">Submit a price</a>
+        <a href="#" onclick="openReconModal();return false" class="block text-muted hover:text-terra transition-colors">Request a suburb</a>
+        <a href="mailto:daniel@agenticconsciousness.com.au" class="block text-muted hover:text-terra transition-colors">Media enquiries</a>
+        <p class="text-faint">Melbourne — coming soon</p>
+      </div>
+      <div class="space-y-2 text-sm">
+        <p class="font-semibold text-ink mb-3">Links</p>
+        <a href="/llms.txt" class="block text-muted hover:text-terra transition-colors">llms.txt</a>
+        <a href="/sitemap.xml" class="block text-muted hover:text-terra transition-colors">Sitemap</a>
+        <a href="/press" class="block text-muted hover:text-terra transition-colors">Press kit</a>
+      </div>
+    </div>
+    <div class="border-t border-rule pt-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 text-xs text-faint">
+      <p>© 2026 The Flat White Index — a project by <a href="https://agenticconsciousness.com.au" class="text-muted hover:text-terra transition-colors">Agentic Consciousness</a></p>
+      <p>Created by Daniel · <a href="https://printforge.com.au" class="text-muted hover:text-terra transition-colors">Printforge</a></p>
+    </div>
+  </div>
+</footer>
+
+<!-- MODALS -->
+<div class="fixed inset-0 bg-ink/60 z-[1000] items-center justify-center hidden" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="bg-white rounded-2xl p-6 max-w-md w-[90%] mx-auto" onclick="event.stopPropagation()">
+    <h3 class="font-serif text-xl font-bold mb-4" id="submitPriceTitle">Submit a price</h3>
+    <label class="text-xs text-faint uppercase tracking-wider mb-1 block">Café name</label>
+    <input type="text" id="modalCafe" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas mb-3 focus:outline-none focus:border-terra">
+    <label class="text-xs text-faint uppercase tracking-wider mb-1 block">Suburb</label>
+    <input type="text" id="modalSuburb" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas mb-3 focus:outline-none focus:border-terra">
+    <label class="text-xs text-faint uppercase tracking-wider mb-1 block">Price (regular flat white)</label>
+    <input type="text" id="modalPrice" placeholder="5.00" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas mb-4 focus:outline-none focus:border-terra">
+    <div class="flex gap-3">
+      <button onclick="closeModal()" class="flex-1 px-4 py-2.5 border border-rule rounded-lg text-sm text-muted hover:bg-canvas transition-colors">Cancel</button>
+      <button onclick="submitPrice()" class="flex-2 px-4 py-2.5 bg-ink text-canvas rounded-lg text-sm font-medium hover:bg-ink/80 transition-colors">Submit</button>
+    </div>
+    <p id="successMsg" class="text-sm text-cheap mt-3" style="display:none;">Thanks! We'll verify this price.</p>
+  </div>
+</div>
+
+<div class="fixed inset-0 bg-ink/60 z-[1000] items-center justify-center hidden" id="reconModal" onclick="if(event.target===this)closeReconModal()">
+  <div class="bg-white rounded-2xl p-6 max-w-md w-[90%] mx-auto" onclick="event.stopPropagation()">
+    <h3 class="font-serif text-xl font-bold mb-4" id="reconTitle">Request a suburb</h3>
+    <label class="text-xs text-faint uppercase tracking-wider mb-1 block">Suburb name</label>
+    <input type="text" id="reconSuburb" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas mb-3 focus:outline-none focus:border-terra">
+    <label class="text-xs text-faint uppercase tracking-wider mb-1 block">Your email (optional)</label>
+    <input type="email" id="reconEmail" class="w-full px-3 py-2 border border-rule rounded-lg text-sm bg-canvas mb-4 focus:outline-none focus:border-terra">
+    <div class="flex gap-3">
+      <button onclick="closeReconModal()" class="flex-1 px-4 py-2.5 border border-rule rounded-lg text-sm text-muted hover:bg-canvas transition-colors">Cancel</button>
+      <button onclick="submitRecon()" class="flex-2 px-4 py-2.5 bg-ink text-canvas rounded-lg text-sm font-medium hover:bg-ink/80 transition-colors">Request</button>
+    </div>
+    <p id="reconSuccess" class="text-sm text-cheap mt-3" style="display:none;">Noted! We'll add this suburb to the queue.</p>
+  </div>
+</div>
+
+<script src="leaflet.js"></script>
+<script>
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+function esc(str) { const d = document.createElement('div'); d.textContent = str; return d.innerHTML; }
+function priceColor(p) { return p < 4.50 ? 'cheap' : p < 5.50 ? 'mid' : 'expensive'; }
+function markerHex(p) { return p < 4.50 ? '#2D8F4E' : p < 5.50 ? '#D4A04A' : '#C4654A'; }
+
+// ─── LIVE DATA ───────────────────────────────────────────────────────────────
+const LIVE = window.__LIVE_DATA__;
+const REGIONS = window.__REGION_CONFIG__ || { regions: {} };
+if (!LIVE) document.body.innerHTML = '<div class="flex items-center justify-center min-h-screen text-muted">Loading data...</div>';
+
+// ─── REGION CARDS ────────────────────────────────────────────────────────────
+function buildRegions(suburbs) {
+  const lookup = {};
+  for (const [id, info] of Object.entries(REGIONS.regions || {})) {
+    for (const s of (info.suburbs || [])) lookup[s] = id;
+  }
+  const map = {};
+  suburbs.forEach(s => {
+    const key = (s.suburb || '').toLowerCase().replace(/\s+/g, '_').replace(/['']/g, '');
+    const rid = lookup[key] || 'other';
+    if (!map[rid]) map[rid] = { prices: [], count: 0, suburbs: 0 };
+    if (s.avg_price) { map[rid].prices.push(s.avg_price); map[rid].count += (s.sample_size || 0); }
+    map[rid].suburbs++;
+  });
+  const results = [];
+  for (const [id, d] of Object.entries(map)) {
+    if (!d.prices.length) continue;
+    const avg = d.prices.reduce((a, b) => a + b, 0) / d.prices.length;
+    results.push({ id, label: REGIONS.regions[id]?.label || 'Other', avg, count: d.count, suburbs: d.suburbs });
+  }
+  results.sort((a, b) => a.avg - b.avg);
+  return results;
+}
+
+function renderRegionCards(regions) {
+  const el = document.getElementById('regionCards');
+  el.innerHTML = regions.map((r, i) => {
+    const c = priceColor(r.avg);
+    const bgClass = c === 'cheap' ? 'bg-cheap-light' : c === 'mid' ? 'bg-mid-light' : 'bg-expensive-light';
+    const textClass = c === 'cheap' ? 'text-cheap' : c === 'mid' ? 'text-mid' : 'text-expensive';
+    return `<div class="rounded-xl border border-rule bg-white p-5 hover:shadow-md transition-shadow">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-xs font-semibold text-faint uppercase tracking-wider">#${i + 1}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full ${bgClass} ${textClass} font-medium">${c === 'cheap' ? 'Budget' : c === 'mid' ? 'Mid-range' : 'Premium'}</span>
+      </div>
+      <h3 class="font-serif text-lg font-bold text-ink mb-1">${esc(r.label)}</h3>
+      <p class="font-serif text-2xl font-bold ${textClass}">$${r.avg.toFixed(2)}</p>
+      <p class="text-xs text-faint mt-2">${r.count} cafés · ${r.suburbs} suburbs</p>
+    </div>`;
+  }).join('');
+}
+
+// ─── MAP ─────────────────────────────────────────────────────────────────────
+let map, markers = [];
+function initMap(data, mode) {
+  if (map) return;
+  map = L.map('leaflet-map', { scrollWheelZoom: false }).setView([-33.87, 151.21], 12);
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '© OpenStreetMap · CartoDB', maxZoom: 18
+  }).addTo(map);
+
+  const bounds = [];
+  data.forEach(c => {
+    if (!c.lat || !c.lng) return;
+    const price = c.price || c.avg_price;
+    if (!price) return;
+    const color = markerHex(price);
+    const r = mode === 'cafe' ? 6 : Math.min(8 + (c.sample_size || c.count || 1) * 0.8, 18);
+    const m = L.circleMarker([c.lat, c.lng], {
+      radius: r, fillColor: color, color: color, weight: 1, opacity: 0.8, fillOpacity: 0.5
+    }).addTo(map);
+    const name = esc(c.name || c.suburb || 'Unknown');
+    const suburb = esc(c.suburb || '');
+    m.bindPopup(`<div style="font-family:Inter,sans-serif;"><strong>${name}</strong>${suburb ? '<br><span style="opacity:0.6;font-size:12px;">'+suburb+'</span>' : ''}<br><span style="font-size:18px;font-weight:700;color:${color}">$${price.toFixed(2)}</span></div>`);
+    if (mode === 'cafe') {
+      L.tooltip({ permanent: true, direction: 'top', offset: [0, -8], className: 'price-label' })
+        .setContent('$' + price.toFixed(2)).setLatLng([c.lat, c.lng]).addTo(map);
+    }
+    markers.push(m);
+    bounds.push([c.lat, c.lng]);
+  });
+  if (bounds.length) map.fitBounds(bounds, { padding: [30, 30] });
+}
+
+// ─── SUBURB LIST ─────────────────────────────────────────────────────────────
+function renderSuburbList(suburbs) {
+  const el = document.getElementById('suburbList');
+  document.getElementById('suburbCount').textContent = suburbs.length + ' suburbs';
+  el.innerHTML = suburbs.map((s, i) => {
+    const c = priceColor(s.avg_price || s.price);
+    const textClass = c === 'cheap' ? 'text-cheap' : c === 'mid' ? 'text-mid' : 'text-expensive';
+    return `<div class="flex items-center px-4 py-2.5 hover:bg-canvas/50 transition-colors cursor-pointer" onclick="clickSuburb('${esc(s.suburb || s.name)}')">
+      <span class="text-xs text-faint w-6">${i + 1}</span>
+      <span class="w-2 h-2 rounded-full bg-${c} mr-2.5 flex-shrink-0"></span>
+      <span class="flex-1 text-sm">${esc(s.suburb || s.name)}</span>
+      <span class="text-xs text-faint mr-3">${s.sample_size || s.count || 0}</span>
+      <span class="font-serif font-bold text-sm ${textClass}">$${(s.avg_price || s.price || 0).toFixed(2)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── DISTRIBUTION ────────────────────────────────────────────────────────────
+function renderDist(distData) {
+  const el = document.getElementById('distBars');
+  const max = Math.max(...distData.map(d => d.count), 1);
+  el.innerHTML = distData.map(d => {
+    const pct = Math.max((d.count / max) * 100, 2);
+    const c = d.label.includes('3') || d.label.includes('4–4') ? 'bg-cheap' :
+              d.label.includes('6') || d.label.includes('5.5') ? 'bg-expensive' : 'bg-mid';
+    return `<div class="flex items-center gap-3">
+      <span class="text-xs text-muted w-20 text-right flex-shrink-0">${d.label}</span>
+      <div class="flex-1 bg-rule/50 rounded h-6 overflow-hidden">
+        <div class="${c} h-full rounded flex items-center justify-end pr-2 transition-all duration-700" style="width:${pct}%">
+          <span class="text-[10px] text-white font-medium">${d.count}</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─── GEMS ────────────────────────────────────────────────────────────────────
+function renderGems(gems) {
+  const el = document.getElementById('gemsList');
+  const top = gems.slice(0, 8);
+  el.innerHTML = top.map((g, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
+    return `<div class="flex items-center px-4 py-3 hover:bg-canvas/50 transition-colors">
+      <span class="text-sm w-8 ${i < 3 ? 'text-lg' : 'text-faint'}">${medal || (i + 1)}</span>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-medium text-ink truncate">${esc(g.name)}</p>
+        <p class="text-xs text-faint">${esc(g.suburb)}</p>
+      </div>
+      <span class="font-serif font-bold text-cheap ml-3">$${g.price.toFixed(2)}</span>
+    </div>`;
+  }).join('');
+}
+
+// ─── FINDINGS ────────────────────────────────────────────────────────────────
+function renderFindings(suburbs, gems, avgPrice) {
+  if (!suburbs.length) return;
+  document.getElementById('findingsSection').style.display = '';
+  const cheapest = suburbs[0];
+  const dearest = suburbs[suburbs.length - 1];
+  const under4 = suburbs.filter(s => s.avg_price < 4).length;
+  const findings = [
+    { icon: '📊', text: `The <strong>$3 flat white is basically extinct</strong> in Sydney — only ${under4 || 'a handful of'} suburbs average under $4.` },
+    { icon: '📍', text: `<strong>${esc(cheapest.suburb)}</strong> is the cheapest suburb at $${cheapest.avg_price.toFixed(2)}, while <strong>${esc(dearest.suburb)}</strong> is the most expensive at $${dearest.avg_price.toFixed(2)}.` },
+    { icon: '💰', text: `The <strong>gap between cheapest and most expensive is $${(dearest.avg_price - cheapest.avg_price).toFixed(2)}</strong> — a ${Math.round((dearest.avg_price / cheapest.avg_price - 1) * 100)}% premium.` },
+    { icon: '☕', text: `The most common price point is <strong>$5.00</strong> — the psychological anchor for Sydney coffee.` },
+  ];
+  document.getElementById('findingsGrid').innerHTML = findings.map(f =>
+    `<div class="flex gap-3 p-4 rounded-xl border border-rule bg-white">
+      <span class="text-xl flex-shrink-0">${f.icon}</span>
+      <p class="text-sm text-muted leading-relaxed">${f.text}</p>
+    </div>`
+  ).join('');
+}
+
+// ─── SYDNEY IN COFFEES ───────────────────────────────────────────────────────
+const COMPARISONS = [
+  { icon: '🏠', raw: 1260000, unit: 'flat whites', desc: 'Median Sydney house', source: 'CoreLogic 2026', featured: true },
+  { icon: '🏠', raw: 690, unit: '/week', desc: 'Bondi median rent', source: 'Domain', cat: 'Living' },
+  { icon: '🥑', raw: 22, unit: 'flat whites', desc: 'One avo toast', source: 'Avg brunch price', cat: 'Living' },
+  { icon: '🛒', raw: 215, unit: 'flat whites', desc: 'Weekly groceries', source: 'ABS', cat: 'Living' },
+  { icon: '🚂', raw: 50, unit: 'flat whites', desc: 'Opal weekly cap', source: 'TfNSW', cat: 'Transport' },
+  { icon: '⛴️', raw: 7.70, unit: 'flat whites', desc: 'Manly ferry return', source: 'Opal fare', cat: 'Transport' },
+  { icon: '⛽', raw: 1.92, unit: '/litre', desc: 'Diesel at the pump', source: 'FuelCheck NSW', cat: 'Transport', pun: true },
+  { icon: '🏏', raw: 78, unit: 'flat whites', desc: 'SCG cricket ticket', source: 'Cricket Aus', cat: 'Sydney' },
+  { icon: '🎭', raw: 42, unit: 'flat whites', desc: 'Opera House tour', source: 'SOH', cat: 'Sydney' },
+  { icon: '🌊', raw: 0, unit: '', desc: 'Bondi to Bronte walk', source: 'Free!', cat: 'Sydney' },
+  { icon: '🐨', raw: 48, unit: 'flat whites', desc: 'Taronga Zoo entry', source: 'taronga.org.au', cat: 'Sydney' },
+  { icon: '💼', raw: null, unit: 'min of work', desc: 'At minimum wage', source: 'Fair Work', cat: 'Money', compute: 'minutes' },
+  { icon: '📅', raw: null, unit: '/year', desc: 'Annual coffee habit', source: '1/workday, 48wk', cat: 'Money', compute: 'annual' },
+  { icon: '🍺', raw: 12, unit: '/schooner', desc: 'Beer at the pub', source: 'Avg pub price', cat: 'Aussie', invert: true },
+  { icon: '🥧', raw: 6, unit: 'flat whites', desc: 'Servo meat pie', source: 'Avg price', cat: 'Aussie' },
+  { icon: '🎰', raw: 260, unit: '/hour', desc: 'Pokie losses (NSW avg)', source: 'L&G data', cat: 'Aussie' },
+];
+
+function coffeeVal(item, avg) {
+  if (item.compute === 'minutes') return Math.round((avg / 23.23) * 60);
+  if (item.compute === 'annual') return '$' + Math.round(avg * 5 * 48).toLocaleString('en-AU');
+  if (item.invert) return (avg / item.raw).toFixed(1);
+  if (!item.raw || !avg) return '0';
+  return Math.round(item.raw / avg).toLocaleString('en-AU');
+}
+
+function renderCoffees(avgPrice) {
+  const el = document.getElementById('coffeesGrid');
+  const featured = COMPARISONS.find(c => c.featured);
+  let html = '';
+  if (featured) {
+    const val = Math.round(featured.raw / avgPrice).toLocaleString('en-AU');
+    html += `<div class="sm:col-span-2 lg:col-span-3 rounded-xl bg-ink text-canvas p-6 md:p-8">
+      <p class="text-xs uppercase tracking-wider text-canvas/40 mb-2">${esc(featured.desc)}</p>
+      <p class="font-serif text-4xl md:text-5xl font-bold text-terra mb-2">${val}</p>
+      <p class="text-sm text-canvas/50">flat whites to buy a median Sydney house ($${featured.raw.toLocaleString('en-AU')} at $${avgPrice.toFixed(2)}/cup)</p>
+      <p class="text-xs text-canvas/30 mt-2">${esc(featured.source)}</p>
+    </div>`;
+  }
+  COMPARISONS.filter(c => !c.featured).forEach(c => {
+    const val = coffeeVal(c, avgPrice);
+    const extra = c.pun ? ' border-terra' : ' border-rule';
+    html += `<div class="rounded-xl border${extra} bg-white p-5">
+      <span class="text-2xl">${c.icon}</span>
+      <p class="font-serif text-2xl font-bold text-ink mt-2">${val}</p>
+      <p class="text-xs text-faint">${esc(c.unit)}</p>
+      <p class="text-sm text-muted mt-1">${esc(c.desc)}</p>
+      <p class="text-[10px] text-faint mt-2">${esc(c.source)}</p>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ─── COMPARE SUBURBS ─────────────────────────────────────────────────────────
+let currentSuburbs = [];
+function populateCompare(suburbs) {
+  currentSuburbs = suburbs;
+  const s1 = document.getElementById('compare1');
+  const s2 = document.getElementById('compare2');
+  const opts = suburbs.map(s => `<option value="${esc(s.suburb)}">${esc(s.suburb)}</option>`).join('');
+  s1.innerHTML = opts;
+  s2.innerHTML = opts;
+  if (suburbs.length > 1) s2.selectedIndex = 1;
+}
+
+function compareSuburbs() {
+  const n1 = document.getElementById('compare1').value;
+  const n2 = document.getElementById('compare2').value;
+  const s1 = currentSuburbs.find(s => s.suburb === n1);
+  const s2 = currentSuburbs.find(s => s.suburb === n2);
+  if (!s1 || !s2) return;
+  const diff = Math.abs(s1.avg_price - s2.avg_price).toFixed(2);
+  const cheaper = s1.avg_price < s2.avg_price ? s1.suburb : s2.suburb;
+  document.getElementById('compareResult').innerHTML = `
+    <div class="grid grid-cols-2 gap-4 mt-4">
+      <div class="text-center p-3 rounded-lg bg-canvas"><p class="text-xs text-faint">${esc(s1.suburb)}</p><p class="font-serif text-2xl font-bold text-${priceColor(s1.avg_price)}">$${s1.avg_price.toFixed(2)}</p><p class="text-xs text-faint">${s1.sample_size} cafés</p></div>
+      <div class="text-center p-3 rounded-lg bg-canvas"><p class="text-xs text-faint">${esc(s2.suburb)}</p><p class="font-serif text-2xl font-bold text-${priceColor(s2.avg_price)}">$${s2.avg_price.toFixed(2)}</p><p class="text-xs text-faint">${s2.sample_size} cafés</p></div>
+    </div>
+    <p class="text-sm text-muted mt-3 text-center"><strong>${esc(cheaper)}</strong> is $${diff} cheaper per flat white.</p>`;
+}
+
+// ─── SALARY CALC ─────────────────────────────────────────────────────────────
+function calcSalary() {
+  const raw = document.getElementById('salaryInput').value.replace(/[^0-9.]/g, '');
+  const salary = parseFloat(raw);
+  if (!salary || !LIVE) return;
+  const hourly = salary / (48 * 5 * 8);
+  const mins = (LIVE.avg_price / hourly) * 60;
+  document.getElementById('salaryMinutes').textContent = mins.toFixed(1);
+}
+
+// ─── NEAR ME ─────────────────────────────────────────────────────────────────
+function findNearMe() {
+  if (!navigator.geolocation) return;
+  const el = document.getElementById('nearMeResult');
+  el.textContent = 'Finding your location...';
+  navigator.geolocation.getCurrentPosition(pos => {
+    const { latitude: lat, longitude: lng } = pos.coords;
+    let best = null, bestDist = Infinity;
+    (LIVE.gems || []).forEach(g => {
+      if (!g.lat || !g.lng) return;
+      const d = Math.sqrt(Math.pow(lat - g.lat, 2) + Math.pow(lng - g.lng, 2)) * 111;
+      if (d < bestDist) { bestDist = d; best = g; }
+    });
+    if (best) {
+      const km = bestDist < 1 ? Math.round(bestDist * 1000) + 'm' : bestDist.toFixed(1) + 'km';
+      el.innerHTML = `Cheapest near you: <strong>${esc(best.name)}</strong> in ${esc(best.suburb)} — <span class="text-cheap font-bold">$${best.price.toFixed(2)}</span> (${km} away)`;
+    } else {
+      el.textContent = 'No cafés found nearby.';
+    }
+  }, () => { el.textContent = 'Location access denied.'; });
+}
+
+// ─── CLICK SUBURB ────────────────────────────────────────────────────────────
+function clickSuburb(name) {
+  if (!map) return;
+  const sub = currentSuburbs.find(s => (s.suburb || s.name) === name);
+  if (sub && sub.lat && sub.lng) map.setView([sub.lat, sub.lng], 15);
+}
+
+// ─── MODALS ──────────────────────────────────────────────────────────────────
+function openModal() { document.getElementById('modal').classList.replace('hidden', 'flex'); }
+function closeModal() { document.getElementById('modal').classList.replace('flex', 'hidden'); }
+function openReconModal() { document.getElementById('reconModal').classList.replace('hidden', 'flex'); }
+function closeReconModal() { document.getElementById('reconModal').classList.replace('flex', 'hidden'); }
+
+function submitPrice() {
+  const name = document.getElementById('modalCafe').value;
+  const suburb = document.getElementById('modalSuburb').value;
+  const price = parseFloat(document.getElementById('modalPrice').value);
+  if (!name || !price) return;
+  fetch('/api/submit-price', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, suburb, price_small: price }),
+  }).then(r => { if (r.ok) document.getElementById('successMsg').style.display = 'block'; })
+  .catch(() => {});
+}
+
+function submitRecon() {
+  const suburb = document.getElementById('reconSuburb').value;
+  if (!suburb) return;
+  const email = document.getElementById('reconEmail').value;
+  fetch('/api/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: email || 'recon@flatwhiteindex.com.au', source: 'recon:' + suburb }),
+  }).then(r => { if (r.ok) document.getElementById('reconSuccess').style.display = 'block'; })
+  .catch(() => {});
+}
+
+function subscribeCTA(e) {
+  e.preventDefault();
+  const email = document.getElementById('ctaEmail').value;
+  if (!email) return;
+  fetch('/api/subscribe', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, source: 'v3-cta' }),
+  }).then(r => { if (!r.ok) throw new Error(); return r.json(); })
+  .then(() => {
+    document.getElementById('ctaSuccess').style.display = 'block';
+    document.getElementById('ctaForm').style.display = 'none';
+  }).catch(() => {
+    const el = document.getElementById('ctaSuccess');
+    el.textContent = 'Something went wrong — try again later.';
+    el.style.color = '#C4654A';
+    el.style.display = 'block';
+  });
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+if (LIVE) {
+  const suburbs = LIVE.suburbs || [];
+  const gems = LIVE.gems || [];
+  const dist = LIVE.distribution || [];
+  const avg = LIVE.avg_price || 0;
+
+  // Hero + stats
+  document.getElementById('heroCalls').textContent = (LIVE.calls_total || LIVE.total_cafes || 0).toLocaleString();
+  document.getElementById('heroSuburbs').textContent = suburbs.length;
+  document.getElementById('statAvg').textContent = '$' + avg.toFixed(2);
+  document.getElementById('statCafes').textContent = (LIVE.calls_total || LIVE.total_cafes || 0).toLocaleString();
+
+  if (suburbs.length) {
+    document.getElementById('statCheapPrice').textContent = '$' + suburbs[0].avg_price.toFixed(2);
+    document.getElementById('statCheapName').textContent = suburbs[0].suburb;
+    document.getElementById('statExpPrice').textContent = '$' + suburbs[suburbs.length - 1].avg_price.toFixed(2);
+    document.getElementById('statExpName').textContent = suburbs[suburbs.length - 1].suburb;
+  }
+
+  // Regions
+  const regions = buildRegions(suburbs);
+  renderRegionCards(regions);
+
+  // Findings
+  renderFindings(suburbs, gems, avg);
+
+  // Map (lazy)
+  const mapEl = document.getElementById('leaflet-map');
+  const cafeMarkers = gems.filter(g => g.lat && g.lng);
+  const mapData = cafeMarkers.length > 0 ? cafeMarkers : suburbs.filter(s => s.lat && s.lng);
+  const mapMode = cafeMarkers.length > 0 ? 'cafe' : 'suburb';
+  if ('IntersectionObserver' in window) {
+    new IntersectionObserver((entries, obs) => {
+      if (entries[0].isIntersecting) { obs.disconnect(); initMap(mapData, mapMode); }
+    }, { rootMargin: '300px' }).observe(mapEl);
+  } else {
+    initMap(mapData, mapMode);
+  }
+
+  // Sidebar + distribution + gems
+  renderSuburbList(suburbs);
+  if (dist.length) renderDist(dist);
+  if (gems.length) renderGems(gems);
+
+  // Sydney in Coffees
+  renderCoffees(avg);
+
+  // Compare + salary
+  populateCompare(suburbs);
+  calcSalary();
+}
+</script>
+</body>
+</html>
