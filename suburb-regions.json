@@ -1,0 +1,12 @@
+{
+  "regions": {
+    "inner_west": { "label": "Inner West", "suburbs": ["newtown", "marrickville", "leichhardt", "dulwich_hill", "enmore", "stanmore", "petersham", "ashfield"] },
+    "cbd": { "label": "CBD", "suburbs": ["sydney_cbd", "surry_hills", "darlinghurst", "pyrmont"] },
+    "eastern": { "label": "Eastern", "suburbs": ["bondi", "double_bay", "paddington", "randwick", "coogee", "bronte"] },
+    "north_shore": { "label": "North Shore", "suburbs": ["mosman", "neutral_bay", "chatswood", "crows_nest", "lane_cove", "north_sydney", "willoughby", "artarmon", "roseville", "st_leonards"] },
+    "beaches": { "label": "Beaches", "suburbs": ["manly", "dee_why", "freshwater", "curl_curl", "avalon"] },
+    "south": { "label": "South", "suburbs": ["hurstville", "kogarah", "miranda", "cronulla", "sutherland", "rockdale", "canterbury"] },
+    "west": { "label": "West", "suburbs": ["parramatta", "liverpool", "bankstown", "blacktown", "penrith", "fairfield", "auburn", "granville", "strathfield", "burwood", "homebush", "lidcombe"] },
+    "hills": { "label": "Hills", "suburbs": ["castle_hill", "baulkham_hills", "rouse_hill", "kellyville"] }
+  }
+}
