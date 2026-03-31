@@ -391,6 +391,17 @@
     margin-top: 2px;
   }
 
+  /* Price label tooltips on map — permanent, minimal */
+  .price-label {
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    padding: 0 !important;
+    text-shadow: 0 0 3px white, 0 0 3px white, 0 0 6px white;
+  }
+  .price-label::before { display: none !important; }
+
   /* Leaflet close button override */
   .leaflet-popup-close-button {
     color: rgba(247,243,237,0.7) !important;
@@ -1543,7 +1554,7 @@
         <div class="tagline">Sydney coffee price guide · 2026</div>
       </div>
     </div>
-    <div class="updated-badge">Updated March 2026</div>
+    <div class="updated-badge" id="updatedBadge">Live data</div>
   </header>
 
   <!-- HERO -->
@@ -1575,7 +1586,7 @@
     <div class="stat-card">
       <div class="stat-label">Cafés called</div>
       <div class="stat-value" id="cafesCalled">0</div>
-      <div class="stat-sub">of ~2,100 in Sydney</div>
+      <div class="stat-sub" id="cafesCalledSub">independent cafés</div>
     </div>
     <div class="stat-card">
       <div class="stat-label">Prices collected</div>
@@ -1992,7 +2003,6 @@ function initMap(items, mode) {
       <div class="legend-row"><div class="legend-dot" style="background:#3A7D44"></div> Under $4.50</div>
       <div class="legend-row"><div class="legend-dot" style="background:#B5763A"></div> $4.50 – $5.50</div>
       <div class="legend-row"><div class="legend-dot" style="background:#C0392B"></div> Over $5.50</div>
-      <div class="legend-row"><div class="legend-dot" style="background:#9C8872;opacity:0.5"></div> Discovered</div>
     `;
     return div;
   };
@@ -2002,23 +2012,22 @@ function initMap(items, mode) {
     const price = s.price || s.avg_price || 0;
     const colour = markerColour(price);
     const isCafe = mode === 'cafe';
-    const radius = isCafe ? 7 : markerRadius(s.count || 1);
     const name = s.name || s.suburb || 'Unknown';
     const suburb = s.suburb || '';
 
+    // Visible dot with drop shadow
     const marker = L.circleMarker([s.lat, s.lng], {
-      radius: radius,
+      radius: isCafe ? 8 : markerRadius(s.count || 1),
       fillColor: colour,
-      fillOpacity: 0.82,
-      color: 'white',
-      weight: 1.5,
+      fillOpacity: 0.9,
+      color: '#2C1A0E',
+      weight: 2,
     });
 
+    // Permanent price label above the dot
     marker.bindTooltip(
-      `<strong style="font-family:'DM Sans',sans-serif">${esc(name)}</strong><br>
-       <span style="font-family:'Playfair Display',serif;font-size:1rem">$${price.toFixed(2)}</span>
-       ${isCafe && suburb ? '<br><span style="font-size:0.75rem;opacity:0.7">' + esc(suburb) + '</span>' : ''}`,
-      { permanent: false, direction: 'top', offset: [0, -radius], opacity: 1 }
+      `<span style="font-family:'DM Sans',sans-serif;font-weight:600;font-size:0.72rem;color:${colour}">$${price.toFixed(2)}</span>`,
+      { permanent: true, direction: 'top', offset: [0, -10], className: 'price-label', opacity: 1 }
     );
 
     marker.on('click', () => {
@@ -2033,7 +2042,6 @@ function initMap(items, mode) {
         ${isCafe ? '<div class="popup-meta">' + esc(suburb) + '</div>' : ''}
         <div class="popup-price ${popupPriceClass(price)}">$${price.toFixed(2)}</div>
         ${!isCafe && s.count ? '<div class="popup-meta">' + s.count + ' café' + (s.count !== 1 ? 's' : '') + ' sampled</div>' : ''}
-        ${!isCafe && s.min != null && s.max != null ? '<div class="popup-minmax">Range: $' + s.min.toFixed(2) + ' – $' + s.max.toFixed(2) + '</div>' : ''}
         <button class="popup-share" onclick="shareSuburb('${esc(suburbName).replace(/'/g, "\\'")}', ${price}, this)">Share</button>
       `, { maxWidth: 220 }).openPopup();
     });
@@ -2271,21 +2279,15 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
   const mapData = cafeMarkers.length > 0 ? cafeMarkers : suburbs.filter(s => s.lat != null && s.lng != null);
   const mapMode = cafeMarkers.length > 0 ? 'cafe' : 'suburb';
 
-  // Lazy-init map when it scrolls into view (below fold on most devices)
-  const discovered = (raw && raw.discovered && raw.discovered.length > 0) ? raw.discovered : [];
+  // Lazy-init map — only priced cafes, no discovered dots
   const mapEl = document.getElementById('leaflet-map');
   if (mapEl && 'IntersectionObserver' in window) {
     const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) {
-        obs.disconnect();
-        initMap(mapData, mapMode);
-        if (discovered.length > 0) addDiscoveredMarkers(discovered);
-      }
+      if (entries[0].isIntersecting) { obs.disconnect(); initMap(mapData, mapMode); }
     }, { rootMargin: '300px' });
     obs.observe(mapEl);
   } else {
     initMap(mapData, mapMode);
-    if (discovered.length > 0) addDiscoveredMarkers(discovered);
   }
   loadFromHash();
 
@@ -2332,8 +2334,17 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
 
     document.getElementById('cafesCalled').textContent = called.toLocaleString();
     document.getElementById('statPrices').textContent = pricesCollected.toLocaleString();
+    const subEl = document.getElementById('cafesCalledSub');
+    if (subEl && discovered > 0) subEl.textContent = `of ${discovered.toLocaleString()} found`;
 
-    const pct = Math.round((discovered / 2100) * 100);
+    // Update badge with real timestamp
+    const badge = document.getElementById('updatedBadge');
+    if (badge && raw?.generated_at) {
+      const d = new Date(raw.generated_at);
+      badge.textContent = 'Updated ' + d.toLocaleDateString('en-AU', { day: 'numeric', month: 'short' });
+    }
+
+    const pct = Math.round((called / Math.max(discovered, 1)) * 100);
     document.getElementById('progressLabel').textContent =
       `${discovered} cafés discovered · ${called} called · ${pricesCollected} priced`;
     const bar = document.querySelector('.progress-bar-inner');
