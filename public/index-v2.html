@@ -1114,74 +1114,6 @@ function buildLiveDist(suburbs) {
   });
 }
 
-// ─── DEMO DATA (fallback) ────────────────────────────────────────────────────
-const DEMO_CAFES = [
-  { n:"Single O", s:"Surry Hills", p:5.00, r:4.6, x:450, y:340 },
-  { n:"Mecca", s:"CBD", p:5.70, r:4.4, x:380, y:270 },
-  { n:"Edition Coffee", s:"Darlinghurst", p:5.30, r:4.5, x:475, y:300 },
-  { n:"Artificer", s:"Surry Hills", p:5.50, r:4.7, x:440, y:355 },
-  { n:"Campos", s:"Newtown", p:5.00, r:4.5, x:280, y:350 },
-  { n:"Gumption", s:"CBD", p:6.00, r:4.6, x:395, y:258 },
-  { n:"Room 10", s:"Potts Point", p:5.20, r:4.3, x:495, y:270 },
-  { n:"The Grounds", s:"Alexandria", p:5.80, r:4.2, x:400, y:415 },
-  { n:"Paramount Coffee", s:"Surry Hills", p:5.40, r:4.6, x:435, y:330 },
-  { n:"Reformatory", s:"Marrickville", p:4.10, r:4.7, x:200, y:395 },
-  { n:"Cabrito Coffee", s:"CBD", p:5.50, r:4.3, x:365, y:280 },
-  { n:"Sample Coffee", s:"St Peters", p:4.60, r:4.5, x:310, y:420 },
-  { n:"Veneziano", s:"Surry Hills", p:5.60, r:4.4, x:455, y:365 },
-  { n:"Reuben Hills", s:"Surry Hills", p:5.30, r:4.6, x:445, y:348 },
-  { n:"Three Williams", s:"Redfern", p:4.80, r:4.4, x:390, y:385 },
-  { n:"Bondi Latte", s:"Bondi", p:6.20, r:4.1, x:580, y:330 },
-  { n:"Gertrude & Alice", s:"Bondi Beach", p:6.00, r:4.3, x:590, y:345 },
-  { n:"Bay Vista", s:"Double Bay", p:6.50, r:4.0, x:535, y:285 },
-  { n:"Indigo", s:"Double Bay", p:6.30, r:4.2, x:525, y:280 },
-  { n:"The Hideout", s:"Manly", p:5.60, r:4.5, x:660, y:240 },
-  { n:"Hemingway's", s:"Manly", p:5.80, r:4.3, x:650, y:250 },
-  { n:"Coogee Pav Café", s:"Coogee", p:6.00, r:4.1, x:600, y:400 },
-  { n:"Barzura", s:"Coogee", p:5.80, r:4.2, x:610, y:390 },
-  { n:"About Life", s:"Rozelle", p:4.70, r:4.3, x:200, y:260 },
-  { n:"Cornersmith", s:"Marrickville", p:4.30, r:4.6, x:215, y:410 },
-  { n:"North Shore Brew", s:"North Sydney", p:5.50, r:4.3, x:320, y:160 },
-  { n:"Incognito", s:"Mosman", p:6.10, r:4.4, x:550, y:170 },
-  { n:"Black Star Pastry", s:"Newtown", p:5.10, r:4.5, x:265, y:338 },
-  { n:"Two Chaps", s:"Marrickville", p:4.40, r:4.5, x:205, y:385 },
-  { n:"Balmain Bugs Café", s:"Balmain", p:5.00, r:4.2, x:185, y:252 },
-  { n:"White Horse", s:"Surry Hills", p:5.40, r:4.4, x:460, y:320 },
-  { n:"Pablo & Rusty's", s:"CBD", p:5.80, r:4.5, x:370, y:265 },
-  { n:"Skittle Lane", s:"CBD", p:5.60, r:4.3, x:385, y:275 },
-  { n:"Brewtown", s:"Newtown", p:4.90, r:4.4, x:275, y:355 },
-  { n:"Henley's", s:"Randwick", p:5.40, r:4.2, x:560, y:430 },
-  { n:"Coffee Alchemy", s:"Marrickville", p:4.20, r:4.8, x:210, y:400 },
-];
-
-const DEMO_TICKER = [
-  { s:"Surry Hills", p:"$5.38", d:"+$0.22", dir:"up" },
-  { s:"Newtown", p:"$5.00", d:"+$0.10", dir:"up" },
-  { s:"Marrickville", p:"$4.25", d:"—", dir:"flat" },
-  { s:"CBD", p:"$5.65", d:"+$0.30", dir:"up" },
-  { s:"Bondi", p:"$6.10", d:"+$0.25", dir:"up" },
-  { s:"Manly", p:"$5.70", d:"+$0.15", dir:"up" },
-  { s:"Double Bay", p:"$6.40", d:"+$0.35", dir:"up" },
-  { s:"Balmain", p:"$5.00", d:"+$0.05", dir:"up" },
-  { s:"Coogee", p:"$5.90", d:"+$0.20", dir:"up" },
-  { s:"St Peters", p:"$4.60", d:"-$0.05", dir:"down" },
-  { s:"North Sydney", p:"$5.50", d:"+$0.15", dir:"up" },
-  { s:"Redfern", p:"$4.80", d:"—", dir:"flat" },
-];
-
-const DEMO_DIST = [
-  { suburb: "Double Bay", price: 6.50, pct: 100 },
-  { suburb: "Bondi", price: 6.10, pct: 92 },
-  { suburb: "Coogee", price: 5.90, pct: 87 },
-  { suburb: "CBD", price: 5.65, pct: 82 },
-  { suburb: "Manly", price: 5.70, pct: 83 },
-  { suburb: "Surry Hills", price: 5.38, pct: 75 },
-  { suburb: "Newtown", price: 5.00, pct: 67 },
-  { suburb: "Redfern", price: 4.80, pct: 62 },
-  { suburb: "St Peters", price: 4.60, pct: 56 },
-  { suburb: "Marrickville", price: 4.25, pct: 47 },
-];
-
 // ─── TICKER ──────────────────────────────────────────────────────────────────
 function buildTicker() {
   const track = document.getElementById('tickerTrack');
@@ -1599,14 +1531,10 @@ function subscribeCTA(e) {
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
 
-// Resolve data: live from server injection, or hardcoded demo
-const liveCafes = isLive ? buildLiveCafes(LIVE.gems) : null;
-const liveTicker = isLive ? buildLiveTicker(LIVE.suburbs) : null;
-const liveDist = isLive ? buildLiveDist(LIVE.suburbs) : null;
-
-const cafes = liveCafes && liveCafes.length > 5 ? liveCafes : DEMO_CAFES;
-const tickerData = liveTicker && liveTicker.length > 3 ? liveTicker : DEMO_TICKER;
-const distData = liveDist && liveDist.length > 3 ? liveDist : DEMO_DIST;
+// Live data only — no fallback
+const cafes = isLive ? buildLiveCafes(LIVE.gems) || [] : [];
+const tickerData = isLive ? buildLiveTicker(LIVE.suburbs) || [] : [];
+const distData = isLive ? buildLiveDist(LIVE.suburbs) || [] : [];
 
 // Update hero stats from live data
 if (isLive) {
