@@ -95,7 +95,7 @@ app.get("/", async (req, res) => {
       // Build cache (reuse from /api/dashboard handler)
       buildDashboardCache(priceData, callStats, discoveredCafes);
     }
-    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};window.__REGION_CONFIG__=${regionConfigJson};</script>`;
+    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};window.__REGION_CONFIG__=${JSON.stringify(JSON.parse(regionConfigJson))};</script>`;
     const html = indexHtml.replace('</head>', inject + '</head>');
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=60');
