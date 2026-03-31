@@ -569,9 +569,10 @@ document.getElementById('tabs').addEventListener('click', e => {
   tab.classList.add('active');
   document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
   const t = tab.dataset.tab;
-  const now = Date.now();
-  if (tabDataAge[t] && (now - tabDataAge[t]) < TAB_CACHE_TTL) return;
-  tabDataAge[t] = now;
+  // Reset filters on tab switch
+  if (t === 'calls') { document.getElementById('callStatusFilter').value = ''; }
+  if (t === 'cafes') { document.getElementById('cafeSearch').value = ''; document.getElementById('cafeStatusFilter').value = ''; }
+  // Always reload fresh data
   if (t === 'calls') loadCalls();
   else if (t === 'cafes') loadCafes();
   else if (t === 'review') loadReview();
