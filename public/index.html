@@ -33,8 +33,7 @@
 <link rel="preload" href="fonts/dm-sans-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="fonts/playfair-display-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="fonts.css">
-<link rel="preload" href="leaflet.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
-<noscript><link rel="stylesheet" href="leaflet.css"></noscript>
+<link rel="stylesheet" href="leaflet.css">
 <link rel="dns-prefetch" href="https://a.basemaps.cartocdn.com">
 <link rel="dns-prefetch" href="https://b.basemaps.cartocdn.com">
 <style>
@@ -1943,7 +1942,7 @@ function initMap(items, mode) {
   mode = mode || 'suburb';
   map = L.map('leaflet-map', {
     zoomControl: true,
-    scrollWheelZoom: true,
+    scrollWheelZoom: false,
   });
 
   L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
@@ -2013,8 +2012,8 @@ function initMap(items, mode) {
   // Force Leaflet to recalculate container size, then fit to all markers
   setTimeout(() => {
     map.invalidateSize();
-    if (suburbs.length > 0) {
-      const bounds = L.latLngBounds(suburbs.map(s => [s.lat, s.lng]));
+    if (items.length > 0) {
+      const bounds = L.latLngBounds(items.map(s => [s.lat, s.lng]));
       map.fitBounds(bounds, { padding: [30, 30], maxZoom: 13 });
     } else {
       map.setView([-33.87, 151.21], 12);
@@ -2240,19 +2239,20 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
   const mapMode = cafeMarkers.length > 0 ? 'cafe' : 'suburb';
 
   // Lazy-init map when it scrolls into view (below fold on most devices)
+  const discovered = (raw && raw.discovered && raw.discovered.length > 0) ? raw.discovered : [];
   const mapEl = document.getElementById('leaflet-map');
   if (mapEl && 'IntersectionObserver' in window) {
     const obs = new IntersectionObserver((entries) => {
-      if (entries[0].isIntersecting) { obs.disconnect(); initMap(mapData, mapMode); }
+      if (entries[0].isIntersecting) {
+        obs.disconnect();
+        initMap(mapData, mapMode);
+        if (discovered.length > 0) addDiscoveredMarkers(discovered);
+      }
     }, { rootMargin: '300px' });
     obs.observe(mapEl);
   } else {
     initMap(mapData, mapMode);
-  }
-
-  // Show discovered cafes as grey dots
-  if (raw && raw.discovered && raw.discovered.length > 0) {
-    addDiscoveredMarkers(raw.discovered);
+    if (discovered.length > 0) addDiscoveredMarkers(discovered);
   }
   loadFromHash();
 

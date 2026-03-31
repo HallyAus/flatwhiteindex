@@ -4,11 +4,23 @@ import { spawn } from "node:child_process";
 import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDiscoveredCafes, testConnection, saveSubscriberToDb, saveUserPriceSubmission, getRecentCalls, getNeedsReviewCalls, updateCallPrice, updateCallStatus, deleteCall, searchCafes, updateCafe, deleteCafe, getSubscribers, deleteSubscriber, getUserSubmissions, deleteUserSubmission, retryCall, bulkRetryFailed, getAvgPrice, getReviewCount, getSuburbProgress } from "./db.js";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 let _twilioMod; // cached twilio import
+
+// Hidden suburbs — won't show on public dashboard or map
+const HIDDEN_SUBURBS_FILE = join(__dirname, 'hidden-suburbs.json');
+let hiddenSuburbs = new Set();
+try {
+  if (existsSync(HIDDEN_SUBURBS_FILE)) {
+    hiddenSuburbs = new Set(JSON.parse(readFileSync(HIDDEN_SUBURBS_FILE, 'utf-8')));
+  }
+} catch {}
+function saveHiddenSuburbs() {
+  writeFileSync(HIDDEN_SUBURBS_FILE, JSON.stringify([...hiddenSuburbs]), 'utf-8');
+}
 
 // [SECURITY] Trust first proxy (Cloudflare/nginx) for correct req.ip
 app.set('trust proxy', 1);
@@ -329,7 +341,11 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
   priceData.forEach(row => {
     const suburb = row.cafes?.suburb || 'Unknown';
     if (!suburbMap[suburb]) {
-      suburbMap[suburb] = { suburb, lat: row.cafes?.lat, lng: row.cafes?.lng, prices: [], cafes: [] };
+      suburbMap[suburb] = { suburb, lat: null, lng: null, prices: [], cafes: [] };
+    }
+    if (suburbMap[suburb].lat == null && row.cafes?.lat != null) {
+      suburbMap[suburb].lat = row.cafes.lat;
+      suburbMap[suburb].lng = row.cafes.lng;
     }
     suburbMap[suburb].prices.push(row.price_small);
     suburbMap[suburb].cafes.push({
@@ -377,6 +393,11 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
   // prices_collected = calls with an actual extracted price, not just status=completed
   const actualPrices = priceData.filter(r => r.price_small != null).length;
 
+  // Filter out hidden suburbs from public dashboard
+  const visibleSuburbs = suburbs.filter(s => !hiddenSuburbs.has(s.suburb));
+  const visibleGems = gems.filter(g => !hiddenSuburbs.has(g.suburb));
+  const visibleDiscovered = discovered.filter(d => !hiddenSuburbs.has(d.suburb));
+
   dashboardCache = {
     generated_at: new Date().toISOString(),
     total_cafes: callStats.cafes_total || discoveredCafes.length,
@@ -385,7 +406,7 @@ function buildDashboardCache(priceData, callStats, discoveredCafes) {
     total_discovered: discoveredCafes.length,
     prices_collected: actualPrices,
     calls_total: callStats.total,
-    avg_price: avgPrice, suburbs, gems, distribution, discovered,
+    avg_price: avgPrice, suburbs: visibleSuburbs, gems: visibleGems, distribution, discovered: visibleDiscovered,
   };
   dashboardCacheTime = Date.now();
 
@@ -668,6 +689,21 @@ app.get("/api/admin/logs", verifyAdmin, async (req, res) => {
 
   // Default: in-memory ring buffer
   res.json({ source: 'ring', lines: LOG_RING.slice(-lines) });
+});
+
+// Admin hidden suburbs — toggle visibility on public dashboard
+app.get("/api/admin/hidden-suburbs", verifyAdmin, (req, res) => {
+  res.json([...hiddenSuburbs]);
+});
+
+app.post("/api/admin/hidden-suburbs", verifyAdmin, (req, res) => {
+  const { suburb, hidden } = req.body;
+  if (!suburb || typeof suburb !== 'string') return res.status(400).json({ error: 'suburb required' });
+  if (hidden) { hiddenSuburbs.add(suburb); } else { hiddenSuburbs.delete(suburb); }
+  saveHiddenSuburbs();
+  dashboardCache = null; // Invalidate so next request rebuilds
+  console.log(`🔧 Suburb "${suburb}" ${hidden ? 'hidden' : 'shown'} on public dashboard`);
+  res.json({ ok: true, hidden: [...hiddenSuburbs] });
 });
 
 // Admin suburb progress — per-suburb call stats (cached 30s)

@@ -650,32 +650,37 @@ const SUBURB_MAP = {
   newcastle:'Newcastle',
 };
 
+let hiddenSuburbsSet = new Set();
+
 async function loadSuburbProgress() {
   const container = document.getElementById('suburbButtons');
   try {
-    const res = await api('/api/admin/suburb-progress');
-    const progress = await res.json();
+    const [progRes, hiddenRes] = await Promise.all([
+      api('/api/admin/suburb-progress'),
+      api('/api/admin/hidden-suburbs'),
+    ]);
+    const progress = await progRes.json();
+    hiddenSuburbsSet = new Set(await hiddenRes.json());
 
-    // Index by suburb name for lookup
     const byName = {};
     progress.forEach(s => { byName[s.suburb] = s; });
 
     container.innerHTML = Object.entries(SUBURB_MAP).map(([key, label]) => {
-      // Match suburb key to DB suburb name (DB uses Title Case, keys use snake_case)
-      const dbName = label; // The display name matches the DB suburb name
+      const dbName = label;
       const s = byName[dbName] || { eligible: 0, called: 0, priced: 0, voicemail: 0, no_answer: 0 };
+      const isHidden = hiddenSuburbsSet.has(dbName);
 
       const pct = s.eligible > 0 ? Math.round(s.priced / s.eligible * 100) : 0;
-      const cls = pct >= 80 ? 'done' : s.called > 0 ? 'partial' : 'none';
+      const cls = isHidden ? 'none' : (pct >= 80 ? 'done' : s.called > 0 ? 'partial' : 'none');
       const barColor = pct >= 80 ? 'var(--green)' : pct > 0 ? 'var(--bronze)' : 'transparent';
       const stats = s.eligible > 0
         ? `${s.priced}/${s.eligible}` + (s.voicemail ? ` · ${s.voicemail}vm` : '')
         : '—';
 
-      return `<button class="quick-sub ${cls}" onclick="quickDispatch('${key}')" title="${label}: ${s.priced} priced, ${s.called} called, ${s.eligible} eligible, ${s.voicemail} voicemail">
+      return `<button class="quick-sub ${cls}" style="${isHidden ? 'opacity:0.35;text-decoration:line-through;' : ''}" onclick="quickDispatch('${key}')" oncontextmenu="event.preventDefault();toggleSuburbVisibility('${dbName}',${!isHidden})" title="${label}: ${s.priced} priced, ${s.called} called | Right-click to ${isHidden ? 'show' : 'hide'} on public dashboard">
         <span class="qs-name">${label}</span>
-        <span class="qs-stats">${stats}</span>
-        <div class="qs-bar" style="width:${pct}%;background:${barColor};"></div>
+        <span class="qs-stats">${isHidden ? 'hidden' : stats}</span>
+        <div class="qs-bar" style="width:${isHidden ? 0 : pct}%;background:${barColor};"></div>
       </button>`;
     }).join('');
   } catch {
@@ -683,6 +688,12 @@ async function loadSuburbProgress() {
       `<button class="quick-sub" onclick="quickDispatch('${key}')"><span class="qs-name">${label}</span></button>`
     ).join('');
   }
+}
+
+async function toggleSuburbVisibility(suburb, hide) {
+  await api('/api/admin/hidden-suburbs', { method: 'POST', body: JSON.stringify({ suburb, hidden: hide }) });
+  log(`${suburb} ${hide ? 'hidden from' : 'shown on'} public dashboard`, hide ? 'w' : 's');
+  loadSuburbProgress();
 }
 
 async function dispatch() {
@@ -764,11 +775,21 @@ async function loadCalls() {
       <td class="mono">${timeAgo(c.completed_at || c.called_at)}</td>
       <td>
         <button class="btn btn-ghost btn-sm" onclick="viewTranscript('${esc(c.id)}','${esc(c.cafes?.name||'')}',${JSON.stringify(JSON.stringify(c.raw_transcript||''))})">View</button>
+        ${c.status === 'completed' ? `<button class="btn btn-ghost btn-sm" onclick="editCallPrice('${c.id}',${c.price_small||0})">Edit $</button>` : ''}
         ${['failed','no_answer','voicemail'].includes(c.status) ? `<button class="btn btn-ocean btn-sm" onclick="retryCall('${c.id}')">Retry</button>` : ''}
         <button class="btn btn-ghost btn-sm" onclick="if(confirm('Delete this call?'))deleteCallRow('${c.id}')">✕</button>
       </td>
     </tr>`).join('');
   } catch (err) { body.innerHTML = '<tr><td colspan="7" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
+}
+
+function editCallPrice(id, current) {
+  const newPrice = prompt('Enter correct price (e.g. 4.50):', current || '');
+  if (!newPrice) return;
+  const p = parseFloat(newPrice);
+  if (isNaN(p) || p < 2 || p > 20) { alert('Price must be between $2 and $20'); return; }
+  api('/api/admin/calls/' + id + '/price', { method: 'PATCH', body: JSON.stringify({ price_small: p, approve: true }) })
+    .then(() => { loadCalls(); log('Updated price to $' + p, 's'); });
 }
 
 async function retryCall(id) {
@@ -798,6 +819,8 @@ function viewTranscript(id, name, transcript) {
 }
 
 // --- CAFES TAB ---
+const cafeCache = {};
+
 async function loadCafes() {
   const q = document.getElementById('cafeSearch').value;
   const status = document.getElementById('cafeStatusFilter').value;
@@ -806,6 +829,7 @@ async function loadCafes() {
     const res = await api('/api/admin/cafes?limit=200' + (q ? '&q=' + encodeURIComponent(q) : '') + (status ? '&status=' + status : ''));
     const cafes = await res.json();
     if (!cafes.length) { body.innerHTML = '<tr><td colspan="6" class="empty"><div class="empty-icon">☕</div>No cafes found</td></tr>'; return; }
+    cafes.forEach(c => cafeCache[c.id] = c);
     body.innerHTML = cafes.map(c => `<tr>
       <td>${esc(c.name)}</td>
       <td>${esc(c.suburb || '—')}</td>
@@ -813,7 +837,7 @@ async function loadCafes() {
       <td>${c.google_rating || '—'}</td>
       <td><span class="badge badge-${c.status || 'discovered'}">${c.status || 'discovered'}</span></td>
       <td>
-        <button class="btn btn-ghost btn-sm" onclick="editCafe(${JSON.stringify(JSON.stringify(c))})">Edit</button>
+        <button class="btn btn-ghost btn-sm" onclick="editCafe('${c.id}')">Edit</button>
         <button class="btn btn-ghost btn-sm" onclick="toggleCafeStatus('${c.id}','${c.status}')">${c.status === 'excluded' ? '✓' : '✕'}</button>
         <button class="btn btn-ghost btn-sm" onclick="if(confirm('Delete cafe and all its calls?'))deleteCafeRow('${c.id}')">🗑</button>
       </td>
@@ -821,8 +845,9 @@ async function loadCafes() {
   } catch (err) { body.innerHTML = '<tr><td colspan="6" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
 }
 
-function editCafe(json) {
-  const c = JSON.parse(json);
+function editCafe(id) {
+  const c = cafeCache[id];
+  if (!c) return;
   document.getElementById('editCafeId').value = c.id;
   document.getElementById('editCafeName').value = c.name || '';
   document.getElementById('editCafeSuburb').value = c.suburb || '';
