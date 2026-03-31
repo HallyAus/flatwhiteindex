@@ -1063,8 +1063,59 @@ body {
 </div>
 
 <script>
-// ─── DATA ────────────────────────────────────────────────────────────────────
-const cafes = [
+// ─── LIVE DATA INTEGRATION ───────────────────────────────────────────────────
+const LIVE = window.__LIVE_DATA__;
+const isLive = !!LIVE;
+
+// Convert live data to v2 format
+function buildLiveCafes(gems) {
+  if (!gems || !gems.length) return null;
+  // Distribute cafes across a rough Sydney SVG coordinate space
+  const suburbCoords = {
+    'surry hills':{x:450,y:340},'cbd':{x:380,y:270},'sydney cbd':{x:380,y:270},
+    'darlinghurst':{x:475,y:300},'newtown':{x:280,y:350},'potts point':{x:495,y:270},
+    'alexandria':{x:400,y:415},'marrickville':{x:200,y:395},'st peters':{x:310,y:420},
+    'redfern':{x:390,y:385},'bondi':{x:580,y:330},'bondi beach':{x:590,y:345},
+    'double bay':{x:535,y:285},'manly':{x:660,y:240},'coogee':{x:600,y:400},
+    'rozelle':{x:200,y:260},'north sydney':{x:320,y:160},'mosman':{x:550,y:170},
+    'balmain':{x:185,y:252},'randwick':{x:560,y:430},'paddington':{x:510,y:310},
+    'pyrmont':{x:340,y:290},'glebe':{x:260,y:300},'waterloo':{x:420,y:400},
+    'erskineville':{x:360,y:400},'enmore':{x:290,y:360},'leichhardt':{x:220,y:300},
+    'chatswood':{x:400,y:130},'crows nest':{x:350,y:170},'neutral bay':{x:420,y:180},
+    'dee why':{x:600,y:120},'freshwater':{x:620,y:140},'cronulla':{x:480,y:480},
+    'hurstville':{x:400,y:470},'parramatta':{x:100,y:300},'liverpool':{x:60,y:400},
+    'bankstown':{x:150,y:420},'blacktown':{x:60,y:200},'penrith':{x:20,y:250},
+    'strathfield':{x:280,y:380},'burwood':{x:250,y:350},'ashfield':{x:240,y:330},
+    'dulwich hill':{x:230,y:370},'stanmore':{x:270,y:340},'petersham':{x:250,y:340},
+    'homebush':{x:220,y:340},'castle hill':{x:200,y:100},'miranda':{x:450,y:470},
+    'kogarah':{x:420,y:460},'rockdale':{x:410,y:450},'canterbury':{x:300,y:410},
+    'lane cove':{x:380,y:150},'willoughby':{x:390,y:140},'artarmon':{x:370,y:155},
+  };
+  return gems.filter(g => g.price).map(g => {
+    const key = (g.suburb || '').toLowerCase();
+    const coords = suburbCoords[key] || { x: 300 + Math.random()*300, y: 200 + Math.random()*200 };
+    return { n: g.name, s: g.suburb, p: g.price, r: g.rating || 4.0, x: coords.x + (Math.random()-0.5)*20, y: coords.y + (Math.random()-0.5)*20 };
+  });
+}
+
+function buildLiveTicker(suburbs) {
+  if (!suburbs || !suburbs.length) return null;
+  return suburbs.slice(0, 16).map(s => ({
+    s: s.suburb || s.name, p: '$' + (s.avg_price || s.price || 0).toFixed(2),
+    d: '—', dir: 'flat'  // no delta data yet
+  }));
+}
+
+function buildLiveDist(suburbs) {
+  if (!suburbs || !suburbs.length) return null;
+  return suburbs.filter(s => s.avg_price).sort((a,b) => b.avg_price - a.avg_price).slice(0, 12).map(s => {
+    const maxP = suburbs.reduce((m, x) => Math.max(m, x.avg_price || 0), 0);
+    return { suburb: s.suburb, price: s.avg_price, pct: Math.round((s.avg_price / maxP) * 100) };
+  });
+}
+
+// ─── DEMO DATA (fallback) ────────────────────────────────────────────────────
+const DEMO_CAFES = [
   { n:"Single O", s:"Surry Hills", p:5.00, r:4.6, x:450, y:340 },
   { n:"Mecca", s:"CBD", p:5.70, r:4.4, x:380, y:270 },
   { n:"Edition Coffee", s:"Darlinghurst", p:5.30, r:4.5, x:475, y:300 },
@@ -1103,7 +1154,7 @@ const cafes = [
   { n:"Coffee Alchemy", s:"Marrickville", p:4.20, r:4.8, x:210, y:400 },
 ];
 
-const tickerData = [
+const DEMO_TICKER = [
   { s:"Surry Hills", p:"$5.38", d:"+$0.22", dir:"up" },
   { s:"Newtown", p:"$5.00", d:"+$0.10", dir:"up" },
   { s:"Marrickville", p:"$4.25", d:"—", dir:"flat" },
@@ -1118,7 +1169,7 @@ const tickerData = [
   { s:"Redfern", p:"$4.80", d:"—", dir:"flat" },
 ];
 
-const distData = [
+const DEMO_DIST = [
   { suburb: "Double Bay", price: 6.50, pct: 100 },
   { suburb: "Bondi", price: 6.10, pct: 92 },
   { suburb: "Coogee", price: 5.90, pct: 87 },
@@ -1547,6 +1598,49 @@ function subscribeCTA(e) {
 })();
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+
+// Resolve data: live from server injection, or hardcoded demo
+const liveCafes = isLive ? buildLiveCafes(LIVE.gems) : null;
+const liveTicker = isLive ? buildLiveTicker(LIVE.suburbs) : null;
+const liveDist = isLive ? buildLiveDist(LIVE.suburbs) : null;
+
+const cafes = liveCafes && liveCafes.length > 5 ? liveCafes : DEMO_CAFES;
+const tickerData = liveTicker && liveTicker.length > 3 ? liveTicker : DEMO_TICKER;
+const distData = liveDist && liveDist.length > 3 ? liveDist : DEMO_DIST;
+
+// Update hero stats from live data
+if (isLive) {
+  const avgPrice = LIVE.avg_price || 0;
+  const totalCafes = LIVE.calls_total || LIVE.total_cafes || 0;
+  const suburbCount = (LIVE.suburbs || []).length;
+  const cheapest = LIVE.suburbs && LIVE.suburbs.length ? LIVE.suburbs[0] : null;
+  const expensive = LIVE.suburbs && LIVE.suburbs.length ? LIVE.suburbs[LIVE.suburbs.length - 1] : null;
+
+  // Update hero stat data-count attributes before counter animation runs
+  const statEls = document.querySelectorAll('.hero-stat-value');
+  if (statEls[0] && totalCafes) { statEls[0].dataset.count = totalCafes; }
+  if (statEls[1] && avgPrice) { statEls[1].dataset.count = avgPrice; }
+  if (statEls[2] && suburbCount) { statEls[2].dataset.count = suburbCount; }
+
+  // Update bento cards with live data
+  if (cheapest) {
+    const cheapCard = document.querySelectorAll('.bento-value.green');
+    if (cheapCard[0]) cheapCard[0].textContent = '$' + (cheapest.avg_price || cheapest.price || 0).toFixed(2);
+    const cheapDetail = cheapCard[0]?.parentElement?.querySelector('.bento-detail');
+    if (cheapDetail) cheapDetail.textContent = (cheapest.suburb || cheapest.name) + ' — cheapest in Sydney';
+  }
+  if (expensive) {
+    const expCard = document.querySelectorAll('.bento-value.red');
+    if (expCard[0]) expCard[0].textContent = '$' + (expensive.avg_price || expensive.price || 0).toFixed(2);
+    const expDetail = expCard[0]?.parentElement?.querySelector('.bento-detail');
+    if (expDetail) expDetail.textContent = (expensive.suburb || expensive.name) + ' — most expensive';
+  }
+
+  // Update donut center + map badge
+  const badge = document.querySelector('.map-badge');
+  if (badge) badge.textContent = totalCafes + ' data points';
+}
+
 buildTicker();
 buildDistBars();
 buildMap();
@@ -1556,7 +1650,6 @@ initCursorTrail();
 initScroll();
 animateCounters();
 drawDonut();
-// Sparklines
 setTimeout(() => {
   drawSparkline('sparkCheap', '#5ea068', [4.00, 3.90, 3.95, 4.00, 4.10, 4.05, 4.10, 4.10, 4.15, 4.10, 4.10, 4.10]);
   drawSparkline('sparkExpensive', '#c45040', [5.80, 5.90, 6.00, 6.10, 6.00, 6.20, 6.30, 6.20, 6.40, 6.50, 6.40, 6.50]);

@@ -78,8 +78,10 @@ app.use((req, res, next) => {
 
 // Server-rendered index with live data injected (no demo data flash)
 let indexHtml = null;
+let indexV2Html = null;
 let regionConfigJson = '{}';
 try { indexHtml = readFileSync(join(__dirname, 'public', 'index.html'), 'utf-8'); } catch {}
+try { indexV2Html = readFileSync(join(__dirname, 'public', 'index-v2.html'), 'utf-8'); } catch {}
 try { regionConfigJson = readFileSync(join(__dirname, 'suburb-regions.json'), 'utf-8'); } catch {}
 
 app.get("/", async (req, res) => {
@@ -102,6 +104,27 @@ app.get("/", async (req, res) => {
     res.send(html);
   } catch {
     res.sendFile(join(__dirname, 'public', 'index.html'));
+  }
+});
+
+// V2 editorial redesign with live data injection
+app.get("/v2", async (req, res) => {
+  if (!indexV2Html) return res.sendFile(join(__dirname, 'public', 'index-v2.html'));
+  try {
+    const now = Date.now();
+    if (!dashboardCache || (now - dashboardCacheTime) >= CACHE_TTL) {
+      const [priceData, callStats, discoveredCafes] = await Promise.all([
+        getPriceStats(), getCallStats(), getDiscoveredCafes(),
+      ]);
+      buildDashboardCache(priceData, callStats, discoveredCafes);
+    }
+    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};</script>`;
+    const html = indexV2Html.replace('</head>', inject + '</head>');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=60');
+    res.send(html);
+  } catch {
+    res.sendFile(join(__dirname, 'public', 'index-v2.html'));
   }
 });
 
