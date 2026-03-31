@@ -327,7 +327,7 @@
     <!-- REVIEW TAB -->
     <div class="tab-panel" id="panel-review">
       <div class="panel">
-        <div class="panel-head"><h2>🔍 Needs Review</h2><button class="btn btn-ghost btn-sm" onclick="loadReview()">Refresh</button></div>
+        <div class="panel-head"><h2>🔍 Needs Review</h2><div style="display:flex;gap:0.5rem;"><button class="btn btn-ocean btn-sm" onclick="reprocessAll()">🔄 Reprocess All</button><button class="btn btn-ghost btn-sm" onclick="loadReview()">Refresh</button></div></div>
         <div id="reviewList"><div class="empty"><div class="empty-icon">✅</div>Loading...</div></div>
       </div>
     </div>
@@ -831,6 +831,21 @@ async function deleteCafeRow(id) {
 }
 
 // --- REVIEW TAB ---
+async function reprocessAll() {
+  if (!confirm('Re-run price extraction and voicemail detection on all review items?')) return;
+  log('🔄 Reprocessing all review items...', 'd');
+  try {
+    const res = await api('/api/admin/reprocess', { method: 'POST' });
+    const data = await res.json();
+    log(`Reprocessed ${data.total}: ${data.fixed} prices extracted, ${data.voicemails} → voicemail, ${data.unchanged} unchanged`, 's');
+    loadReview();
+    refreshStats();
+    loadSuburbProgress();
+  } catch (err) {
+    log('Reprocess error: ' + err.message, 'e');
+  }
+}
+
 async function loadReview() {
   const el = document.getElementById('reviewList');
   try {

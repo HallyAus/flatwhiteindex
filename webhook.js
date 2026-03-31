@@ -528,6 +528,39 @@ app.get("/api/admin/review-count", verifyAdmin, async (req, res) => {
   }
 });
 
+// Admin: reprocess all needs_review calls through updated price extraction + status inference
+app.post("/api/admin/reprocess", verifyAdmin, async (req, res) => {
+  try {
+    const reviews = await getNeedsReviewCalls();
+    let fixed = 0, voicemails = 0, unchanged = 0;
+
+    for (const call of reviews) {
+      const transcript = call.raw_transcript || '';
+
+      // Re-check if this should be voicemail/IVR
+      if (/please leave (a |us a )?message|leave a detailed message|after the (tone|beep)|cannot get to the phone|isn't available right now|please hold the line|your call will be answered|press \d|our operating hours|please call back|submit an? (email )?enquir|contact us through our website/i.test(transcript)) {
+        await updateCallStatus(call.id, 'voicemail');
+        voicemails++;
+        continue;
+      }
+
+      // Re-extract prices with updated patterns
+      const { price_small, price_large, needs_review } = extractPrices(transcript);
+      if (price_small != null && !needs_review) {
+        await updateCallPrice(call.id, price_small, price_large, true);
+        fixed++;
+      } else {
+        unchanged++;
+      }
+    }
+
+    console.log(`🔄 Reprocessed ${reviews.length} reviews: ${fixed} prices extracted, ${voicemails} reclassified as voicemail, ${unchanged} unchanged`);
+    res.json({ ok: true, total: reviews.length, fixed, voicemails, unchanged });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 // Helper to run a shell command and collect output
 function runCmd(output, cmd, args, opts = {}) {
   return new Promise((resolve) => {
