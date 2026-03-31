@@ -9,6 +9,22 @@ import { readFileSync, writeFileSync, existsSync } from "node:fs";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 let _twilioMod; // cached twilio import
+let _resend; // cached Resend client
+
+async function sendWelcomeEmail(email) {
+  if (!_resend) {
+    const { Resend } = await import('resend');
+    _resend = new Resend(process.env.RESEND_API_KEY);
+  }
+  const { welcomeEmail } = await import('./scripts/email-templates.js');
+  const avgPrice = dashboardCache?.avg_price || 0;
+  const { subject, html } = welcomeEmail({ avgPrice, totalCafes: dashboardCache?.total_cafes, totalPrices: dashboardCache?.prices_collected });
+  const unsubUrl = `https://flatwhiteindex.com.au/unsubscribe?email=${encodeURIComponent(email)}`;
+  const personalised = html.replace(/\{\{UNSUBSCRIBE_URL\}\}/g, unsubUrl);
+  const from = process.env.EMAIL_FROM || 'Flat White Index <hello@flatwhiteindex.com.au>';
+  await _resend.emails.send({ from, to: email, subject, html: personalised });
+  console.log(`📧 Welcome email sent to ${email.slice(0, 3)}***`);
+}
 
 // Hidden suburbs — won't show on public dashboard or map
 const HIDDEN_SUBURBS_FILE = join(__dirname, 'hidden-suburbs.json');
@@ -460,6 +476,11 @@ app.post("/api/subscribe", async (req, res) => {
     const isNew = await saveSubscriberToDb(sanitised, sanitisedSource);
     console.log(`📧 ${isNew ? 'New' : 'Existing'} subscriber: ${sanitised.slice(0, 3)}*** (${sanitisedSource.slice(0, 30)})`);
     res.json({ ok: true, new: isNew });
+
+    // Send welcome email to new subscribers (non-blocking)
+    if (isNew && process.env.RESEND_API_KEY) {
+      sendWelcomeEmail(sanitised).catch(err => console.warn('Welcome email failed:', err.message));
+    }
   } catch (err) {
     console.error("Subscribe error:", err.message);
     res.status(500).json({ error: "Failed to save subscription" });
