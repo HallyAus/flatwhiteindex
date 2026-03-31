@@ -77,7 +77,214 @@
     opacity: 0.4;
   }
 
-  main { position: relative; z-index: 1; max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; }
+  .container { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem; }
+  .content { max-width: 1100px; margin: 0 auto; padding: 0 1.5rem 2rem; position: relative; z-index: 1; }
+
+  /* DARK ZONE — The Shot */
+  .dark-zone {
+    background: linear-gradient(135deg, var(--shot) 0%, var(--crema) 100%);
+    color: var(--ceramic);
+    position: relative;
+    overflow: hidden;
+  }
+  .dark-zone::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -40%);
+    width: 600px; height: 600px;
+    background:
+      radial-gradient(ellipse 120px 120px at 50% 50%, rgba(196,129,58,0.06) 0%, transparent 100%),
+      radial-gradient(ellipse 200px 200px at 50% 50%, rgba(196,129,58,0.04) 0%, transparent 100%),
+      radial-gradient(ellipse 300px 300px at 50% 50%, rgba(196,129,58,0.02) 0%, transparent 100%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .dark-zone :focus-visible { outline: 2px solid var(--art); outline-offset: 2px; }
+
+  /* Header in dark zone */
+  .dark-zone header { border-bottom-color: rgba(196,129,58,0.15); }
+  .dark-zone h1 { color: var(--ceramic); }
+  .dark-zone .tagline { color: var(--art); }
+  .dark-zone .updated-badge {
+    background: rgba(196,129,58,0.1);
+    border: 1px solid rgba(196,129,58,0.25);
+    color: var(--art);
+  }
+  .dark-zone .updated-badge::before {
+    content: '';
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--budget);
+    animation: pulse 2s infinite;
+    display: inline-block; margin-right: 6px;
+  }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  /* Hero in dark zone */
+  .dark-zone .hero { padding: 2rem 0 1rem; }
+  .dark-zone .hero-lede { color: rgba(245,240,232,0.6); }
+  .dark-zone .hero-insight { background: rgba(245,240,232,0.05); border-left-color: var(--art); }
+  .dark-zone .insight-number { color: var(--art); font-size: 3rem; text-shadow: 0 0 60px rgba(196,129,58,0.2); }
+  .dark-zone .insight-text { color: rgba(245,240,232,0.5); }
+
+  /* Stats in dark zone */
+  .dark-zone .stats-row {
+    display: flex; justify-content: center; gap: 2rem;
+    border-bottom: 1px solid rgba(245,240,232,0.06);
+    padding: 1rem 0 1.25rem;
+  }
+  .dark-zone .stat-card {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    text-align: center;
+  }
+  .dark-zone .stat-card.hero-stat { background: transparent; }
+  .dark-zone .stat-label { color: rgba(245,240,232,0.3); }
+  .dark-zone .stat-value { color: var(--ceramic); }
+  .dark-zone .stat-card.hero-stat .stat-value { color: var(--art); font-size: 2.2rem; }
+  .dark-zone .stat-card.hero-stat .stat-label { color: rgba(245,240,232,0.35); }
+  .dark-zone .stat-card.hero-stat .stat-sub { color: rgba(245,240,232,0.3); }
+  .dark-zone .stat-sub { color: rgba(245,240,232,0.25); }
+  .dark-zone .stat-value.good { color: #6BCB77; }
+  .dark-zone .stat-value.warn { color: #E8665A; }
+
+  /* Tier badges */
+  .tier-row { display: flex; justify-content: center; gap: 8px; padding: 1rem 0 2rem; position: relative; z-index: 1; }
+  .tier-badge { padding: 4px 12px; border-radius: 5px; font-size: 0.62rem; font-weight: 500; letter-spacing: 0.04em; }
+  .tier-budget { background: rgba(74,160,88,0.1); border: 1px solid rgba(74,160,88,0.25); color: #6BCB77; }
+  .tier-mid { background: rgba(196,129,58,0.1); border: 1px solid rgba(196,129,58,0.25); color: var(--art); }
+  .tier-premium { background: rgba(180,65,52,0.1); border: 1px solid rgba(180,65,52,0.25); color: #E8665A; }
+
+  /* POUR ART — transition element */
+  .pour-art {
+    height: 40px;
+    background: var(--shot);
+    position: relative;
+    overflow: hidden;
+  }
+  .pour-art::after {
+    content: '';
+    position: absolute;
+    bottom: -20px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 40px;
+    background: var(--shot);
+    border-radius: 0 0 50% 50%;
+  }
+
+  /* BRIDGE ZONE — The Pour */
+  .bridge-zone {
+    background: linear-gradient(180deg, var(--crema) 0%, var(--ceramic) 100%);
+    padding: 0 0 1.5rem;
+  }
+  .region-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  .region-grid + .region-grid { margin-top: 10px; }
+
+  .region-card {
+    background: var(--rim);
+    border-radius: 14px;
+    padding: 16px;
+    box-shadow: 0 4px 20px rgba(27,18,13,0.1);
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+  .region-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(27,18,13,0.16);
+  }
+  .region-card::before {
+    content: '';
+    position: absolute; top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 60px; height: 3px;
+    border-radius: 0 0 6px 6px;
+  }
+  .region-card.rc-budget::before { background: var(--budget); }
+  .region-card.rc-mid::before { background: var(--midrange); }
+  .region-card.rc-premium::before { background: var(--premium); }
+  .region-name { font-size: 0.7rem; font-weight: 600; color: var(--pour); text-transform: uppercase; letter-spacing: 0.06em; }
+  .region-price { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; margin: 4px 0 2px; }
+  .region-meta { font-size: 0.6rem; color: var(--text-muted); }
+  .region-tier { display: inline-block; font-size: 0.52rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .region-tier.rt-b { background: var(--budget-bg); color: var(--budget); }
+  .region-tier.rt-m { background: var(--midrange-bg); color: var(--midrange); }
+  .region-tier.rt-p { background: var(--premium-bg); color: var(--premium); }
+
+  /* LIGHT ZONE — The Milk */
+  .light-zone { background: var(--ceramic); }
+
+  /* SYDNEY IN COFFEES */
+  .coffees-section { padding: 1.5rem 0; border-top: 1px solid var(--border); }
+  .coffees-intro { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem; }
+  .coffees-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+  .coffee-card {
+    background: var(--rim); border: 1px solid var(--border);
+    border-radius: 12px; padding: 1rem;
+    position: relative; overflow: hidden;
+  }
+  .coffee-card::after {
+    content: ''; position: absolute;
+    bottom: -15px; right: -15px;
+    width: 50px; height: 50px;
+    border: 2px solid rgba(196,129,58,0.06);
+    border-radius: 50%; pointer-events: none;
+  }
+  .coffee-icon { font-size: 1.4rem; margin-bottom: 0.3rem; }
+  .coffee-number { font-family: 'Playfair Display', serif; font-size: 1.7rem; font-weight: 700; color: var(--pour); line-height: 1; }
+  .coffee-unit { font-size: 0.68rem; color: var(--text-muted); margin-top: 2px; }
+  .coffee-desc { font-size: 0.76rem; color: var(--pour); margin-top: 0.3rem; line-height: 1.4; }
+  .coffee-source { font-size: 0.56rem; color: var(--text-muted); font-style: italic; margin-top: 0.4rem; }
+  .coffee-featured {
+    grid-column: 1 / -1;
+    background: linear-gradient(135deg, var(--shot), var(--crema));
+    border: none; color: var(--ceramic);
+    display: flex; align-items: center; gap: 1.5rem;
+    padding: 1.5rem; border-radius: 14px;
+    position: relative; overflow: hidden;
+  }
+  .coffee-featured::before {
+    content: ''; position: absolute;
+    right: 40px; top: 50%; transform: translateY(-50%);
+    width: 150px; height: 150px;
+    border: 1px solid rgba(196,129,58,0.06);
+    border-radius: 50%; pointer-events: none;
+  }
+  .coffee-featured .coffee-number { font-size: 2.8rem; color: var(--art); }
+  .coffee-featured .coffee-desc { color: rgba(245,240,232,0.5); }
+  .coffee-featured .coffee-source { color: rgba(245,240,232,0.3); }
+  .coffee-pun { border: 2px solid var(--art); }
+  .coffee-pun .coffee-number { color: var(--premium); }
+  .pun-tag { display: inline-block; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; background: var(--premium-bg); color: var(--premium); padding: 2px 8px; border-radius: 4px; margin-bottom: 0.4rem; }
+  .coffee-highlight {
+    background: linear-gradient(135deg, var(--pour), var(--crema));
+    border: none; color: var(--ceramic);
+  }
+  .coffee-highlight .coffee-number { color: var(--art); }
+  .coffee-highlight .coffee-desc { color: rgba(245,240,232,0.6); }
+  .coffees-divider {
+    grid-column: 1 / -1; text-align: center;
+    padding: 0.5rem 0; font-size: 0.62rem;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--text-muted); position: relative;
+  }
+  .coffees-divider::before, .coffees-divider::after {
+    content: ''; position: absolute; top: 50%;
+    width: calc(50% - 80px); height: 1px;
+    background: var(--border);
+  }
+  .coffees-divider::before { left: 0; }
+  .coffees-divider::after { right: 0; }
 
   /* HEADER */
   header {
@@ -174,6 +381,9 @@
 
   @media (max-width: 900px) {
     .stats-row { grid-template-columns: repeat(3, 1fr); }
+    .dark-zone .stats-row { flex-wrap: wrap; gap: 1.25rem; }
+    .region-grid { grid-template-columns: repeat(2, 1fr); }
+    .dark-zone .insight-number { font-size: 2.5rem; }
   }
   @media (max-width: 540px) {
     .stats-row { grid-template-columns: repeat(2, 1fr); }
@@ -181,6 +391,10 @@
     h1 { font-size: 1.4rem; }
     .hero-lede { font-size: 0.9rem; }
     .insight-number { font-size: 1.6rem; }
+    .dark-zone .insight-number { font-size: 2rem; }
+    .coffees-grid { grid-template-columns: 1fr; }
+    .coffee-featured { flex-direction: column; gap: 0.75rem; }
+    .coffee-featured .coffee-number { font-size: 2rem; }
   }
 
   .stat-card {
@@ -1520,7 +1734,9 @@
 <style>.skip-link:focus{top:0;}</style>
 <div class="grain" aria-hidden="true"></div>
 
-<main id="content">
+<!-- DARK ZONE — The Shot -->
+<div class="dark-zone" role="banner">
+  <div class="container">
   <!-- HEADER -->
   <header>
     <div class="logo-area">
@@ -1645,6 +1861,28 @@
       <div class="stat-sub" id="statAnswerRate">awaiting calls</div>
     </div>
   </section>
+
+    <!-- Tier badges -->
+    <div class="tier-row" id="tierRow">
+      <span class="tier-badge tier-budget">Budget ≤ P25</span>
+      <span class="tier-badge tier-mid">Mid-range</span>
+      <span class="tier-badge tier-premium">Premium ≥ P75</span>
+    </div>
+  </div>
+</div>
+
+<!-- POUR ART — transition element -->
+<div class="pour-art"></div>
+
+<!-- BRIDGE ZONE — The Pour (region cards) -->
+<div class="bridge-zone" role="region" aria-label="Regional price comparison">
+  <div class="region-grid" id="region-cards-1"></div>
+  <div class="region-grid" id="region-cards-2"></div>
+</div>
+
+<!-- LIGHT ZONE — The Milk -->
+<div class="light-zone" role="main" id="content">
+  <div class="content">
 
   <!-- KEY FINDINGS — hidden until we have real data, shown by JS -->
   <section class="findings" id="findingsSection" style="display:none;">
@@ -1791,6 +2029,9 @@
     </div>
   </section>
 
+  <!-- SYDNEY IN COFFEES -->
+  <div class="coffees-section" id="sydney-coffees"></div>
+
   <!-- SALARY CALCULATOR -->
   <section class="salary-calc">
     <h2>How long do you work for a coffee?</h2>
@@ -1871,7 +2112,9 @@
       <button class="contribute-btn" style="background:var(--art);" onclick="openReconModal()">Request a suburb</button>
     </div>
   </div>
-</main>
+
+  </div>
+</div>
 
 <!-- FOOTER -->
 <footer class="site-footer">
@@ -1968,6 +2211,166 @@ function esc(str) {
   const d = document.createElement('div');
   d.textContent = str;
   return d.innerHTML;
+}
+
+// ─── TIER + REGION + COFFEE COMPARISONS ─────────────────────────────────────
+
+const REGION_CONFIG = window.__REGION_CONFIG__ || { regions: {} };
+
+function calculateTiers(prices) {
+  const sorted = [...prices].sort((a, b) => a - b);
+  const p25 = sorted[Math.floor(sorted.length * 0.25)];
+  const p75 = sorted[Math.floor(sorted.length * 0.75)];
+  return { budget: p25, premium: p75 };
+}
+
+function getTier(price, thresholds) {
+  if (price <= thresholds.budget) return 'budget';
+  if (price >= thresholds.premium) return 'premium';
+  return 'midrange';
+}
+
+const TIER_CSS = { budget: 'rc-budget', midrange: 'rc-mid', premium: 'rc-premium' };
+const TIER_LABEL = { budget: 'Budget', midrange: 'Mid-range', premium: 'Premium' };
+const TIER_BADGE = { budget: 'rt-b', midrange: 'rt-m', premium: 'rt-p' };
+const TIER_COLOR = { budget: 'var(--budget)', midrange: 'var(--midrange)', premium: 'var(--premium)' };
+
+function aggregateRegions(suburbs) {
+  const suburbToRegion = {};
+  for (const [regionId, info] of Object.entries(REGION_CONFIG.regions || {})) {
+    for (const s of info.suburbs) suburbToRegion[s] = regionId;
+  }
+  const regionMap = {};
+  for (const sub of suburbs) {
+    const key = (sub.suburb_name || sub.name || '').toLowerCase().replace(/\s+/g, '_').replace(/['']/g, '');
+    const regionId = suburbToRegion[key] || 'other';
+    if (!regionMap[regionId]) regionMap[regionId] = { suburbs: [], prices: [], cafeCount: 0 };
+    regionMap[regionId].suburbs.push(sub);
+    const p = sub.avg_price || sub.price;
+    if (p) {
+      regionMap[regionId].prices.push(p);
+      regionMap[regionId].cafeCount += (sub.cafe_count || sub.count || 0);
+    }
+  }
+  const allPrices = suburbs.filter(s => s.avg_price || s.price).map(s => s.avg_price || s.price);
+  if (allPrices.length < 4) return { regions: [], tiers: { budget: 0, premium: 0 } };
+  const tiers = calculateTiers(allPrices);
+  const results = [];
+  for (const [regionId, data] of Object.entries(regionMap)) {
+    if (data.prices.length === 0) continue;
+    const avg = data.prices.reduce((a, b) => a + b, 0) / data.prices.length;
+    const label = REGION_CONFIG.regions[regionId]?.label || 'Other';
+    results.push({ id: regionId, label, avgPrice: avg, cafeCount: data.cafeCount, suburbCount: data.suburbs.length, tier: getTier(avg, tiers) });
+  }
+  results.sort((a, b) => b.avgPrice - a.avgPrice);
+  return { regions: results, tiers };
+}
+
+function renderRegionCards(regions) {
+  const grid1 = document.getElementById('region-cards-1');
+  const grid2 = document.getElementById('region-cards-2');
+  if (!grid1 || !grid2) return;
+  const first4 = regions.slice(0, 4);
+  const rest = regions.slice(4);
+  grid1.innerHTML = first4.map(regionCardHTML).join('');
+  grid2.innerHTML = rest.map(regionCardHTML).join('');
+}
+
+function regionCardHTML(r) {
+  return `<div class="region-card ${TIER_CSS[r.tier]}">
+    <div class="region-name">${esc(r.label)}</div>
+    <div class="region-price" style="color:${TIER_COLOR[r.tier]};">$${r.avgPrice.toFixed(2)}</div>
+    <div class="region-meta">${r.cafeCount} cafés · ${r.suburbCount} suburbs</div>
+    <div class="region-tier ${TIER_BADGE[r.tier]}">${TIER_LABEL[r.tier]}</div>
+  </div>`;
+}
+
+// ─── SYDNEY IN COFFEES ──────────────────────────────────────────────────────
+
+const COFFEE_COMPARISONS = [
+  { icon: '🏠', raw: 1260000, unit: 'flat whites to buy a house', desc: 'Median Sydney house price', source: 'CoreLogic median, March 2026', featured: true },
+  { icon: '🏠', raw: 690, unit: 'flat whites/week', desc: 'Median weekly rent in Bondi ($690)', source: 'Domain Rental Report Q1 2026', category: 'cost' },
+  { icon: '🥑', raw: 22, unit: 'flat whites', desc: 'One avo toast at a Sydney café ($22)', source: 'Average brunch menu price', category: 'cost' },
+  { icon: '🛒', raw: 215, unit: 'flat whites', desc: 'Average weekly grocery shop ($215)', source: 'ABS Household Expenditure Survey', category: 'cost' },
+  { icon: '⚡', raw: 295, unit: 'flat whites/quarter', desc: 'Average Sydney electricity bill ($295/qtr)', source: 'AER Electricity Report 2025', category: 'cost' },
+  { icon: '🚂', raw: 50, unit: 'flat whites', desc: 'Opal weekly cap ($50)', source: 'Transport for NSW 2026', category: 'transport' },
+  { icon: '⛴️', raw: 7.70, unit: 'flat whites', desc: 'Return ferry to Manly ($7.70)', source: 'Opal adult fare', category: 'transport' },
+  { icon: '🚗', raw: 18.57, unit: 'flat whites', desc: 'Harbour Bridge toll — E-Tag return ($18.57)', source: 'Transport for NSW toll schedule', category: 'transport' },
+  { icon: '⛽', raw: 1.92, unit: 'flat whites/litre', desc: 'Diesel is $1.92/L. A flat white costs more than 2.5 litres of diesel. At least the coffee keeps you awake at the pump.', source: 'FuelCheck NSW avg diesel, March 2026', category: 'transport', pun: true },
+  { icon: '🏏', raw: 78, unit: 'flat whites', desc: 'Day at the SCG — GA ticket ($78)', source: 'Cricket Australia 2025/26', category: 'experiences' },
+  { icon: '🎭', raw: 42, unit: 'flat whites', desc: 'Opera House guided tour ($42)', source: 'sydneyoperahouse.com', category: 'experiences' },
+  { icon: '🌊', raw: 0, unit: 'flat whites', desc: 'Bondi to Bronte coastal walk. Free. You earned that post-walk flat white.', source: 'Best things in Sydney cost nothing', category: 'experiences' },
+  { icon: '🎡', raw: 40, unit: 'flat whites', desc: 'Luna Park unlimited rides ($40)', source: 'lunaparksydney.com', category: 'experiences' },
+  { icon: '🐨', raw: 48, unit: 'flat whites', desc: 'Taronga Zoo adult entry ($48)', source: 'taronga.org.au', category: 'experiences' },
+  { icon: '💼', raw: null, unit: 'of work', desc: 'Time to earn a flat white at minimum wage ($23.23/hr)', source: 'Fair Work Commission', category: 'money', compute: 'minutes' },
+  { icon: '📅', raw: null, unit: 'per year', desc: 'Your annual coffee habit — 1 per workday, 48 weeks', source: 'Based on Sydney average', category: 'money', compute: 'annual' },
+  { icon: '🏦', raw: null, unit: 'over 30 years', desc: 'One daily flat white, invested at 7% p.a. instead', source: 'Assumes daily price, 7% return', category: 'money', compute: 'compound' },
+  { icon: '💰', raw: null, unit: 'of min wage', desc: 'Daily flat white as % of weekly minimum wage ($475/wk)', source: 'Fair Work + ATO tax tables', category: 'money', compute: 'pct_wage' },
+  { icon: '🍺', raw: 12, unit: 'flat whites/schooner', desc: 'A schooner at the pub (~$12). Beer costs 2.3x more than coffee.', source: 'Average Sydney pub prices', category: 'aussie', invert: true },
+  { icon: '🥧', raw: 6, unit: 'flat whites', desc: 'A servo meat pie ($6). The true Aussie benchmark.', source: 'Average service station price', category: 'aussie' },
+  { icon: '🎰', raw: 260, unit: 'flat whites/hour', desc: 'Average pokie losses in NSW ($260/hr). At least coffee gives you something back.', source: 'NSW Liquor & Gaming data', category: 'aussie' },
+  { icon: '🏄', raw: 400, unit: 'flat whites', desc: 'Annual Surfing Australia membership ($400)', source: 'surfingaustralia.com', category: 'aussie' },
+];
+
+const CATEGORY_LABELS = { cost: 'Cost of Living', transport: 'Getting Around', experiences: 'Sydney Experiences', money: 'Work & Money', aussie: 'Only in Australia' };
+
+function computeCoffeeValue(item, avgPrice) {
+  if (item.compute === 'minutes') return ((avgPrice / 23.23) * 60).toFixed(0) + 'min';
+  if (item.compute === 'annual') return '$' + Math.round(avgPrice * 5 * 48).toLocaleString('en-AU');
+  if (item.compute === 'compound') {
+    const annual = avgPrice * 240;
+    let total = 0;
+    for (let y = 0; y < 30; y++) total = (total + annual) * 1.07;
+    return '$' + Math.round(total).toLocaleString('en-AU');
+  }
+  if (item.compute === 'pct_wage') return ((avgPrice / 475) * 100).toFixed(1) + '%';
+  if (item.invert) return (avgPrice / item.raw).toFixed(1);
+  if (item.raw === 0) return '0';
+  return (item.raw / avgPrice).toFixed(1);
+}
+
+function renderSydneyCoffees(avgPrice) {
+  const el = document.getElementById('sydney-coffees');
+  if (!el || !avgPrice) return;
+  const featured = COFFEE_COMPARISONS.find(c => c.featured);
+  const grouped = {};
+  COFFEE_COMPARISONS.filter(c => !c.featured).forEach(c => {
+    const cat = c.category || 'other';
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(c);
+  });
+  let html = `<h2 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;margin-bottom:0.3rem;">Sydney in Coffees ☕</h2>
+    <p class="coffees-intro">How far does a flat white go in Sydney? We did the maths.</p>`;
+  if (featured) {
+    const val = Math.round(featured.raw / avgPrice).toLocaleString('en-AU');
+    html += `<div class="coffee-card coffee-featured" style="margin-bottom:10px;">
+      <div><div class="coffee-icon" style="font-size:2rem;">${featured.icon}</div></div>
+      <div style="flex:1;position:relative;z-index:1;">
+        <div class="coffee-number">${val}</div>
+        <div class="coffee-unit">${esc(featured.unit)}</div>
+        <div class="coffee-desc">${esc(featured.desc)} — $${featured.raw.toLocaleString('en-AU')} at $${avgPrice.toFixed(2)} per cup</div>
+        <div class="coffee-source">${esc(featured.source)}</div>
+      </div>
+    </div>`;
+  }
+  html += '<div class="coffees-grid">';
+  for (const [cat, items] of Object.entries(grouped)) {
+    html += `<div class="coffees-divider">${CATEGORY_LABELS[cat] || cat}</div>`;
+    for (const item of items) {
+      const val = computeCoffeeValue(item, avgPrice);
+      const extra = item.pun ? ' coffee-pun' : item.compute === 'minutes' ? ' coffee-highlight' : '';
+      html += `<div class="coffee-card${extra}">`;
+      if (item.pun) html += '<div class="pun-tag">Price check</div>';
+      html += `<div class="coffee-icon">${item.icon}</div>
+        <div class="coffee-number">${val}</div>
+        <div class="coffee-unit">${esc(item.unit)}</div>
+        <div class="coffee-desc">${esc(item.desc)}</div>
+        <div class="coffee-source">${esc(item.source)}</div>
+      </div>`;
+    }
+  }
+  html += '</div>';
+  el.innerHTML = html;
 }
 
 // ─── DEMO DATA ───────────────────────────────────────────────────────────────
@@ -2390,6 +2793,22 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
   const mappable = suburbs.filter(s => s.lat != null && s.lng != null);
 
   updateStats(suburbs, totalCafes, pricesCollected, avgPrice);
+
+  // Region cards + tier badges
+  const { regions, tiers } = aggregateRegions(suburbs);
+  renderRegionCards(regions);
+  const tierRow = document.getElementById('tierRow');
+  if (tierRow && tiers.budget) {
+    tierRow.innerHTML = `
+      <span class="tier-badge tier-budget">Budget ≤ $${tiers.budget.toFixed(2)}</span>
+      <span class="tier-badge tier-mid">Mid-range</span>
+      <span class="tier-badge tier-premium">Premium ≥ $${tiers.premium.toFixed(2)}</span>
+    `;
+  }
+
+  // Sydney in Coffees
+  renderSydneyCoffees(avgPrice);
+
   if (suburbs.length > 0) renderSuburbList(suburbs);
   if (distData.length > 0) renderDist(distData);
   if (gems.length > 0) renderGems(gems);
