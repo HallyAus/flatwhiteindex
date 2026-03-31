@@ -2197,7 +2197,8 @@ function resetMapView() {
   map.closePopup();
   document.getElementById('selectedInfo').textContent = 'Click a suburb or cafe';
   highlightSuburb(null);
-  history.replaceState(null, '', '/');
+  window.history.replaceState(null, '', window.location.origin + '/');
+  window.location.hash = '';
 }
 
 // ─── BOTTOM PANELS ────────────────────────────────────────────────────────────
