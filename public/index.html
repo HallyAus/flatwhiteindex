@@ -1701,6 +1701,15 @@
           <div id="leaflet-map" role="application" aria-label="Interactive map showing flat white prices by Sydney suburb"></div>
         </div>
       </div>
+      <!-- EMBED — under map -->
+      <details class="embed-section" style="margin-top:0.5rem;">
+        <summary><h2 style="font-size:0.82rem; display:inline;">Embed this data</h2></summary>
+        <p class="embed-desc">Add the Flat White Index to your article or website.</p>
+        <div class="embed-code-wrapper">
+          <code class="embed-code" id="embedCode">&lt;iframe src="https://flatwhiteindex.com.au/" width="100%" height="600" frameborder="0" title="Flat White Index — Sydney Coffee Prices"&gt;&lt;/iframe&gt;</code>
+          <button class="embed-copy-btn" onclick="copyEmbed(this)">Copy</button>
+        </div>
+      </details>
     </div>
 
     <!-- SIDEBAR: SUBURB LIST -->
@@ -1730,32 +1739,34 @@
     <div class="panel">
       <h2 class="section-title">Price distribution</h2>
       <div class="dist-chart" id="distChart"></div>
-      <!-- INSIGHTS GRID -->
-      <div id="priceInsights" style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; padding:0.6rem 0.75rem; border-top:1px solid var(--border);"></div>
+      <!-- INSIGHTS -->
+      <div style="border-top:1px solid var(--border); padding:0.75rem 1rem;">
+        <div id="priceInsights" style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:0.5rem;"></div>
+      </div>
 
-      <!-- METHODOLOGY GRID -->
-      <div style="border-top:1px solid var(--border); padding:0.6rem 0.75rem;">
-        <h3 style="font-family:'Playfair Display',serif; font-size:0.82rem; font-weight:600; margin-bottom:0.4rem; color:var(--espresso);">How we collect this data</h3>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem;">
-          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
-            <div style="font-size:0.9rem; margin-bottom:0.2rem;">📞</div>
-            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">AI voice calls</div>
-            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">An AI agent calls each café: "How much is a flat white?" Handles voicemail and hang-ups.</div>
+      <!-- METHODOLOGY -->
+      <div style="border-top:1px solid var(--border); padding:0.75rem 1rem;">
+        <h3 style="font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:600; margin-bottom:0.6rem; color:var(--espresso);">How we collect this data</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
+          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+            <div style="font-size:1.1rem; margin-bottom:0.25rem;">📞</div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">AI voice calls</div>
+            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">An AI agent calls each café and asks one question: "How much is a flat white?"</div>
           </div>
-          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
-            <div style="font-size:0.9rem; margin-bottom:0.2rem;">🔍</div>
-            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Auto-discovery</div>
-            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">Cafés found via public listings. Calls in batches during business hours. Prices verified.</div>
+          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+            <div style="font-size:1.1rem; margin-bottom:0.25rem;">🔍</div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">Auto-discovery</div>
+            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">Cafés found via public listings. Calls during business hours. Prices verified before publishing.</div>
           </div>
-          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
-            <div style="font-size:0.9rem; margin-bottom:0.2rem;">🚫</div>
-            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Chains excluded</div>
-            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">Only independents. No Starbucks, McCafé, Gloria Jean's, The Coffee Club, or 10 others.</div>
+          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+            <div style="font-size:1.1rem; margin-bottom:0.25rem;">🚫</div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">Chains excluded</div>
+            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">Only independents. No Starbucks, McCafé, Gloria Jean's, The Coffee Club, or 10 others.</div>
           </div>
-          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
-            <div style="font-size:0.9rem; margin-bottom:0.2rem;">🗺️</div>
-            <div style="font-size:0.78rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">What's next</div>
-            <div style="font-size:0.75rem; color:var(--mid); line-height:1.45;">Expanding across Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal();return false;" style="color:var(--bronze);">Request a suburb →</a></div>
+          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+            <div style="font-size:1.1rem; margin-bottom:0.25rem;">🗺️</div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">What's next</div>
+            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">Expanding across Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal();return false;" style="color:var(--bronze);">Request a suburb →</a></div>
           </div>
         </div>
       </div>
@@ -1841,14 +1852,6 @@
   <div id="about"></div>
 
   <!-- EMBED -->
-  <details class="embed-section">
-    <summary><h2>Embed this data</h2></summary>
-    <p class="embed-desc">Add the Flat White Index to your article or website.</p>
-    <div class="embed-code-wrapper">
-      <code class="embed-code" id="embedCode">&lt;iframe src="https://flatwhiteindex.com.au/" width="100%" height="600" frameborder="0" title="Flat White Index — Sydney Coffee Prices"&gt;&lt;/iframe&gt;</code>
-      <button class="embed-copy-btn" onclick="copyEmbed(this)">Copy</button>
-    </div>
-  </details>
 
   <!-- NEWSLETTER -->
   
@@ -2259,11 +2262,11 @@ function renderPriceInsights(suburbs, gems, avgPrice, pricesCollected) {
   ].filter(Boolean);
 
   el.innerHTML = insights.map(i => `
-    <div style="background:var(--milk); border-radius:8px; padding:0.5rem 0.65rem; display:flex; align-items:center; gap:0.5rem;">
-      <span style="font-size:0.85rem;">${i.icon}</span>
+    <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.6rem 0.85rem; display:flex; align-items:center; gap:0.6rem;">
+      <span style="font-size:1.1rem;">${i.icon}</span>
       <div>
-        <div style="font-size:0.95rem; font-weight:700; color:var(--espresso); line-height:1.1;">${i.stat}</div>
-        <div style="font-size:0.7rem; color:var(--mid); line-height:1.2;">${i.label}</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--espresso); line-height:1.1;">${i.stat}</div>
+        <div style="font-size:0.78rem; color:var(--mid); line-height:1.3;">${i.label}</div>
       </div>
     </div>`).join('');
 }
