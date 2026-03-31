@@ -316,6 +316,156 @@ function getSuburbCenter(suburb) {
       { lat: -32.9240, lng: 151.7730 },
       { lat: -32.9300, lng: 151.7790 },
     ],
+    // Northern Beaches
+    freshwater: [
+      { lat: -33.7770, lng: 151.2880 },
+      { lat: -33.7800, lng: 151.2850 },
+    ],
+    curl_curl: [
+      { lat: -33.7680, lng: 151.2880 },
+      { lat: -33.7650, lng: 151.2850 },
+    ],
+    narrabeen: [
+      { lat: -33.7140, lng: 151.2970 },
+      { lat: -33.7170, lng: 151.2940 },
+    ],
+    mona_vale: [
+      { lat: -33.6770, lng: 151.3030 },
+      { lat: -33.6740, lng: 151.3060 },
+    ],
+    // Potts Point / Kings Cross / East
+    potts_point: [
+      { lat: -33.8710, lng: 151.2260 },
+      { lat: -33.8690, lng: 151.2230 },
+    ],
+    elizabeth_bay: [
+      { lat: -33.8720, lng: 151.2280 },
+      { lat: -33.8740, lng: 151.2310 },
+    ],
+    woolloomooloo: [
+      { lat: -33.8680, lng: 151.2220 },
+      { lat: -33.8660, lng: 151.2190 },
+    ],
+    // Lower North Shore
+    cremorne: [
+      { lat: -33.8280, lng: 151.2270 },
+      { lat: -33.8310, lng: 151.2240 },
+    ],
+    cammeray: [
+      { lat: -33.8200, lng: 151.2120 },
+      { lat: -33.8230, lng: 151.2090 },
+    ],
+    // Upper North Shore
+    gordon: [
+      { lat: -33.7560, lng: 151.1530 },
+      { lat: -33.7530, lng: 151.1500 },
+    ],
+    pymble: [
+      { lat: -33.7440, lng: 151.1440 },
+      { lat: -33.7470, lng: 151.1470 },
+    ],
+    hornsby: [
+      { lat: -33.7030, lng: 151.0990 },
+      { lat: -33.7000, lng: 151.0960 },
+    ],
+    // Inner West extended
+    five_dock: [
+      { lat: -33.8680, lng: 151.1290 },
+      { lat: -33.8650, lng: 151.1260 },
+    ],
+    burwood: [
+      { lat: -33.8770, lng: 151.1030 },
+      { lat: -33.8740, lng: 151.1000 },
+      { lat: -33.8800, lng: 151.1060 },
+    ],
+    concord: [
+      { lat: -33.8580, lng: 151.1050 },
+      { lat: -33.8610, lng: 151.1080 },
+    ],
+    drummoyne: [
+      { lat: -33.8530, lng: 151.1540 },
+      { lat: -33.8560, lng: 151.1570 },
+    ],
+    // Ryde / Meadowbank
+    ryde: [
+      { lat: -33.8130, lng: 151.1070 },
+      { lat: -33.8100, lng: 151.1040 },
+    ],
+    meadowbank: [
+      { lat: -33.8170, lng: 151.0900 },
+      { lat: -33.8200, lng: 151.0870 },
+    ],
+    eastwood: [
+      { lat: -33.7910, lng: 151.0810 },
+      { lat: -33.7880, lng: 151.0780 },
+    ],
+    // South
+    mascot: [
+      { lat: -33.9260, lng: 151.1930 },
+      { lat: -33.9290, lng: 151.1960 },
+    ],
+    rosebery: [
+      { lat: -33.9170, lng: 151.2030 },
+      { lat: -33.9140, lng: 151.2000 },
+    ],
+    st_peters: [
+      { lat: -33.9120, lng: 151.1800 },
+      { lat: -33.9150, lng: 151.1830 },
+    ],
+    tempe: [
+      { lat: -33.9220, lng: 151.1630 },
+      { lat: -33.9190, lng: 151.1600 },
+    ],
+    hurstville: [
+      { lat: -33.9670, lng: 151.1020 },
+      { lat: -33.9640, lng: 151.0990 },
+    ],
+    kogarah: [
+      { lat: -33.9630, lng: 151.1320 },
+      { lat: -33.9600, lng: 151.1290 },
+    ],
+    rockdale: [
+      { lat: -33.9530, lng: 151.1370 },
+      { lat: -33.9500, lng: 151.1340 },
+    ],
+    // West
+    homebush: [
+      { lat: -33.8660, lng: 151.0830 },
+      { lat: -33.8630, lng: 151.0800 },
+    ],
+    rhodes: [
+      { lat: -33.8300, lng: 151.0870 },
+      { lat: -33.8330, lng: 151.0900 },
+    ],
+    bankstown: [
+      { lat: -33.9180, lng: 151.0350 },
+      { lat: -33.9150, lng: 151.0320 },
+    ],
+    canterbury: [
+      { lat: -33.9110, lng: 151.1180 },
+      { lat: -33.9080, lng: 151.1150 },
+    ],
+    lakemba: [
+      { lat: -33.9190, lng: 151.0750 },
+      { lat: -33.9220, lng: 151.0780 },
+    ],
+    liverpool: [
+      { lat: -33.9210, lng: 150.9240 },
+      { lat: -33.9180, lng: 150.9210 },
+    ],
+    // Sutherland Shire
+    cronulla: [
+      { lat: -34.0540, lng: 151.1520 },
+      { lat: -34.0510, lng: 151.1490 },
+    ],
+    miranda: [
+      { lat: -34.0370, lng: 151.1030 },
+      { lat: -34.0340, lng: 151.1000 },
+    ],
+    caringbah: [
+      { lat: -34.0450, lng: 151.1240 },
+      { lat: -34.0420, lng: 151.1210 },
+    ],
   };
 
   return centers[suburb] || centers.sydney_cbd;

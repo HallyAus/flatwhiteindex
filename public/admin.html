@@ -253,7 +253,6 @@
               <label>Suburb</label>
               <select id="suburbSelect">
                 <option value="">All Sydney (grid)</option>
-                <option value="sydney_cbd">Sydney CBD</option><option value="surry_hills">Surry Hills</option><option value="newtown">Newtown</option><option value="glebe">Glebe</option><option value="balmain">Balmain</option><option value="paddington">Paddington</option><option value="darlinghurst">Darlinghurst</option><option value="redfern">Redfern</option><option value="chippendale">Chippendale</option><option value="erskineville">Erskineville</option><option value="mosman">Mosman</option><option value="bondi">Bondi</option><option value="bondi_junction">Bondi Junction</option><option value="manly">Manly</option><option value="crows_nest">Crows Nest</option><option value="neutral_bay">Neutral Bay</option><option value="marrickville">Marrickville</option><option value="leichhardt">Leichhardt</option><option value="kirribilli">Kirribilli</option><option value="north_sydney">North Sydney</option><option value="chatswood">Chatswood</option><option value="lane_cove">Lane Cove</option><option value="double_bay">Double Bay</option><option value="woollahra">Woollahra</option><option value="rose_bay">Rose Bay</option><option value="bronte">Bronte</option><option value="coogee">Coogee</option><option value="randwick">Randwick</option><option value="annandale">Annandale</option><option value="rozelle">Rozelle</option><option value="enmore">Enmore</option><option value="stanmore">Stanmore</option><option value="dulwich_hill">Dulwich Hill</option><option value="ashfield">Ashfield</option><option value="strathfield">Strathfield</option><option value="alexandria">Alexandria</option><option value="waterloo">Waterloo</option><option value="zetland">Zetland</option><option value="pyrmont">Pyrmont</option><option value="ultimo">Ultimo</option><option value="haymarket">Haymarket</option><option value="dee_why">Dee Why</option><option value="brookvale">Brookvale</option><option value="avalon">Avalon</option><option value="parramatta">Parramatta</option><option value="newcastle">Newcastle</option>
               </select>
             </div>
             <div class="field"><label>Batch</label><input type="number" id="batchSize" value="10" min="1" max="50" style="width:70px;"></div>
@@ -443,6 +442,9 @@ async function verifyAndShow() {
     startPolling();
     loadReviewCount();
     loadSuburbProgress();
+    // Populate dropdown from SUBURB_MAP
+    const sel = document.getElementById('suburbSelect');
+    Object.entries(SUBURB_MAP).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; sel.appendChild(o); });
     return true;
   } catch { return false; }
 }
@@ -611,16 +613,41 @@ function quickDispatch(suburb) {
 
 // Suburb buttons with progress
 const SUBURB_MAP = {
-  sydney_cbd:'CBD',surry_hills:'Surry Hills',newtown:'Newtown',glebe:'Glebe',balmain:'Balmain',
-  paddington:'Paddington',darlinghurst:'Darlinghurst',redfern:'Redfern',chippendale:'Chippendale',
-  erskineville:'Erskineville',mosman:'Mosman',bondi:'Bondi',bondi_junction:'Bondi Jn',manly:'Manly',
-  crows_nest:'Crows Nest',neutral_bay:'Neutral Bay',marrickville:'Marrickville',leichhardt:'Leichhardt',
-  kirribilli:'Kirribilli',north_sydney:'North Sydney',chatswood:'Chatswood',lane_cove:'Lane Cove',
-  double_bay:'Double Bay',woollahra:'Woollahra',rose_bay:'Rose Bay',bronte:'Bronte',coogee:'Coogee',
-  randwick:'Randwick',annandale:'Annandale',rozelle:'Rozelle',enmore:'Enmore',stanmore:'Stanmore',
-  dulwich_hill:'Dulwich Hill',ashfield:'Ashfield',strathfield:'Strathfield',alexandria:'Alexandria',
-  waterloo:'Waterloo',zetland:'Zetland',pyrmont:'Pyrmont',ultimo:'Ultimo',haymarket:'Haymarket',
-  dee_why:'Dee Why',brookvale:'Brookvale',avalon:'Avalon',parramatta:'Parramatta',newcastle:'Newcastle'
+  // CBD & Surrounds
+  sydney_cbd:'CBD',pyrmont:'Pyrmont',ultimo:'Ultimo',haymarket:'Haymarket',
+  woolloomooloo:'Woolloomooloo',potts_point:'Potts Point',elizabeth_bay:'Elizabeth Bay',
+  // Inner East
+  surry_hills:'Surry Hills',darlinghurst:'Darlinghurst',paddington:'Paddington',
+  redfern:'Redfern',chippendale:'Chippendale',
+  // Eastern Suburbs
+  bondi:'Bondi',bondi_junction:'Bondi Jn',double_bay:'Double Bay',woollahra:'Woollahra',
+  rose_bay:'Rose Bay',bronte:'Bronte',coogee:'Coogee',randwick:'Randwick',
+  // Inner West
+  newtown:'Newtown',enmore:'Enmore',stanmore:'Stanmore',erskineville:'Erskineville',
+  marrickville:'Marrickville',dulwich_hill:'Dulwich Hill',
+  glebe:'Glebe',annandale:'Annandale',leichhardt:'Leichhardt',
+  balmain:'Balmain',rozelle:'Rozelle',drummoyne:'Drummoyne',five_dock:'Five Dock',
+  // West
+  ashfield:'Ashfield',burwood:'Burwood',concord:'Concord',strathfield:'Strathfield',
+  homebush:'Homebush',rhodes:'Rhodes',parramatta:'Parramatta',
+  bankstown:'Bankstown',canterbury:'Canterbury',lakemba:'Lakemba',liverpool:'Liverpool',
+  // South
+  alexandria:'Alexandria',waterloo:'Waterloo',zetland:'Zetland',
+  rosebery:'Rosebery',mascot:'Mascot',st_peters:'St Peters',tempe:'Tempe',
+  rockdale:'Rockdale',kogarah:'Kogarah',hurstville:'Hurstville',
+  // Sutherland
+  cronulla:'Cronulla',miranda:'Miranda',caringbah:'Caringbah',
+  // Lower North Shore
+  kirribilli:'Kirribilli',north_sydney:'North Sydney',neutral_bay:'Neutral Bay',
+  cremorne:'Cremorne',cammeray:'Cammeray',mosman:'Mosman',crows_nest:'Crows Nest',
+  // Upper North Shore
+  chatswood:'Chatswood',lane_cove:'Lane Cove',gordon:'Gordon',pymble:'Pymble',hornsby:'Hornsby',
+  ryde:'Ryde',meadowbank:'Meadowbank',eastwood:'Eastwood',
+  // Northern Beaches
+  manly:'Manly',dee_why:'Dee Why',brookvale:'Brookvale',freshwater:'Freshwater',
+  curl_curl:'Curl Curl',narrabeen:'Narrabeen',mona_vale:'Mona Vale',avalon:'Avalon',
+  // Regional
+  newcastle:'Newcastle',
 };
 
 async function loadSuburbProgress() {
