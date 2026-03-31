@@ -1729,15 +1729,33 @@
     <div class="panel">
       <h2 class="section-title">Price distribution</h2>
       <div class="dist-chart" id="distChart"></div>
-      <div id="priceInsights" style="padding:0.5rem 1rem; border-top:1px solid var(--border); font-size:0.78rem; color:var(--mid); line-height:1.6;"></div>
+      <!-- INSIGHTS GRID -->
+      <div id="priceInsights" style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem; padding:0.6rem 0.75rem; border-top:1px solid var(--border);"></div>
 
-      <div style="border-top:1px solid var(--border); padding:0.75rem 1rem;">
-        <h3 style="font-family:'Playfair Display',serif; font-size:0.85rem; font-weight:600; margin-bottom:0.5rem;">How we collect this data</h3>
-        <div style="font-size:0.78rem; color:var(--mid); line-height:1.6;">
-          <p style="margin-bottom:0.4rem;"><strong>📞 AI voice calls.</strong> An AI agent phones each café and asks one question: "How much is a regular flat white?" Handles voicemail, hang-ups, and cafés that don't serve them.</p>
-          <p style="margin-bottom:0.4rem;"><strong>🔍 Auto-discovery.</strong> Cafés found via public business listings. Calls go out in batches during business hours, weekdays only. Prices verified before publishing.</p>
-          <p style="margin-bottom:0.4rem;"><strong>🚫 Chains excluded.</strong> Only independent cafés. <span style="font-size:0.7rem; opacity:0.7;">Starbucks, McCafé, Gloria Jean's, The Coffee Club, Hudson's, Zarraffa's, Boost Juice, Donut King, Michel's, Jamaica Blue, Coffee Guru, Muzz Buzz, Soul Origin.</span></p>
-          <p style="margin-bottom:0;"><strong>🗺️ What's next.</strong> Expanding across Greater Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal(); return false;" style="color:var(--bronze);">Request a suburb →</a></p>
+      <!-- METHODOLOGY GRID -->
+      <div style="border-top:1px solid var(--border); padding:0.6rem 0.75rem;">
+        <h3 style="font-family:'Playfair Display',serif; font-size:0.82rem; font-weight:600; margin-bottom:0.4rem; color:var(--espresso);">How we collect this data</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.4rem;">
+          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
+            <div style="font-size:0.9rem; margin-bottom:0.2rem;">📞</div>
+            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">AI voice calls</div>
+            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">An AI agent calls each café: "How much is a flat white?" Handles voicemail and hang-ups.</div>
+          </div>
+          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
+            <div style="font-size:0.9rem; margin-bottom:0.2rem;">🔍</div>
+            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Auto-discovery</div>
+            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">Cafés found via public listings. Calls in batches during business hours. Prices verified.</div>
+          </div>
+          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
+            <div style="font-size:0.9rem; margin-bottom:0.2rem;">🚫</div>
+            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">Chains excluded</div>
+            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">Only independents. No Starbucks, McCafé, Gloria Jean's, The Coffee Club, or 10 others.</div>
+          </div>
+          <div style="background:var(--milk); border-radius:8px; padding:0.6rem 0.75rem;">
+            <div style="font-size:0.9rem; margin-bottom:0.2rem;">🗺️</div>
+            <div style="font-size:0.72rem; font-weight:600; color:var(--espresso); margin-bottom:0.15rem;">What's next</div>
+            <div style="font-size:0.68rem; color:var(--mid); line-height:1.4;">Expanding across Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal();return false;" style="color:var(--bronze);">Request a suburb →</a></div>
+          </div>
         </div>
       </div>
     </div>
@@ -2232,14 +2250,21 @@ function renderPriceInsights(suburbs, gems, avgPrice, pricesCollected) {
   const pctUnder5 = allPrices.length > 0 ? Math.round(under5 / allPrices.length * 100) : 0;
 
   const insights = [
-    `<strong>${pctUnder5}%</strong> of cafes charge under $5`,
-    `<strong>$${spread}</strong> gap between cheapest (${esc(cheapest.name)}) and dearest (${esc(dearest.name)})`,
-    `That's <strong>$${annualDiff}/year</strong> if you have one a day`,
-    `Median suburb price: <strong>$${median.price.toFixed(2)}</strong> (${esc(median.name)})`,
-    pricesCollected ? `Based on <strong>${pricesCollected}</strong> verified phone calls` : null,
+    { icon: '💰', stat: `${pctUnder5}%`, label: 'of cafes under $5' },
+    { icon: '📊', stat: `$${spread}`, label: `gap: ${esc(cheapest.name)} → ${esc(dearest.name)}` },
+    { icon: '📅', stat: `$${annualDiff}`, label: 'yearly difference (1 coffee/day)' },
+    { icon: '📍', stat: `$${median.price.toFixed(2)}`, label: `median (${esc(median.name)})` },
+    pricesCollected ? { icon: '✅', stat: pricesCollected.toString(), label: 'verified phone calls' } : null,
   ].filter(Boolean);
 
-  el.innerHTML = insights.map(i => `<div style="padding:0.15rem 0;">☕ ${i}</div>`).join('');
+  el.innerHTML = insights.map(i => `
+    <div style="background:var(--milk); border-radius:8px; padding:0.5rem 0.65rem; display:flex; align-items:center; gap:0.5rem;">
+      <span style="font-size:0.85rem;">${i.icon}</span>
+      <div>
+        <div style="font-size:0.85rem; font-weight:700; color:var(--espresso); line-height:1.1;">${i.stat}</div>
+        <div style="font-size:0.62rem; color:var(--mid); line-height:1.2;">${i.label}</div>
+      </div>
+    </div>`).join('');
 }
 
 function renderGems(gems) {
