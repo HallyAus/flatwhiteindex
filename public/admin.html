@@ -229,6 +229,7 @@
     <div class="tab" data-tab="cafes">Cafes</div>
     <div class="tab" data-tab="review">Review <span class="tab-count" id="reviewCount" style="display:none"></span></div>
     <div class="tab" data-tab="submissions">Submissions</div>
+    <div class="tab" data-tab="subscribers">Subscribers</div>
     <div class="tab" data-tab="system">System</div>
   </div>
 
@@ -339,6 +340,25 @@
           <table class="tbl">
             <thead><tr><th>Cafe</th><th>Suburb</th><th>Small</th><th>Large</th><th>Submitted</th><th>Actions</th></tr></thead>
             <tbody id="subsBody"><tr><td colspan="6" class="empty"><div class="empty-icon">📋</div>Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SUBSCRIBERS TAB -->
+    <div class="tab-panel" id="panel-subscribers">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>📧 Subscribers</h2>
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-ocean btn-sm" onclick="exportSubscribers()">📥 Export CSV</button>
+            <button class="btn btn-ghost btn-sm" onclick="loadSubscribersList()">Refresh</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="tbl">
+            <thead><tr><th>Email</th><th>Source</th><th>Subscribed</th><th>Actions</th></tr></thead>
+            <tbody id="subscribersBody"><tr><td colspan="4" class="empty"><div class="empty-icon">📧</div>Loading...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -579,6 +599,7 @@ document.getElementById('tabs').addEventListener('click', e => {
   else if (t === 'cafes') loadCafes();
   else if (t === 'review') loadReview();
   else if (t === 'submissions') loadSubmissions();
+  else if (t === 'subscribers') loadSubscribersList();
   else if (t === 'system') loadSystem();
 });
 
@@ -975,6 +996,40 @@ async function loadSubmissions() {
 async function deleteSub(id) {
   await api('/api/admin/submissions/' + id, { method: 'DELETE' });
   loadSubmissions();
+}
+
+// --- SUBSCRIBERS TAB ---
+async function loadSubscribersList() {
+  const body = document.getElementById('subscribersBody');
+  try {
+    const res = await api('/api/admin/subscribers');
+    const subs = await res.json();
+    if (!subs.length) { body.innerHTML = '<tr><td colspan="4" class="empty"><div class="empty-icon">📧</div>No subscribers yet</td></tr>'; return; }
+    body.innerHTML = subs.map(s => `<tr>
+      <td>${esc(s.email)}</td>
+      <td><span class="badge badge-${s.source === 'melbourne-notify' ? 'pending' : 'completed'}">${esc(s.source || 'website')}</span></td>
+      <td class="mono">${timeAgo(s.subscribed_at)}</td>
+      <td><button class="btn btn-ghost btn-sm" onclick="if(confirm('Unsubscribe ${esc(s.email)}?'))removeSubscriber('${encodeURIComponent(s.email)}')">✕</button></td>
+    </tr>`).join('');
+  } catch (err) { body.innerHTML = '<tr><td colspan="4" class="empty">Error: ' + esc(err.message) + '</td></tr>'; }
+}
+
+async function removeSubscriber(encodedEmail) {
+  await api('/api/admin/subscribers/' + encodedEmail, { method: 'DELETE' });
+  loadSubscribersList();
+  log('Unsubscribed ' + decodeURIComponent(encodedEmail), 'w');
+}
+
+function exportSubscribers() {
+  api('/api/admin/subscribers').then(r => r.json()).then(subs => {
+    const csv = 'email,source,subscribed_at\n' + subs.map(s => `${s.email},${s.source||'website'},${s.subscribed_at}`).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'flatwhiteindex-subscribers-' + new Date().toISOString().slice(0,10) + '.csv';
+    a.click();
+    log('Exported ' + subs.length + ' subscribers to CSV', 's');
+  });
 }
 
 // --- SYSTEM TAB ---

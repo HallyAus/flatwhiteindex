@@ -211,9 +211,9 @@ function notifyMe(e) {
     document.querySelector('.notify-form').style.display = 'none';
     document.getElementById('melbSuccess').style.display = 'block';
   }).catch(() => {
-    document.querySelector('.notify-form').style.display = 'none';
-    document.getElementById('melbSuccess').textContent = 'Something went wrong — try again later.';
+    document.getElementById('melbSuccess').textContent = 'Something went wrong — try again.';
     document.getElementById('melbSuccess').style.display = 'block';
+    document.getElementById('melbSuccess').style.color = '#C0392B';
   });
 }
 </script>

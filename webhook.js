@@ -32,7 +32,6 @@ app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 // [SECURITY] Basic security headers + CSP
 app.use((req, res, next) => {
   res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
@@ -44,6 +43,7 @@ app.use((req, res, next) => {
     "font-src 'self'",
     "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
     "connect-src 'self' https://analytics.agenticconsciousness.com.au",
+    "frame-ancestors *",
   ].join('; '));
   next();
 });
@@ -463,6 +463,20 @@ app.post("/api/subscribe", async (req, res) => {
   } catch (err) {
     console.error("Subscribe error:", err.message);
     res.status(500).json({ error: "Failed to save subscription" });
+  }
+});
+
+// --- Unsubscribe ---
+
+app.get("/unsubscribe", async (req, res) => {
+  const email = req.query.email ? decodeURIComponent(req.query.email).toLowerCase().trim() : null;
+  if (!email) return res.redirect('/');
+  try {
+    await deleteSubscriber(email);
+    res.send(`<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribed</title></head><body style="font-family:-apple-system,sans-serif;background:#F7F3ED;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;"><div style="text-align:center;padding:2rem;"><div style="font-size:3rem;margin-bottom:1rem;">☕</div><h1 style="color:#2C1A0E;font-size:1.4rem;">You've been unsubscribed</h1><p style="color:#6B5840;margin:1rem 0;">No more emails from us. You can always come back.</p><a href="/" style="color:#8E5A28;">← Back to Flat White Index</a></div></body></html>`);
+    console.log(`📧 Unsubscribed: ${email.slice(0, 3)}***`);
+  } catch {
+    res.status(500).send(`<!DOCTYPE html><html><body style="font-family:sans-serif;padding:2rem;"><p>Something went wrong. <a href="/">Return to Flat White Index</a></p></body></html>`);
   }
 });
 
