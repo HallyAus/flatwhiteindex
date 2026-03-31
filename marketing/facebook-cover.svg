@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="312" viewBox="0 0 820 312">
+  <!-- Dark espresso background -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3D2516"/>
+      <stop offset="100%" stop-color="#1A0F08"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#B5763A"/>
+      <stop offset="100%" stop-color="#D4A05A"/>
+    </linearGradient>
+    <radialGradient id="bean" cx="38%" cy="32%" r="65%">
+      <stop offset="0%" stop-color="#6B3A1F"/>
+      <stop offset="40%" stop-color="#4A2512"/>
+      <stop offset="100%" stop-color="#1A0D05"/>
+    </radialGradient>
+  </defs>
+  <rect width="820" height="312" fill="url(#bg)"/>
+
+  <!-- Top + bottom accent bars -->
+  <rect width="820" height="3" fill="url(#gold)"/>
+  <rect y="309" width="820" height="3" fill="url(#gold)"/>
+
+  <!-- Bean mascot (left side) -->
+  <g transform="translate(80, 56) scale(2.5)">
+    <ellipse cx="40" cy="40" rx="22" ry="28" fill="url(#bean)"/>
+    <ellipse cx="36" cy="16" rx="12" ry="4" fill="#7A4A2A" opacity="0.4" transform="rotate(-5,36,16)"/>
+    <path d="M36 14 Q42 28 40 40 Q38 52 40 66" stroke="#8B5A30" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    <path d="M37 15 Q43 29 41 41 Q39 53 41 65" stroke="#1A0D05" stroke-width="1.2" fill="none" stroke-linecap="round" opacity="0.4"/>
+    <ellipse cx="32" cy="34" rx="6" ry="6.5" fill="white"/>
+    <ellipse cx="50" cy="34" rx="6" ry="6.5" fill="white"/>
+    <circle cx="33" cy="35" r="3.5" fill="#5C3018"/>
+    <circle cx="51" cy="35" r="3.5" fill="#5C3018"/>
+    <circle cx="33.5" cy="35.5" r="2" fill="#1A0D05"/>
+    <circle cx="51.5" cy="35.5" r="2" fill="#1A0D05"/>
+    <circle cx="35" cy="33" r="1.5" fill="white"/>
+    <circle cx="53" cy="33" r="1.5" fill="white"/>
+    <path d="M26 27 Q32 23 38 26" stroke="#3A1E10" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M44 26 Q50 23 56 27" stroke="#3A1E10" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <path d="M34 46 Q41 52 48 46" stroke="#3A1E10" stroke-width="1.8" fill="none" stroke-linecap="round"/>
+    <circle cx="30" cy="44" r="3" fill="#C0785A" opacity="0.2"/>
+    <circle cx="52" cy="44" r="3" fill="#C0785A" opacity="0.2"/>
+  </g>
+
+  <!-- Title -->
+  <text x="420" y="120" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="52" font-weight="bold" fill="#F7F3ED" letter-spacing="1">Flat White Index</text>
+
+  <!-- Divider -->
+  <line x1="350" y1="140" x2="720" y2="140" stroke="#B5763A" stroke-width="1.5" opacity="0.5"/>
+
+  <!-- Subtitle -->
+  <text x="535" y="175" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#D4A05A" letter-spacing="4">SYDNEY COFFEE PRICES</text>
+
+  <!-- Tagline -->
+  <text x="535" y="210" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" fill="#F7F3ED" opacity="0.6" letter-spacing="2">Every cafe. Every suburb. Verified by phone.</text>
+
+  <!-- Stats bar -->
+  <g transform="translate(360, 235)">
+    <rect x="0" y="0" width="350" height="45" rx="8" fill="rgba(247,243,237,0.08)" stroke="rgba(247,243,237,0.1)" stroke-width="1"/>
+    <text x="60" y="20" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#F7F3ED">$4.56</text>
+    <text x="60" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#B5763A" letter-spacing="1">AVG PRICE</text>
+
+    <line x1="120" y1="8" x2="120" y2="37" stroke="rgba(247,243,237,0.15)" stroke-width="1"/>
+
+    <text x="175" y="20" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#F7F3ED">500+</text>
+    <text x="175" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#B5763A" letter-spacing="1">CAFES CALLED</text>
+
+    <line x1="230" y1="8" x2="230" y2="37" stroke="rgba(247,243,237,0.15)" stroke-width="1"/>
+
+    <text x="290" y="20" text-anchor="middle" font-family="Georgia, serif" font-size="18" font-weight="bold" fill="#F7F3ED">40+</text>
+    <text x="290" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" fill="#B5763A" letter-spacing="1">SUBURBS</text>
+  </g>
+
+  <!-- URL -->
+  <text x="535" y="300" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" fill="#F7F3ED" opacity="0.4" letter-spacing="1">flatwhiteindex.com.au</text>
+</svg>
