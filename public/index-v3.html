@@ -49,15 +49,151 @@ tailwind.config = {
 </script>
 <style>
   body { background: #FAFAF8; }
+
+  /* Subtle warm paper texture */
+  body::before {
+    content: '';
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.015'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  /* All content above the texture */
+  body > * { position: relative; z-index: 1; }
+
+  /* Headline kerning + optical sizing */
+  .hero-headline { font-feature-settings: 'kern' 1, 'liga' 1; font-optical-sizing: auto; }
+
+  /* Stat cards — newspaper feel */
+  .stat-card {
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .stat-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  /* Region cards — editorial ranking feel */
+  .region-card {
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    position: relative;
+  }
+  .region-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 32px rgba(196,101,74,0.1), 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .region-card::after {
+    content: '';
+    position: absolute; bottom: 0; left: 1.25rem; right: 1.25rem;
+    height: 3px; border-radius: 3px 3px 0 0;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+  .region-card:hover::after { opacity: 1; }
+  .region-card.tier-cheap::after { background: #2D8F4E; }
+  .region-card.tier-mid::after { background: #D4A04A; }
+  .region-card.tier-expensive::after { background: #C4654A; }
+
+  /* Big number styling — editorial weight */
+  .big-number {
+    letter-spacing: -0.03em;
+    line-height: 0.9;
+  }
+
+  /* Section transitions */
+  .editorial-section {
+    opacity: 0; transform: translateY(30px);
+    transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .editorial-section.visible { opacity: 1; transform: translateY(0); }
+
+  /* Finding cards */
+  .finding-card {
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+  }
+  .finding-card:hover {
+    border-left-color: #C4654A;
+    background: white;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.04);
+  }
+
+  /* Coffee comparison cards */
+  .coffee-card {
+    transition: all 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .coffee-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.06);
+  }
+
+  /* Suburb list rows */
+  .suburb-row { transition: all 0.15s ease; }
+  .suburb-row:hover {
+    background: rgba(196,101,74,0.04);
+    padding-left: 1.25rem;
+  }
+
+  /* Methodology step numbers */
+  .step-number {
+    background: linear-gradient(135deg, #C4654A 0%, #D4845C 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* CTA section */
+  .cta-glow {
+    background: radial-gradient(ellipse 600px 300px at 50% 50%, rgba(196,101,74,0.06) 0%, transparent 70%);
+  }
+
+  /* The terracotta accent line used throughout */
+  .accent-line { width: 40px; height: 3px; background: #C4654A; border-radius: 2px; }
+
+  /* Gems list — podium feel */
+  .gem-row { transition: all 0.15s ease; }
+  .gem-row:hover { background: #EDF7F0; }
+  .gem-row:first-child { background: linear-gradient(90deg, #EDF7F0, transparent); }
+
+  /* Map overrides */
   .leaflet-tile-pane { filter: saturate(0.85) brightness(1.02); }
   .leaflet-control-zoom a { background: #FAFAF8 !important; color: #1A1A1A !important; border-color: #E8E8E4 !important; }
-  .leaflet-popup-content-wrapper { background: #1A1A1A; color: #FAFAF8; border-radius: 8px; }
+  .leaflet-popup-content-wrapper { background: #1A1A1A; color: #FAFAF8; border-radius: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.2); }
   .leaflet-popup-tip { background: #1A1A1A; }
   .leaflet-popup-close-button { color: rgba(250,250,248,0.5) !important; }
   .price-label { background: none !important; border: none !important; box-shadow: none !important; font-weight: 600 !important; padding: 0 !important; text-shadow: 0 0 4px white, 0 0 4px white, 0 0 8px white; font-family: Inter, sans-serif !important; font-size: 12px !important; }
   .price-label::before { display: none !important; }
-  @keyframes countUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  .stat-animate { animation: countUp 0.6s ease-out forwards; }
+
+  /* Scroll reveal */
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* The big featured coffee card */
+  .featured-coffee {
+    background: linear-gradient(135deg, #1A1A1A 0%, #2A2520 100%);
+    position: relative; overflow: hidden;
+  }
+  .featured-coffee::before {
+    content: '';
+    position: absolute; right: -40px; top: -40px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    border: 1px solid rgba(196,101,74,0.1);
+    pointer-events: none;
+  }
+  .featured-coffee::after {
+    content: '';
+    position: absolute; right: -10px; top: -10px;
+    width: 140px; height: 140px;
+    border-radius: 50%;
+    border: 1px solid rgba(196,101,74,0.06);
+    pointer-events: none;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 640px) {
+    .hero-headline { font-size: 2.5rem !important; }
+  }
 </style>
 </head>
 <body class="font-sans text-ink antialiased">
@@ -83,38 +219,42 @@ tailwind.config = {
 </nav>
 
 <!-- HERO -->
-<section class="pt-28 pb-16 md:pt-36 md:pb-24 px-5 md:px-8 max-w-6xl mx-auto">
+<section class="pt-28 pb-20 md:pt-40 md:pb-28 px-5 md:px-8 max-w-6xl mx-auto">
   <div class="max-w-3xl">
-    <p class="text-terra font-medium text-sm tracking-wide uppercase mb-5">Sydney's definitive coffee price tracker</p>
-    <h1 class="font-serif text-4xl md:text-6xl lg:text-7xl font-900 leading-[0.95] tracking-tight text-ink mb-6">
-      An AI is calling<br>every Sydney café<br>to ask one question.
+    <div class="flex items-center gap-3 mb-8">
+      <div class="accent-line"></div>
+      <p class="text-terra font-semibold text-xs tracking-[0.2em] uppercase">Sydney's definitive coffee price tracker</p>
+    </div>
+    <h1 class="hero-headline font-serif text-5xl md:text-7xl lg:text-8xl font-black leading-[0.92] tracking-tight text-ink mb-8">
+      An AI is calling<br>every Sydney café<br>to ask <em class="italic text-terra">one question.</em>
     </h1>
-    <p class="text-lg md:text-xl text-muted leading-relaxed max-w-xl mb-10">
-      <em class="font-serif text-ink not-italic">"How much is a flat white?"</em> — Our voice agent Mia has called <strong class="text-ink font-semibold" id="heroCalls">494</strong> cafés across <strong class="text-ink font-semibold" id="heroSuburbs">38</strong> suburbs. This is what she found.
+    <p class="text-lg md:text-xl text-muted leading-relaxed max-w-xl mb-12">
+      <span class="font-serif text-2xl md:text-3xl text-ink font-bold block mb-3">"How much is a flat white?"</span>
+      Our voice agent Mia has called <strong class="text-ink font-semibold" id="heroCalls">494</strong> cafés across <strong class="text-ink font-semibold" id="heroSuburbs">38</strong> suburbs so far. This is what she found.
     </p>
   </div>
 
   <!-- STAT STRIP -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-rule rounded-xl overflow-hidden border border-rule">
-    <div class="bg-canvas p-5 md:p-6">
-      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Sydney Average</p>
-      <p class="font-serif text-3xl md:text-4xl font-bold text-ink" id="statAvg">$5.42</p>
-      <p class="text-faint text-xs mt-1">regular flat white</p>
+  <div class="grid grid-cols-2 md:grid-cols-4 gap-px bg-rule rounded-2xl overflow-hidden border border-rule shadow-sm">
+    <div class="stat-card bg-white p-6 md:p-8">
+      <p class="text-faint text-[10px] font-semibold uppercase tracking-[0.15em] mb-2">Sydney Average</p>
+      <p class="font-serif text-4xl md:text-5xl font-bold text-ink big-number" id="statAvg">$5.42</p>
+      <p class="text-faint text-xs mt-2">regular flat white</p>
     </div>
-    <div class="bg-canvas p-5 md:p-6">
-      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Cheapest Suburb</p>
-      <p class="font-serif text-3xl md:text-4xl font-bold text-cheap" id="statCheapPrice">$4.10</p>
-      <p class="text-faint text-xs mt-1" id="statCheapName">Marrickville</p>
+    <div class="stat-card bg-white p-6 md:p-8">
+      <p class="text-faint text-[10px] font-semibold uppercase tracking-[0.15em] mb-2">Cheapest Suburb</p>
+      <p class="font-serif text-4xl md:text-5xl font-bold text-cheap big-number" id="statCheapPrice">$4.10</p>
+      <p class="text-faint text-xs mt-2" id="statCheapName">Marrickville</p>
     </div>
-    <div class="bg-canvas p-5 md:p-6">
-      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Most Expensive</p>
-      <p class="font-serif text-3xl md:text-4xl font-bold text-expensive" id="statExpPrice">$6.50</p>
-      <p class="text-faint text-xs mt-1" id="statExpName">Double Bay</p>
+    <div class="stat-card bg-white p-6 md:p-8">
+      <p class="text-faint text-[10px] font-semibold uppercase tracking-[0.15em] mb-2">Most Expensive</p>
+      <p class="font-serif text-4xl md:text-5xl font-bold text-expensive big-number" id="statExpPrice">$6.50</p>
+      <p class="text-faint text-xs mt-2" id="statExpName">Double Bay</p>
     </div>
-    <div class="bg-canvas p-5 md:p-6">
-      <p class="text-faint text-xs font-medium uppercase tracking-wider mb-1">Cafés Called</p>
-      <p class="font-serif text-3xl md:text-4xl font-bold text-ink" id="statCafes">494</p>
-      <p class="text-faint text-xs mt-1">and counting</p>
+    <div class="stat-card bg-white p-6 md:p-8">
+      <p class="text-faint text-[10px] font-semibold uppercase tracking-[0.15em] mb-2">Cafés Called</p>
+      <p class="font-serif text-4xl md:text-5xl font-bold text-ink big-number" id="statCafes">494</p>
+      <p class="text-faint text-xs mt-2">and counting</p>
     </div>
   </div>
 </section>
@@ -123,13 +263,13 @@ tailwind.config = {
 <div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
 
 <!-- REGION BREAKDOWN -->
-<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto" id="data">
-  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-10">
+<section class="py-20 md:py-28 px-5 md:px-8 max-w-6xl mx-auto editorial-section" id="data">
+  <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-12">
     <div>
-      <p class="text-terra font-medium text-sm tracking-wide uppercase mb-2">Regional breakdown</p>
-      <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink">Where's your money going?</h2>
+      <div class="flex items-center gap-3 mb-3"><div class="accent-line"></div><p class="text-terra font-semibold text-[10px] tracking-[0.2em] uppercase">Regional breakdown</p></div>
+      <h2 class="font-serif text-3xl md:text-5xl font-bold text-ink leading-tight">Where's your money going?</h2>
     </div>
-    <p class="text-muted text-sm max-w-xs">Average flat white price by Sydney region. Ranked cheapest to most expensive.</p>
+    <p class="text-muted text-sm max-w-xs leading-relaxed">Average flat white price by Sydney region. Ranked cheapest to most expensive.</p>
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="regionCards">
@@ -269,19 +409,19 @@ tailwind.config = {
     <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink">How we collect this data</h2>
   </div>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div class="border-t-2 border-terra pt-6">
-      <p class="font-serif text-5xl font-bold text-rule mb-4">01</p>
-      <h3 class="font-serif text-lg font-bold text-ink mb-2">Mia calls every café</h3>
+    <div class="border-t-2 border-terra pt-8">
+      <p class="font-serif text-6xl font-bold step-number mb-4">01</p>
+      <h3 class="font-serif text-xl font-bold text-ink mb-3">Mia calls every café</h3>
       <p class="text-muted text-sm leading-relaxed">Our AI voice agent phones each café during business hours and asks a simple question: "How much is a regular flat white?" Real conversations, real prices.</p>
     </div>
-    <div class="border-t-2 border-terra pt-6">
-      <p class="font-serif text-5xl font-bold text-rule mb-4">02</p>
-      <h3 class="font-serif text-lg font-bold text-ink mb-2">Prices are verified</h3>
+    <div class="border-t-2 border-terra pt-8">
+      <p class="font-serif text-6xl font-bold step-number mb-4">02</p>
+      <h3 class="font-serif text-xl font-bold text-ink mb-3">Prices are verified</h3>
       <p class="text-muted text-sm leading-relaxed">Every response is transcribed and parsed. We extract prices from natural speech — "$4.50", "four fifty", "about five bucks" — and flag ambiguous answers for human review.</p>
     </div>
-    <div class="border-t-2 border-terra pt-6">
-      <p class="font-serif text-5xl font-bold text-rule mb-4">03</p>
-      <h3 class="font-serif text-lg font-bold text-ink mb-2">Data goes live</h3>
+    <div class="border-t-2 border-terra pt-8">
+      <p class="font-serif text-6xl font-bold step-number mb-4">03</p>
+      <h3 class="font-serif text-xl font-bold text-ink mb-3">Data goes live</h3>
       <p class="text-muted text-sm leading-relaxed">Verified prices are published instantly. Every data point links to a real café and a real phone call. No scraping, no guessing. Chains excluded — independents only.</p>
     </div>
   </div>
@@ -291,14 +431,17 @@ tailwind.config = {
 <div class="max-w-6xl mx-auto px-5 md:px-8"><hr class="border-rule"></div>
 
 <!-- CTA -->
-<section class="py-16 md:py-20 px-5 md:px-8 max-w-6xl mx-auto text-center">
-  <h2 class="font-serif text-3xl md:text-4xl font-bold text-ink mb-3">The Flat White Index, monthly.</h2>
-  <p class="text-muted mb-8 max-w-md mx-auto">Every suburb. Verified prices. Free.</p>
-  <form onsubmit="subscribeCTA(event)" class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-md mx-auto" id="ctaForm">
-    <input type="email" id="ctaEmail" placeholder="your@email.com" required class="flex-1 w-full px-4 py-3 border border-rule rounded-lg text-sm bg-white focus:outline-none focus:border-terra">
-    <button type="submit" class="px-6 py-3 bg-terra text-white rounded-lg text-sm font-semibold hover:bg-terra-dark transition-colors whitespace-nowrap">Subscribe</button>
-  </form>
-  <p id="ctaSuccess" class="text-sm text-cheap mt-4" style="display:none;">Thanks! You'll get the first report soon.</p>
+<section class="py-24 md:py-32 px-5 md:px-8 max-w-6xl mx-auto text-center relative editorial-section">
+  <div class="cta-glow absolute inset-0 pointer-events-none"></div>
+  <div class="relative">
+    <h2 class="font-serif text-4xl md:text-5xl font-bold text-ink mb-4 leading-tight">The Flat White Index,<br>monthly.</h2>
+    <p class="text-muted text-lg mb-10 max-w-md mx-auto">Every suburb. Verified prices. Free.</p>
+    <form onsubmit="subscribeCTA(event)" class="flex flex-col sm:flex-row items-center justify-center gap-3 max-w-lg mx-auto" id="ctaForm">
+      <input type="email" id="ctaEmail" placeholder="your@email.com" required class="flex-1 w-full px-5 py-3.5 border border-rule rounded-xl text-sm bg-white shadow-sm focus:outline-none focus:border-terra focus:shadow-md transition-all">
+      <button type="submit" class="px-8 py-3.5 bg-terra text-white rounded-xl text-sm font-semibold hover:bg-terra-dark hover:shadow-lg transition-all whitespace-nowrap">Subscribe</button>
+    </form>
+    <p id="ctaSuccess" class="text-sm text-cheap mt-4" style="display:none;">Thanks! You'll get the first report soon.</p>
+  </div>
 </section>
 
 <!-- FOOTER -->
@@ -405,14 +548,18 @@ function renderRegionCards(regions) {
     const c = priceColor(r.avg);
     const bgClass = c === 'cheap' ? 'bg-cheap-light' : c === 'mid' ? 'bg-mid-light' : 'bg-expensive-light';
     const textClass = c === 'cheap' ? 'text-cheap' : c === 'mid' ? 'text-mid' : 'text-expensive';
-    return `<div class="rounded-xl border border-rule bg-white p-5 hover:shadow-md transition-shadow">
-      <div class="flex items-center justify-between mb-3">
-        <span class="text-xs font-semibold text-faint uppercase tracking-wider">#${i + 1}</span>
-        <span class="text-xs px-2 py-0.5 rounded-full ${bgClass} ${textClass} font-medium">${c === 'cheap' ? 'Budget' : c === 'mid' ? 'Mid-range' : 'Premium'}</span>
+    return `<div class="region-card tier-${c} rounded-2xl border border-rule bg-white p-6 group">
+      <div class="flex items-center justify-between mb-4">
+        <span class="font-serif text-3xl font-bold text-rule/60 group-hover:text-rule">#${i + 1}</span>
+        <span class="text-[10px] px-2.5 py-1 rounded-full ${bgClass} ${textClass} font-semibold uppercase tracking-wider">${c === 'cheap' ? 'Budget' : c === 'mid' ? 'Mid-range' : 'Premium'}</span>
       </div>
-      <h3 class="font-serif text-lg font-bold text-ink mb-1">${esc(r.label)}</h3>
-      <p class="font-serif text-2xl font-bold ${textClass}">$${r.avg.toFixed(2)}</p>
-      <p class="text-xs text-faint mt-2">${r.count} cafés · ${r.suburbs} suburbs</p>
+      <h3 class="font-serif text-xl font-bold text-ink mb-2">${esc(r.label)}</h3>
+      <p class="font-serif text-3xl font-bold ${textClass} big-number mb-3">$${r.avg.toFixed(2)}</p>
+      <div class="flex items-center gap-3 text-xs text-faint">
+        <span>${r.count} cafés</span>
+        <span class="w-1 h-1 rounded-full bg-rule"></span>
+        <span>${r.suburbs} suburbs</span>
+      </div>
     </div>`;
   }).join('');
 }
@@ -491,13 +638,13 @@ function renderGems(gems) {
   const top = gems.slice(0, 8);
   el.innerHTML = top.map((g, i) => {
     const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '';
-    return `<div class="flex items-center px-4 py-3 hover:bg-canvas/50 transition-colors">
-      <span class="text-sm w-8 ${i < 3 ? 'text-lg' : 'text-faint'}">${medal || (i + 1)}</span>
-      <div class="flex-1 min-w-0">
+    return `<div class="gem-row flex items-center px-5 py-4">
+      <span class="text-sm w-8 ${i < 3 ? 'text-xl' : 'text-faint font-serif'}">${medal || (i + 1)}</span>
+      <div class="flex-1 min-w-0 ml-1">
         <p class="text-sm font-medium text-ink truncate">${esc(g.name)}</p>
-        <p class="text-xs text-faint">${esc(g.suburb)}</p>
+        <p class="text-xs text-faint mt-0.5">${esc(g.suburb)}</p>
       </div>
-      <span class="font-serif font-bold text-cheap ml-3">$${g.price.toFixed(2)}</span>
+      <span class="font-serif text-lg font-bold text-cheap ml-3">$${g.price.toFixed(2)}</span>
     </div>`;
   }).join('');
 }
@@ -516,8 +663,8 @@ function renderFindings(suburbs, gems, avgPrice) {
     { icon: '☕', text: `The most common price point is <strong>$5.00</strong> — the psychological anchor for Sydney coffee.` },
   ];
   document.getElementById('findingsGrid').innerHTML = findings.map(f =>
-    `<div class="flex gap-3 p-4 rounded-xl border border-rule bg-white">
-      <span class="text-xl flex-shrink-0">${f.icon}</span>
+    `<div class="finding-card flex gap-4 p-5 rounded-xl border border-rule bg-canvas/50">
+      <span class="text-2xl flex-shrink-0">${f.icon}</span>
       <p class="text-sm text-muted leading-relaxed">${f.text}</p>
     </div>`
   ).join('');
@@ -557,22 +704,22 @@ function renderCoffees(avgPrice) {
   let html = '';
   if (featured) {
     const val = Math.round(featured.raw / avgPrice).toLocaleString('en-AU');
-    html += `<div class="sm:col-span-2 lg:col-span-3 rounded-xl bg-ink text-canvas p-6 md:p-8">
-      <p class="text-xs uppercase tracking-wider text-canvas/40 mb-2">${esc(featured.desc)}</p>
-      <p class="font-serif text-4xl md:text-5xl font-bold text-terra mb-2">${val}</p>
-      <p class="text-sm text-canvas/50">flat whites to buy a median Sydney house ($${featured.raw.toLocaleString('en-AU')} at $${avgPrice.toFixed(2)}/cup)</p>
-      <p class="text-xs text-canvas/30 mt-2">${esc(featured.source)}</p>
+    html += `<div class="featured-coffee sm:col-span-2 lg:col-span-3 rounded-2xl text-canvas p-8 md:p-10">
+      <p class="text-[10px] uppercase tracking-[0.2em] text-canvas/30 mb-3 font-semibold">${esc(featured.desc)}</p>
+      <p class="font-serif text-5xl md:text-7xl font-bold text-terra big-number mb-3">${val}</p>
+      <p class="text-base text-canvas/50 max-w-lg">flat whites to buy a median Sydney house — $${featured.raw.toLocaleString('en-AU')} at $${avgPrice.toFixed(2)} per cup</p>
+      <p class="text-xs text-canvas/25 mt-4">${esc(featured.source)}</p>
     </div>`;
   }
   COMPARISONS.filter(c => !c.featured).forEach(c => {
     const val = coffeeVal(c, avgPrice);
     const extra = c.pun ? ' border-terra' : ' border-rule';
-    html += `<div class="rounded-xl border${extra} bg-white p-5">
-      <span class="text-2xl">${c.icon}</span>
-      <p class="font-serif text-2xl font-bold text-ink mt-2">${val}</p>
-      <p class="text-xs text-faint">${esc(c.unit)}</p>
-      <p class="text-sm text-muted mt-1">${esc(c.desc)}</p>
-      <p class="text-[10px] text-faint mt-2">${esc(c.source)}</p>
+    html += `<div class="coffee-card rounded-2xl border${extra} bg-white p-6">
+      <span class="text-2xl block mb-3">${c.icon}</span>
+      <p class="font-serif text-3xl font-bold text-ink big-number">${val}</p>
+      <p class="text-xs text-faint mt-1">${esc(c.unit)}</p>
+      <p class="text-sm text-muted mt-2 leading-relaxed">${esc(c.desc)}</p>
+      <p class="text-[10px] text-faint mt-3">${esc(c.source)}</p>
     </div>`;
   });
   el.innerHTML = html;
@@ -694,6 +841,12 @@ function subscribeCTA(e) {
 }
 
 // ─── INIT ────────────────────────────────────────────────────────────────────
+// Scroll reveal
+const revealObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); } });
+}, { threshold: 0.1 });
+document.querySelectorAll('.editorial-section').forEach(el => revealObs.observe(el));
+
 if (LIVE) {
   const suburbs = LIVE.suburbs || [];
   const gems = LIVE.gems || [];
