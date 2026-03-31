@@ -1731,6 +1731,9 @@
       <div class="dist-chart" id="distChart">
         <!-- populated by JS -->
       </div>
+      <div id="priceInsights" style="padding:0.6rem 1rem; border-top:1px solid var(--border); font-size:0.78rem; color:var(--mid); line-height:1.7;">
+        <!-- populated by JS -->
+      </div>
     </div>
 
     <!-- CHEAPEST GEMS -->
@@ -2218,6 +2221,32 @@ function renderDist(distData) {
   `}).join('');
 }
 
+function renderPriceInsights(suburbs, gems, avgPrice, pricesCollected) {
+  const el = document.getElementById('priceInsights');
+  if (!el || !suburbs || suburbs.length < 2) { if (el) el.style.display = 'none'; return; }
+
+  const sorted = [...suburbs].sort((a, b) => a.price - b.price);
+  const cheapest = sorted[0];
+  const dearest = sorted[sorted.length - 1];
+  const spread = (dearest.price - cheapest.price).toFixed(2);
+  const annualDiff = Math.round((dearest.price - cheapest.price) * 365);
+  const median = sorted[Math.floor(sorted.length / 2)];
+
+  const allPrices = gems.map(g => g.price).filter(Boolean);
+  const under5 = allPrices.filter(p => p < 5).length;
+  const pctUnder5 = allPrices.length > 0 ? Math.round(under5 / allPrices.length * 100) : 0;
+
+  const insights = [
+    `<strong>${pctUnder5}%</strong> of cafes charge under $5`,
+    `<strong>$${spread}</strong> gap between cheapest (${esc(cheapest.name)}) and dearest (${esc(dearest.name)})`,
+    `That's <strong>$${annualDiff}/year</strong> if you have one a day`,
+    `Median suburb price: <strong>$${median.price.toFixed(2)}</strong> (${esc(median.name)})`,
+    pricesCollected ? `Based on <strong>${pricesCollected}</strong> verified phone calls` : null,
+  ].filter(Boolean);
+
+  el.innerHTML = insights.map(i => `<div style="padding:0.15rem 0;">☕ ${i}</div>`).join('');
+}
+
 function renderGems(gems) {
   if (!gems || gems.length === 0) return;
 
@@ -2336,6 +2365,7 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
   if (suburbs.length > 0) renderSuburbList(suburbs);
   if (distData.length > 0) renderDist(distData);
   if (gems.length > 0) renderGems(gems);
+  renderPriceInsights(suburbs, gems, avgPrice, pricesCollected);
   // Use individual cafe markers if available, fall back to suburb averages
   const cafeMarkers = gems.filter(g => g.lat != null && g.lng != null);
   const mapData = cafeMarkers.length > 0 ? cafeMarkers : suburbs.filter(s => s.lat != null && s.lng != null);
