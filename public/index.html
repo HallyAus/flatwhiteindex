@@ -39,31 +39,35 @@
 <style>
 
   :root {
-    --cream: #F7F3ED;
-    --espresso: #2C1A0E;
-    --roast: #6B3A1F;
-    --milk: #EDE8E0;
-    --foam: #FAF8F4;
-    --bronze: #8E5A28;
-    --bronze-light: #D4A26A;
-    --green: #3A7D44;
-    --green-light: #E8F3EA;
-    --red-price: #C0392B;
-    --red-light: #FDEDEB;
-    --mid: #6B5840;
-    --text-muted: #6A5238;
-    --border: rgba(107, 58, 31, 0.18);
-    --ocean: #2E6B8A;
-    --ocean-light: #E6F0F5;
+    /* The cup — top to bottom */
+    --shot: #1B120D;
+    --crema: #2E1E14;
+    --pour: #6B3F20;
+    --art: #C4813A;
+    --milk: #E8D5B8;
+    --ceramic: #F5F0E8;
+    --rim: #FFFCF7;
+
+    /* Tier colours */
+    --budget: #4AA058;
+    --budget-bg: #E8F3EA;
+    --midrange: #C4813A;
+    --midrange-bg: #FDF6EE;
+    --premium: #B44134;
+    --premium-bg: #FDEDEB;
+
+    /* UI */
+    --text-muted: #8B7355;
+    --border: rgba(107, 63, 32, 0.12);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
   body {
     font-family: 'DM Sans', sans-serif;
-    font-size: 16px;
-    background: var(--cream);
-    color: var(--espresso);
+    font-size: 15px;
+    background: var(--ceramic);
+    color: var(--shot);
     min-height: 100vh;
   }
 
@@ -97,13 +101,13 @@
     font-family: 'Playfair Display', serif;
     font-size: 1.8rem; font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--espresso);
+    color: var(--shot);
     line-height: 1.1;
   }
 
   .tagline {
     font-size: 0.8rem; font-weight: 300;
-    color: var(--mid);
+    color: var(--pour);
     letter-spacing: 0.08em;
     text-transform: uppercase;
     margin-top: 2px;
@@ -111,8 +115,8 @@
 
   .updated-badge {
     display: flex; align-items: center; gap: 6px;
-    background: var(--ocean);
-    color: var(--cream);
+    background: var(--art);
+    color: var(--ceramic);
     font-size: 0.7rem; font-weight: 500;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -126,7 +130,7 @@
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
     font-weight: 400;
-    color: var(--espresso);
+    color: var(--shot);
     max-width: 600px;
     line-height: 1.5;
   }
@@ -134,7 +138,7 @@
   .hero-insight {
     margin-top: 0.75rem;
     background: var(--milk);
-    border-left: 3px solid var(--ocean);
+    border-left: 3px solid var(--art);
     padding: 0.6rem 1rem;
     display: flex;
     align-items: center;
@@ -147,7 +151,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 2rem;
     font-weight: 700;
-    color: var(--ocean);
+    color: var(--art);
     line-height: 1;
     flex-shrink: 0;
   }
@@ -155,7 +159,7 @@
   .insight-text {
     font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
-    color: var(--mid);
+    color: var(--pour);
     line-height: 1.5;
   }
 
@@ -180,7 +184,7 @@
   }
 
   .stat-card {
-    background: var(--foam);
+    background: var(--rim);
     border: 1px solid var(--border);
     border-radius: 10px;
     padding: 0.75rem 0.9rem 0.65rem;
@@ -188,12 +192,12 @@
   }
 
   .stat-card.hero-stat {
-    background: var(--espresso);
-    border-color: var(--espresso);
+    background: var(--shot);
+    border-color: var(--shot);
   }
 
   .stat-card.hero-stat .stat-label { color: rgba(247,243,237,0.6); }
-  .stat-card.hero-stat .stat-value { color: var(--cream); font-size: 2rem; }
+  .stat-card.hero-stat .stat-value { color: var(--ceramic); font-size: 2rem; }
   .stat-card.hero-stat .stat-sub { color: rgba(247,243,237,0.5); }
 
   .stat-label {
@@ -206,12 +210,12 @@
   .stat-value {
     font-family: 'Playfair Display', serif;
     font-size: 1.6rem; font-weight: 600;
-    color: var(--espresso);
+    color: var(--shot);
     line-height: 1;
   }
 
-  .stat-value.good { color: var(--green); }
-  .stat-value.warn { color: var(--red-price); }
+  .stat-value.good { color: var(--budget); }
+  .stat-value.warn { color: var(--premium); }
 
   .stat-sub {
     font-size: 0.72rem; color: var(--text-muted);
@@ -240,7 +244,7 @@
   @media (max-width: 780px) { .findings-grid { grid-template-columns: 1fr; } }
 
   .finding {
-    background: var(--foam);
+    background: var(--rim);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 0.75rem 1rem;
@@ -254,7 +258,7 @@
   .finding-text { font-size: 0.92rem;
     font-size: 0.88rem;
     line-height: 1.55;
-    color: var(--espresso);
+    color: var(--shot);
   }
 
   .finding-text strong { font-weight: 500; }
@@ -271,7 +275,7 @@
 
   /* MAP PANEL */
   .panel {
-    background: var(--foam);
+    background: var(--rim);
     border: 1px solid var(--border);
     border-radius: 12px;
     box-shadow: 0 1px 3px rgba(44, 26, 14, 0.06);
@@ -316,8 +320,8 @@
 
   /* Leaflet zoom controls */
   .leaflet-control-zoom a {
-    background: var(--foam) !important;
-    color: var(--espresso) !important;
+    background: var(--rim) !important;
+    color: var(--shot) !important;
     border-color: var(--border) !important;
   }
 
@@ -329,12 +333,12 @@
     padding: 10px 14px;
     font-size: 0.7rem;
     font-family: 'DM Sans', sans-serif;
-    color: var(--espresso);
+    color: var(--shot);
     line-height: 1.4;
   }
 
   .legend-title {
-    font-weight: 500; color: var(--mid);
+    font-weight: 500; color: var(--pour);
     text-transform: uppercase; letter-spacing: 0.06em;
     margin-bottom: 6px; font-size: 0.62rem;
   }
@@ -350,15 +354,15 @@
 
   /* Override leaflet popup styles */
   .leaflet-popup-content-wrapper {
-    background: var(--espresso);
-    color: var(--cream);
+    background: var(--shot);
+    color: var(--ceramic);
     border-radius: 10px;
     box-shadow: 0 4px 16px rgba(44,26,14,0.25);
     font-family: 'DM Sans', sans-serif;
   }
 
   .leaflet-popup-tip {
-    background: var(--espresso);
+    background: var(--shot);
   }
 
   .leaflet-popup-content {
@@ -410,7 +414,7 @@
   }
 
   .leaflet-popup-close-button:hover {
-    color: var(--cream) !important;
+    color: var(--ceramic) !important;
   }
 
   .popup-share {
@@ -418,8 +422,8 @@
     width: 100%;
     margin-top: 8px;
     padding: 6px 12px;
-    background: var(--bronze);
-    color: var(--cream);
+    background: var(--art);
+    color: var(--ceramic);
     border: none;
     border-radius: 6px;
     font-family: 'DM Sans', sans-serif;
@@ -430,7 +434,7 @@
   }
 
   .popup-share:hover {
-    background: var(--bronze-light);
+    background: var(--art);
   }
 
   /* SIDEBAR */
@@ -475,9 +479,9 @@
     font-size: 1rem; font-weight: 600;
   }
 
-  .price-good { color: var(--green); }
-  .price-warn { color: var(--red-price); }
-  .price-mid { color: var(--bronze); }
+  .price-good { color: var(--budget); }
+  .price-warn { color: var(--premium); }
+  .price-mid { color: var(--art); }
 
   .price-bar-bg {
     position: absolute; right: 0; top: 0; bottom: 0;
@@ -520,7 +524,7 @@
   .dist-label {
     font-size: 0.78rem; font-weight: 500;
     width: 60px; flex-shrink: 0;
-    color: var(--espresso);
+    color: var(--shot);
   }
 
   .dist-track {
@@ -569,7 +573,7 @@
   }
 
   .find-gem {
-    font-size: 0.75rem; color: var(--bronze);
+    font-size: 0.75rem; color: var(--art);
     flex-shrink: 0;
   }
 
@@ -577,7 +581,7 @@
     flex: 1; font-size: 0.85rem; font-weight: 400;
   }
   .find-suburb { font-size: 0.75rem; color: var(--text-muted); }
-  .find-note { font-size: 0.68rem; color: var(--ocean); font-style: italic; margin-top: 1px; }
+  .find-note { font-size: 0.68rem; color: var(--art); font-style: italic; margin-top: 1px; }
 
   .finds-suburb-header {
     font-size: 0.7rem;
@@ -597,7 +601,7 @@
   .find-price { font-size: 1.05rem;
     font-family: 'Playfair Display', serif;
     font-size: 1rem; font-weight: 600;
-    color: var(--green);
+    color: var(--budget);
     flex-shrink: 0;
   }
 
@@ -610,7 +614,7 @@
     margin: 0.5rem;
     border-radius: 10px;
     padding: 0.75rem 1rem;
-    color: var(--cream);
+    color: var(--ceramic);
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -628,7 +632,7 @@
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--bronze-light);
+    color: var(--art);
     margin-bottom: 0.2rem;
   }
 
@@ -648,7 +652,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 1.6rem;
     font-weight: 700;
-    color: var(--green);
+    color: var(--budget);
   }
 
   .podium {
@@ -685,7 +689,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 0.95rem;
     font-weight: 600;
-    color: var(--green);
+    color: var(--budget);
     margin-left: auto;
     flex-shrink: 0;
   }
@@ -700,7 +704,7 @@
   /* SALARY CALCULATOR */
   .salary-calc {
     margin-top: 1rem;
-    background: var(--foam);
+    background: var(--rim);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 1rem;
@@ -729,7 +733,7 @@
   .salary-input-row label {
     font-size: 0.82rem;
     font-weight: 500;
-    color: var(--mid);
+    color: var(--pour);
   }
 
   .salary-input-row input {
@@ -740,12 +744,12 @@
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
-    color: var(--espresso);
+    color: var(--shot);
   }
 
   .salary-input-row input:focus {
     outline: none;
-    border-color: var(--ocean);
+    border-color: var(--art);
   }
 
   .salary-result {
@@ -767,7 +771,7 @@
     font-family: 'Playfair Display', serif;
     font-size: 2rem;
     font-weight: 700;
-    color: var(--espresso);
+    color: var(--shot);
     line-height: 1;
   }
 
@@ -798,7 +802,7 @@
 
   .progress-bar-inner {
     height: 100%; border-radius: 4px;
-    background: linear-gradient(90deg, var(--bronze-light), var(--bronze));
+    background: linear-gradient(90deg, var(--art), var(--art));
     transition: width 1s ease;
   }
 
@@ -829,7 +833,7 @@
   @media (max-width: 780px) { .about-grid { grid-template-columns: 1fr; } }
 
   .about-block {
-    background: var(--foam);
+    background: var(--rim);
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 0.75rem 1rem;
@@ -845,13 +849,13 @@
   .about-block p {
     font-size: 0.8rem;
     line-height: 1.5;
-    color: var(--mid);
+    color: var(--pour);
   }
 
   /* CONTRIBUTE */
   .contribute-strip {
     margin-top: 1rem;
-    background: var(--espresso);
+    background: var(--shot);
     border-radius: 12px;
     padding: 1rem 1.25rem;
     display: flex; align-items: center; justify-content: space-between;
@@ -860,7 +864,7 @@
 
   .contribute-text h3 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.1rem; color: var(--cream);
+    font-size: 1.1rem; color: var(--ceramic);
     margin-bottom: 4px;
   }
 
@@ -869,8 +873,8 @@
   }
 
   .contribute-btn {
-    background: var(--bronze);
-    color: var(--cream);
+    background: var(--art);
+    color: var(--ceramic);
     border: none; border-radius: 10px;
     padding: 0.65rem 1.4rem;
     font-family: 'DM Sans', sans-serif;
@@ -880,7 +884,7 @@
     transition: background 0.2s;
   }
 
-  .contribute-btn:hover { background: var(--bronze-light); }
+  .contribute-btn:hover { background: var(--art); }
 
   /* FOOTER */
   .site-footer {
@@ -917,14 +921,14 @@
     background: var(--milk);
     border-radius: 6px;
     font-size: 0.72rem;
-    color: var(--mid);
+    color: var(--pour);
     text-decoration: none;
     transition: background 0.15s;
   }
 
   .footer-parent:hover {
     background: var(--border);
-    color: var(--espresso);
+    color: var(--shot);
   }
 
   .footer-parent svg {
@@ -939,7 +943,7 @@
   }
 
   .footer-muted a {
-    color: var(--bronze);
+    color: var(--art);
     text-decoration: none;
   }
 
@@ -955,13 +959,13 @@
 
   .footer-links a {
     font-size: 0.8rem;
-    color: var(--mid);
+    color: var(--pour);
     text-decoration: none;
     transition: color 0.15s;
   }
 
   .footer-links a:hover {
-    color: var(--ocean);
+    color: var(--art);
   }
 
   .footer-bottom {
@@ -995,7 +999,7 @@
   .modal-overlay.open { display: flex; }
 
   .modal {
-    background: var(--foam);
+    background: var(--rim);
     border-radius: 18px;
     padding: 2rem;
     max-width: 420px; width: 90%;
@@ -1014,7 +1018,7 @@
 
   .modal label {
     font-size: 0.8rem; font-weight: 500;
-    color: var(--mid); display: block;
+    color: var(--pour); display: block;
     margin-bottom: 4px; margin-top: 12px;
     text-transform: uppercase; letter-spacing: 0.06em;
   }
@@ -1026,7 +1030,7 @@
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
-    color: var(--espresso);
+    color: var(--shot);
   }
 
   .modal-actions {
@@ -1037,12 +1041,12 @@
     flex: 1; padding: 0.6rem; border: 1px solid var(--border);
     background: transparent; border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
-    cursor: pointer; color: var(--mid);
+    cursor: pointer; color: var(--pour);
   }
 
   .btn-primary {
     flex: 2; padding: 0.6rem;
-    background: var(--espresso); color: var(--cream);
+    background: var(--shot); color: var(--ceramic);
     border: none; border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
     font-weight: 500; cursor: pointer;
@@ -1050,12 +1054,12 @@
 
   .success-msg {
     display: none; text-align: center;
-    padding: 1rem; color: var(--green);
+    padding: 1rem; color: var(--budget);
     font-weight: 500;
   }
 
   .newsletter-strip {
-    background: var(--espresso);
+    background: var(--shot);
     border-radius: 10px;
     padding: 0.85rem 1.25rem;
     margin-bottom: 1rem;
@@ -1070,7 +1074,7 @@
   }
 
   .newsletter-text {
-    color: var(--cream);
+    color: var(--ceramic);
     font-size: 0.9rem;
   }
 
@@ -1098,7 +1102,7 @@
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.85rem;
-    color: var(--cream);
+    color: var(--ceramic);
     width: 220px;
   }
 
@@ -1108,14 +1112,14 @@
 
   .newsletter-form input:focus {
     outline: none;
-    border-color: var(--bronze);
+    border-color: var(--art);
     background: rgba(247, 243, 237, 0.12);
   }
 
   .newsletter-btn {
     padding: 0.6rem 1.2rem;
-    background: var(--bronze);
-    color: var(--cream);
+    background: var(--art);
+    color: var(--ceramic);
     border: none;
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
@@ -1127,12 +1131,12 @@
   }
 
   .newsletter-btn:hover {
-    background: var(--bronze-light);
+    background: var(--art);
   }
 
   .newsletter-success {
     display: none;
-    color: var(--green-light);
+    color: var(--budget-bg);
     font-size: 0.85rem;
     width: 100%;
     padding-top: 0.5rem;
@@ -1154,7 +1158,7 @@
   .embed-section {
     margin-top: 0.75rem;
     padding: 0.75rem 1rem;
-    background: var(--foam);
+    background: var(--rim);
     border: 1px solid var(--border);
     border-radius: 10px;
   }
@@ -1171,7 +1175,7 @@
   }
 
   .embed-section summary::-webkit-details-marker { display: none; }
-  .embed-section summary::before { content: '\25B6'; font-size: 0.6rem; color: var(--mid); transition: transform 0.2s; }
+  .embed-section summary::before { content: '\25B6'; font-size: 0.6rem; color: var(--pour); transition: transform 0.2s; }
   .embed-section[open] summary::before { transform: rotate(90deg); }
 
   .embed-section h2 {
@@ -1201,15 +1205,15 @@
     border-radius: 8px;
     font-family: monospace;
     font-size: 0.72rem;
-    color: var(--mid);
+    color: var(--pour);
     overflow-x: auto;
     white-space: nowrap;
   }
 
   .embed-copy-btn {
     padding: 0.6rem 1rem;
-    background: var(--espresso);
-    color: var(--cream);
+    background: var(--shot);
+    color: var(--ceramic);
     border: none;
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
@@ -1220,7 +1224,7 @@
   }
 
   .embed-copy-btn:hover {
-    background: var(--roast);
+    background: var(--pour);
   }
 
   /* UX DENSITY — tighten all spacing */
@@ -1230,7 +1234,7 @@
   .tagline { font-size: 0.78rem; margin-top: 1px; }
   .updated-badge { font-size: 0.65rem; padding: 4px 10px; }
   .hero { padding: 1rem 0 0.75rem; }
-  .hero-lede { font-size: 1.05rem; color: var(--espresso); line-height: 1.6; max-width: 680px; }
+  .hero-lede { font-size: 1.05rem; color: var(--shot); line-height: 1.6; max-width: 680px; }
   .hero-insight { margin-top: 0.6rem; padding: 0.5rem 1rem; gap: 0.6rem; }
   .insight-number { font-size: 1.8rem; }
   .insight-text { font-size: 0.82rem; }
@@ -1297,7 +1301,7 @@
 
   /* Focus visibility for keyboard users */
   a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
-    outline: 2px solid var(--ocean);
+    outline: 2px solid var(--art);
     outline-offset: 2px;
   }
 
@@ -1337,31 +1341,31 @@
   /* COMPARE SUBURBS */
   .compare-section { margin-top: 1rem; }
   .compare-row { display: flex; gap: 0.75rem; align-items: end; flex-wrap: wrap; }
-  .compare-vs { font-size: 0.85rem; color: var(--mid); font-weight: 500; padding-bottom: 0.6rem; }
+  .compare-vs { font-size: 0.85rem; color: var(--pour); font-weight: 500; padding-bottom: 0.6rem; }
   .compare-result { margin-top: 1rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
   .compare-card { background: var(--milk); border-radius: 8px; padding: 0.75rem; text-align: center; }
   .compare-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 0.5rem; }
   .compare-price { font-size: 2.2rem; font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; }
-  .compare-meta { font-size: 0.78rem; color: var(--mid); margin-top: 0.25rem; }
-  .compare-diff { grid-column: 1 / -1; text-align: center; padding: 0.75rem; background: var(--espresso); color: var(--cream); border-radius: 8px; font-size: 0.85rem; line-height: 1.5; }
+  .compare-meta { font-size: 0.78rem; color: var(--pour); margin-top: 0.25rem; }
+  .compare-diff { grid-column: 1 / -1; text-align: center; padding: 0.75rem; background: var(--shot); color: var(--ceramic); border-radius: 8px; font-size: 0.85rem; line-height: 1.5; }
   .compare-diff strong { font-family: 'Playfair Display', serif; font-size: 1.3rem; }
   .field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
-  .field label { font-size: 0.8rem; font-weight: 500; color: var(--mid); text-transform: uppercase; letter-spacing: 0.06em; }
-  .field select { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); background: white; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--espresso); }
-  .field select:focus { outline: none; border-color: var(--ocean); }
+  .field label { font-size: 0.8rem; font-weight: 500; color: var(--pour); text-transform: uppercase; letter-spacing: 0.06em; }
+  .field select { width: 100%; padding: 0.6rem 0.8rem; border: 1px solid var(--border); background: white; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--shot); }
+  .field select:focus { outline: none; border-color: var(--art); }
   @media (max-width: 540px) { .compare-row { flex-direction: column; } .compare-vs { padding: 0; text-align: center; } }
 
   /* CHEAPEST NEAR ME */
   .nearme-section { margin-top: 1rem; }
   .nearme-list { display: flex; flex-direction: column; gap: 0.35rem; }
   .nearme-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.6rem 0.75rem; background: var(--milk); border-radius: 8px; cursor: pointer; transition: background 0.15s; }
-  .nearme-item:hover { background: var(--cream); }
-  .nearme-rank { font-size: 1.2rem; font-weight: 700; color: var(--mid); width: 24px; text-align: center; flex-shrink: 0; }
+  .nearme-item:hover { background: var(--ceramic); }
+  .nearme-rank { font-size: 1.2rem; font-weight: 700; color: var(--pour); width: 24px; text-align: center; flex-shrink: 0; }
   .nearme-info { flex: 1; }
   .nearme-name { font-size: 0.95rem; font-size: 0.9rem; font-weight: 500; }
-  .nearme-sub { font-size: 0.78rem; color: var(--mid); }
-  .nearme-price { font-size: 1.4rem; font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--green); flex-shrink: 0; }
-  .nearme-dist { font-size: 0.72rem; color: var(--mid); text-align: right; flex-shrink: 0; min-width: 50px; }
+  .nearme-sub { font-size: 0.78rem; color: var(--pour); }
+  .nearme-price { font-size: 1.4rem; font-family: 'Playfair Display', serif; font-size: 1.3rem; font-weight: 700; color: var(--budget); flex-shrink: 0; }
+  .nearme-dist { font-size: 0.72rem; color: var(--pour); text-align: right; flex-shrink: 0; min-width: 50px; }
 </style>
 
 <script type="application/ld+json">
@@ -1512,7 +1516,7 @@
 <script defer src="https://analytics.agenticconsciousness.com.au/script.js" data-website-id="d35f6ff1-35d8-4c68-890d-5aa312d6039c"></script>
 </head>
 <body>
-<a href="#content" class="skip-link" style="position:absolute;top:-40px;left:0;background:var(--espresso);color:var(--cream);padding:8px 16px;z-index:100;font-size:0.85rem;transition:top 0.2s;">Skip to content</a>
+<a href="#content" class="skip-link" style="position:absolute;top:-40px;left:0;background:var(--shot);color:var(--ceramic);padding:8px 16px;z-index:100;font-size:0.85rem;transition:top 0.2s;">Skip to content</a>
 <style>.skip-link:focus{top:0;}</style>
 <div class="grain" aria-hidden="true"></div>
 
@@ -1695,7 +1699,7 @@
       <div class="panel">
         <div class="panel-header">
           <h2 class="panel-title">Price map</h2>
-          <div style="display:flex;gap:0.5rem;align-items:center;"><span style="font-size:0.78rem;color:var(--mid);" id="selectedInfo">Click a suburb or cafe</span><button onclick="resetMapView()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:0.68rem;color:var(--mid);cursor:pointer;">Reset</button></div>
+          <div style="display:flex;gap:0.5rem;align-items:center;"><span style="font-size:0.78rem;color:var(--pour);" id="selectedInfo">Click a suburb or cafe</span><button onclick="resetMapView()" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 8px;font-size:0.68rem;color:var(--pour);cursor:pointer;">Reset</button></div>
         </div>
         <div class="map-container">
           <div id="leaflet-map" role="application" aria-label="Interactive map showing flat white prices by Sydney suburb"></div>
@@ -1716,7 +1720,7 @@
     <div class="panel">
       <div class="panel-header">
         <h2 class="panel-title">By suburb</h2>
-        <div id="selectedInfo" style="font-size:0.75rem; color:var(--mid);">tap map to filter</div>
+        <div id="selectedInfo" style="font-size:0.75rem; color:var(--pour);">tap map to filter</div>
       </div>
       <div class="suburb-list-wrapper">
         <div class="suburb-list" id="suburbList">
@@ -1746,27 +1750,27 @@
 
       <!-- METHODOLOGY -->
       <div style="border-top:1px solid var(--border); padding:0.75rem 1rem;">
-        <h3 style="font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:600; margin-bottom:0.6rem; color:var(--espresso);">How we collect this data</h3>
+        <h3 style="font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:600; margin-bottom:0.6rem; color:var(--shot);">How we collect this data</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem;">
-          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+          <div style="background:var(--rim); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
             <div style="font-size:1.1rem; margin-bottom:0.25rem;">📞</div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">AI voice calls</div>
-            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">An AI agent calls each café and asks one question: "How much is a flat white?"</div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--shot); margin-bottom:0.2rem;">AI voice calls</div>
+            <div style="font-size:0.8rem; color:var(--pour); line-height:1.5;">An AI agent calls each café and asks one question: "How much is a flat white?"</div>
           </div>
-          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+          <div style="background:var(--rim); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
             <div style="font-size:1.1rem; margin-bottom:0.25rem;">🔍</div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">Auto-discovery</div>
-            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">Cafés found via public listings. Calls during business hours. Prices verified before publishing.</div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--shot); margin-bottom:0.2rem;">Auto-discovery</div>
+            <div style="font-size:0.8rem; color:var(--pour); line-height:1.5;">Cafés found via public listings. Calls during business hours. Prices verified before publishing.</div>
           </div>
-          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+          <div style="background:var(--rim); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
             <div style="font-size:1.1rem; margin-bottom:0.25rem;">🚫</div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">Chains excluded</div>
-            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">Only independents. No Starbucks, McCafé, Gloria Jean's, The Coffee Club, or 10 others.</div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--shot); margin-bottom:0.2rem;">Chains excluded</div>
+            <div style="font-size:0.8rem; color:var(--pour); line-height:1.5;">Only independents. No Starbucks, McCafé, Gloria Jean's, The Coffee Club, or 10 others.</div>
           </div>
-          <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
+          <div style="background:var(--rim); border:1px solid var(--border); border-radius:10px; padding:0.75rem 0.85rem;">
             <div style="font-size:1.1rem; margin-bottom:0.25rem;">🗺️</div>
-            <div style="font-size:0.85rem; font-weight:600; color:var(--espresso); margin-bottom:0.2rem;">What's next</div>
-            <div style="font-size:0.8rem; color:var(--mid); line-height:1.5;">Expanding across Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--bronze);">Melbourne</a>. <a href="#" onclick="openReconModal();return false;" style="color:var(--bronze);">Request a suburb →</a></div>
+            <div style="font-size:0.85rem; font-weight:600; color:var(--shot); margin-bottom:0.2rem;">What's next</div>
+            <div style="font-size:0.8rem; color:var(--pour); line-height:1.5;">Expanding across Sydney. Phase 3: <a href="/melbourne.html" style="color:var(--art);">Melbourne</a>. <a href="#" onclick="openReconModal();return false;" style="color:var(--art);">Request a suburb →</a></div>
           </div>
         </div>
       </div>
@@ -1803,11 +1807,11 @@
           <div class="salary-minutes-label">minutes of work<br>per flat white</div>
         </div>
         <div>
-          <div class="salary-minutes" id="salaryPerWeek" style="font-size:1.4rem; color:var(--ocean);">—</div>
+          <div class="salary-minutes" id="salaryPerWeek" style="font-size:1.4rem; color:var(--art);">—</div>
           <div class="salary-minutes-label">per week<br>(1 coffee/day)</div>
         </div>
         <div>
-          <div class="salary-minutes" id="salaryPerYear" style="font-size:1.4rem; color:var(--bronze);">—</div>
+          <div class="salary-minutes" id="salaryPerYear" style="font-size:1.4rem; color:var(--art);">—</div>
           <div class="salary-minutes-label">per year<br>(5 days/week)</div>
         </div>
       </div>
@@ -1864,7 +1868,7 @@
     </div>
     <div style="display:flex; gap:0.75rem; flex-wrap:wrap;">
       <button class="contribute-btn" onclick="openModal()">Submit a price</button>
-      <button class="contribute-btn" style="background:var(--ocean);" onclick="openReconModal()">Request a suburb</button>
+      <button class="contribute-btn" style="background:var(--art);" onclick="openReconModal()">Request a suburb</button>
     </div>
   </div>
 </main>
@@ -1944,7 +1948,7 @@
 <div class="modal-overlay" id="reconModal" role="dialog" aria-modal="true" aria-labelledby="reconTitle">
   <div class="modal">
     <h3 id="reconTitle">Request a suburb</h3>
-    <p style="font-size:0.85rem; color:var(--mid); margin-bottom:1rem;">Want Mia to call cafés in your suburb? Tell us where and we'll add it to the queue.</p>
+    <p style="font-size:0.85rem; color:var(--pour); margin-bottom:1rem;">Want Mia to call cafés in your suburb? Tell us where and we'll add it to the queue.</p>
     <label for="reconSuburb">Suburb name</label>
     <input type="text" id="reconSuburb" placeholder="e.g. Manly, Cronulla, Parramatta">
     <label for="reconEmail">Your email (optional — we'll notify you when it's done)</label>
@@ -2008,13 +2012,13 @@ const DEMO_GEMS = [
 ];
 
 const DEMO_DIST = [
-  { label: "$4–4.99",    count: 38, max: 80, colour: "var(--green)" },
+  { label: "$4–4.99",    count: 38, max: 80, colour: "var(--budget)" },
   { label: "$5–5.49",    count: 72, max: 80, colour: "#6A9A38" },
-  { label: "$5.50",      count: 80, max: 80, colour: "var(--bronze)", annotation: "most common" },
-  { label: "$5.51–5.99", count: 65, max: 80, colour: "var(--bronze-light)" },
+  { label: "$5.50",      count: 80, max: 80, colour: "var(--art)", annotation: "most common" },
+  { label: "$5.51–5.99", count: 65, max: 80, colour: "var(--art)" },
   { label: "$6–6.49",    count: 54, max: 80, colour: "#C87840" },
   { label: "$6.50–6.99", count: 41, max: 80, colour: "#C05040" },
-  { label: "$7+",        count: 18, max: 80, colour: "var(--red-price)" },
+  { label: "$7+",        count: 18, max: 80, colour: "var(--premium)" },
 ];
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
@@ -2225,7 +2229,7 @@ function resetMapView() {
 function renderDist(distData) {
   const chart = document.getElementById('distChart');
   chart.innerHTML = distData.map(d => {
-    const colour = d.colour || 'var(--bronze)';
+    const colour = d.colour || 'var(--art)';
     const annotation = d.annotation ? `<span class="dist-annotation">${d.annotation}</span>` : '';
     return `
     <div class="dist-bar-row">
@@ -2262,11 +2266,11 @@ function renderPriceInsights(suburbs, gems, avgPrice, pricesCollected) {
   ].filter(Boolean);
 
   el.innerHTML = insights.map(i => `
-    <div style="background:var(--foam); border:1px solid var(--border); border-radius:10px; padding:0.6rem 0.85rem; display:flex; align-items:center; gap:0.6rem;">
+    <div style="background:var(--rim); border:1px solid var(--border); border-radius:10px; padding:0.6rem 0.85rem; display:flex; align-items:center; gap:0.6rem;">
       <span style="font-size:1.1rem;">${i.icon}</span>
       <div>
-        <div style="font-size:1.1rem; font-weight:700; color:var(--espresso); line-height:1.1;">${i.stat}</div>
-        <div style="font-size:0.78rem; color:var(--mid); line-height:1.3;">${i.label}</div>
+        <div style="font-size:1.1rem; font-weight:700; color:var(--shot); line-height:1.1;">${i.stat}</div>
+        <div style="font-size:0.78rem; color:var(--pour); line-height:1.3;">${i.label}</div>
       </div>
     </div>`).join('');
 }
@@ -2290,7 +2294,7 @@ function renderGems(gems) {
 
   function ratingStars(r) {
     if (!r || r <= 0) return '';
-    return `<span style="font-size:0.68rem;color:var(--bronze-light);">★ ${r.toFixed(1)}</span>`;
+    return `<span style="font-size:0.68rem;color:var(--art);">★ ${r.toFixed(1)}</span>`;
   }
 
   // Winner hero card
@@ -2702,12 +2706,12 @@ function compareSuburbs() {
     <div class="compare-result">
       <div class="compare-card">
         <h3>${esc(s1.name)}</h3>
-        <div class="compare-price" style="color:${s1.price <= s2.price ? 'var(--green)' : 'var(--red-price)'}">$${s1.price.toFixed(2)}</div>
+        <div class="compare-price" style="color:${s1.price <= s2.price ? 'var(--budget)' : 'var(--premium)'}">$${s1.price.toFixed(2)}</div>
         <div class="compare-meta">${s1.count} cafes · $${(s1.min||s1.price).toFixed(2)}–$${(s1.max||s1.price).toFixed(2)}</div>
       </div>
       <div class="compare-card">
         <h3>${esc(s2.name)}</h3>
-        <div class="compare-price" style="color:${s2.price <= s1.price ? 'var(--green)' : 'var(--red-price)'}">$${s2.price.toFixed(2)}</div>
+        <div class="compare-price" style="color:${s2.price <= s1.price ? 'var(--budget)' : 'var(--premium)'}">$${s2.price.toFixed(2)}</div>
         <div class="compare-meta">${s2.count} cafes · $${(s2.min||s2.price).toFixed(2)}–$${(s2.max||s2.price).toFixed(2)}</div>
       </div>
       <div class="compare-diff">
@@ -2723,7 +2727,7 @@ function findNearMe() {
 
   if (!navigator.geolocation) {
     result.style.display = '';
-    result.innerHTML = '<p style="color:var(--red-price);font-size:0.85rem;">Geolocation not supported by your browser.</p>';
+    result.innerHTML = '<p style="color:var(--premium);font-size:0.85rem;">Geolocation not supported by your browser.</p>';
     return;
   }
 
@@ -2752,7 +2756,7 @@ function findNearMe() {
 
       result.style.display = '';
       if (toShow.length === 0) {
-        result.innerHTML = '<p style="font-size:0.85rem;color:var(--mid);">No cafes found near you yet. We\'re still calling!</p>';
+        result.innerHTML = '<p style="font-size:0.85rem;color:var(--pour);">No cafes found near you yet. We\'re still calling!</p>';
       } else {
         result.innerHTML = `
           <div class="nearme-list">
@@ -2775,7 +2779,7 @@ function findNearMe() {
     },
     (err) => {
       result.style.display = '';
-      result.innerHTML = `<p style="color:var(--red-price);font-size:0.85rem;">${err.code === 1 ? 'Location access denied. Enable it in your browser settings.' : 'Could not get your location. Try again.'}</p>`;
+      result.innerHTML = `<p style="color:var(--premium);font-size:0.85rem;">${err.code === 1 ? 'Location access denied. Enable it in your browser settings.' : 'Could not get your location. Try again.'}</p>`;
       btn.textContent = '📍 Find cheapest near me';
       btn.disabled = false;
     },
