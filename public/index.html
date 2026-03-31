@@ -2238,7 +2238,7 @@ const TIER_COLOR = { budget: 'var(--budget)', midrange: 'var(--midrange)', premi
 function aggregateRegions(suburbs) {
   const suburbToRegion = {};
   for (const [regionId, info] of Object.entries(REGION_CONFIG.regions || {})) {
-    for (const s of info.suburbs) suburbToRegion[s] = regionId;
+    for (const s of (info.suburbs || [])) suburbToRegion[s] = regionId;
   }
   const regionMap = {};
   for (const sub of suburbs) {
@@ -2324,8 +2324,8 @@ function computeCoffeeValue(item, avgPrice) {
     return '$' + Math.round(total).toLocaleString('en-AU');
   }
   if (item.compute === 'pct_wage') return ((avgPrice / 475) * 100).toFixed(1) + '%';
-  if (item.invert) return (avgPrice / item.raw).toFixed(1);
-  if (item.raw === 0) return '0';
+  if (item.invert && item.raw) return (avgPrice / item.raw).toFixed(1);
+  if (!item.raw || !avgPrice) return '0';
   return (item.raw / avgPrice).toFixed(1);
 }
 
