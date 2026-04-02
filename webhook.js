@@ -1110,6 +1110,78 @@ function validateEnv() {
   }
 }
 
+// ElevenLabs post-call webhook — receives conversation results
+app.post("/webhook/elevenlabs-call-complete", async (req, res) => {
+  // [SECURITY] Rate limit
+  if (!rateLimit('webhook', 100)) {
+    return res.status(429).json({ error: "Too many requests" });
+  }
+
+  try {
+    const payload = req.body;
+    const conversationId = payload.conversation_id;
+    const agentId = payload.agent_id;
+
+    // Extract transcript from ElevenLabs format
+    const transcriptParts = (payload.transcript || []).map(t => {
+      const role = t.role === 'agent' ? 'Mia' : 'Cafe';
+      return `[${role}]: ${String(t.message || '').slice(0, 2000)}`;
+    });
+    const transcript = transcriptParts.join(' ').slice(0, 50000);
+
+    // Extract cafe metadata from dynamic variables
+    const initData = payload.conversation_initiation_client_data || {};
+    const dynVars = initData.dynamic_variables || {};
+    const cafeId = dynVars.cafe_id || null;
+    const cafeName = dynVars.cafe_name || 'Unknown';
+    const suburb = dynVars.suburb || 'Sydney';
+
+    // Determine status from call metadata
+    const meta = payload.metadata || {};
+    const duration = meta.call_duration_secs || 0;
+    const termReason = meta.termination_reason || '';
+    const analysis = payload.analysis || {};
+
+    let status = 'completed';
+    if (duration < 5) status = 'no_answer';
+    if (termReason === 'no_answer' || termReason === 'busy') status = 'no_answer';
+    if (termReason === 'failed' || termReason === 'error') status = 'failed';
+    if (transcript.toLowerCase().includes('leave a message') || transcript.toLowerCase().includes('after the beep')) status = 'voicemail';
+    if (transcript.toLowerCase().includes('no flat white') || transcript.toLowerCase().includes("don't do flat whites")) status = 'no_flat_white';
+
+    // Extract prices from transcript
+    let { price_small, price_large, needs_review } = extractPrices(transcript);
+
+    // Use ElevenLabs analysis if available (data collection results)
+    const collected = analysis.data_collection_results || {};
+    if (collected.price && parseFloat(collected.price) >= 3 && parseFloat(collected.price) <= 15) {
+      price_small = parseFloat(collected.price);
+      needs_review = false;
+      console.log(`   📊 Using ElevenLabs collected price: $${price_small}`);
+    }
+
+    console.log(`☎️  ElevenLabs call complete: ${cafeName} (${suburb}) — ${status} — $${price_small || '?'} — ${duration}s`);
+
+    await saveCallResult({
+      cafe_id: cafeId,
+      bland_call_id: conversationId, // reuse field for ElevenLabs conversation ID
+      status,
+      price_small: status === 'completed' ? price_small : null,
+      price_large: status === 'completed' ? price_large : null,
+      transcript,
+      needs_review: status === 'completed' ? needs_review : false,
+    });
+
+    // Invalidate dashboard cache
+    dashboardCacheTime = 0;
+
+    res.json({ ok: true });
+  } catch (err) {
+    console.error('❌ ElevenLabs webhook error:', err.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 // Twilio status callback — update DB for failed/no-answer/voicemail calls
 app.post("/webhook/twilio-status", verifyWebhookOrigin, async (req, res) => {
   const { CallSid, CallStatus, AnsweredBy, Duration, ErrorCode, ErrorMessage } = req.body;
@@ -1184,8 +1256,9 @@ if (isMainModule) {
       console.log(`   📊 Dashboard cache warmed`);
     } catch {}
 
-    // Set up Twilio media stream WebSocket if using Twilio provider
-    if (process.env.CALL_PROVIDER === "twilio") {
+    // Set up call provider
+    const callProvider = process.env.CALL_PROVIDER || 'bland';
+    if (callProvider === "twilio") {
       try {
         const { setupMediaStreamServer } = await import("./caller-twilio.js");
         if (setupMediaStreamServer) {
@@ -1195,6 +1268,9 @@ if (isMainModule) {
       } catch (err) {
         console.warn("⚠️  Twilio media stream setup failed:", err.message);
       }
+    } else if (callProvider === "elevenlabs") {
+      console.log(`   ☎️  ElevenLabs Conversational AI (no media stream needed)`);
+      console.log(`   📡 Webhook: POST /webhook/elevenlabs-call-complete`);
     }
   });
 
