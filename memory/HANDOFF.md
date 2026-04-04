@@ -7,19 +7,12 @@
 
 - **Date:** 2026-04-04
 - **Branch:** master
-- **Focus:** Guinndex redesign, editorial v3, full audit, ElevenLabs voice integration, Supabase migrations
+- **Focus:** CLAUDE.md rewrite (lean + compaction rules)
 
-## Accomplished (this session — 13 commits)
+## Accomplished (this session — 1 commit expected)
 
-- **Guinndex redesign (Latte Art v1)** — Dark-to-light three-zone layout on main index.html: espresso hero, gradient bridge with 8 region cards, light milk content zone. Single Origin colour palette with coffee-process CSS variables.
-- **Percentile tier system** — Budget (≤P25), Mid-range, Premium (≥P75) auto-calculated from live data. Tier badges, region card colours, map marker colours all tied to percentiles.
-- **Sydney in Coffees** — 20 dynamic comparison cards (house price, rent, avo toast, diesel, SCG, Opera House, pokies, etc.) calculated from live average price.
-- **Full 5-agent audit** — HTML structure, CSS, JS, webhook, admin. Fixed 16 issues: XSS in regionConfigJson, field name mismatch (suburb/sample_size), 6 duplicate font-sizes, 3 broken hovers, hardcoded hex, WCAG contrast, duplicate ID, missing label for=, division-by-zero guards.
-- **Editorial v2 (rejected)** — Dark FT-meets-specialty-coffee design. User rejected ("very bad").
-- **Editorial v3** — Light mode, terracotta accent (#C4654A), Source Serif 4 + Inter. Tailwind CDN. Paper texture, card depth, hover lifts, editorial typography. Served at /v3.
-- **ElevenLabs Conversational AI** — New caller-elevenlabs.js replaces Twilio+OpenAI. Single API call per café, no WebSocket bridge needed. Post-call webhook at /webhook/elevenlabs-call-complete. Half the cost per call.
-- **Supabase migrations 003-005** — subscribers table, user_price_submissions, constraints, RLS policies, performance indexes, get_call_stats() function. Subscribe form now working.
-- **Subscriber fix** — RLS was blocking because anon key was being used. Fixed by switching to service_role key (sb_secret_*).
+- **Lean CLAUDE.md** — Rewrote from ~130 lines to ~70. Removed beads section (not installed), auto-update memory table (redundant with system auto-memory), progressive disclosure, workflow ritual (hooks handle it), template placeholders. Added compaction rules.
+- **Session-start hook verified** — Already existed in `.claude/settings.json`, injects date/branch/commits/HANDOFF.md. No changes needed.
 
 ## In Progress
 
@@ -41,10 +34,6 @@
 7. **Set up Resend** — DNS records in Cloudflare
 8. **WhatsApp price submission** — text-based crowdsourcing
 
-## Active Beads Issues
-
-- None (beads not installed)
-
 ## Context
 
 > - Production: Proxmox LXC 700 via systemd `flatwhite-webhook`
@@ -65,14 +54,5 @@
 ## Files Modified
 
 ```
-public/index.html — Latte Art reskin (CSS variables, three zones, regions, tiers, coffees section)
-public/index-v2.html (new) — dark editorial design (rejected)
-public/index-v3.html (new) — light editorial design with terracotta accent
-webhook.js — regionConfigJson injection, XSS fix, /v2 + /v3 routes, ElevenLabs webhook
-caller-elevenlabs.js (new) — ElevenLabs Conversational AI outbound calls
-caller.js — updated router for elevenlabs provider
-suburb-regions.json (new) — 8 Sydney region mappings
-env.example — added ELEVENLABS_* variables, updated CALL_PROVIDER options
-docs/superpowers/specs/2026-03-31-guinndex-redesign-design.md (new)
-docs/superpowers/plans/2026-03-31-guinndex-redesign.md (new)
+CLAUDE.md — rewritten lean (~70 lines) with compaction rules
 ```
