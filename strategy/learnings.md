@@ -11,6 +11,12 @@ Each entry: `[YYYY-MM-DD] Learning — Context`
 
 <!-- Claude: add new entries at the top -->
 
+- [2026-04-04] Supabase new API keys: "publishable" = anon (sb_publishable_*), "secret" = service_role (sb_secret_*) — the secret key bypasses RLS, the publishable key does NOT
+- [2026-04-04] ElevenLabs Conversational AI outbound calls use POST /v1/convai/twilio/outbound-call — needs agent_id, agent_phone_number_id, to_number. No WebSocket bridge needed (they handle audio loop)
+- [2026-04-04] ElevenLabs post-call webhook payload has transcript as array of {role, message, time_in_call_secs} — different format from Bland.ai/Twilio (single string)
+- [2026-04-04] Tailwind CDN gives utility classes but zero visual depth — needs custom CSS for shadows, textures, hover states, or everything looks like a tutorial
+- [2026-04-04] regionConfigJson was injected raw into HTML script tag — XSS vulnerability. Must JSON.stringify(JSON.parse(...)) to sanitise before injection
+- [2026-04-04] Dashboard API returns suburb field as "suburb" not "suburb_name", and "sample_size" not "cafe_count" — frontend aggregateRegions must match actual field names
 - [2026-03-31] process.exit(0) in deploy endpoint kills the HTTP connection before response flushes — use res.on('finish') + setTimeout, or separate deploy from restart
 - [2026-03-31] Leaflet CSS preload onload trick fails on Firefox Android — use sync stylesheet link instead
 - [2026-03-31] initMap variable scope: renamed param from 'suburbs' to 'items' but fitBounds still referenced 'suburbs' — always check variable names after refactoring function signatures

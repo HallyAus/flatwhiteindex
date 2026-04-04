@@ -5,42 +5,41 @@
 
 ## Last Updated
 
-- **Date:** 2026-03-31
+- **Date:** 2026-04-04
 - **Branch:** master
-- **Focus:** Admin portal, voice calling, map overhaul, email system, marketing, UX
+- **Focus:** Guinndex redesign, editorial v3, full audit, ElevenLabs voice integration, Supabase migrations
 
-## Accomplished (this session — 54 commits)
+## Accomplished (this session — 13 commits)
 
-- **Admin portal** — 7 tabs (Dashboard, Calls, Cafes, Review, Submissions, Subscribers, System), 15+ API endpoints, deploy/restart with syntax check + rollback, server log viewer, suburb progress bars with right-click hide/show
-- **Voice calling** — prompt iterated 3x (more patient, no Flat White Index mention), price extraction expanded (word dollars, AUD, reprocess), volume 1.5x, better voicemail/IVR detection
-- **Map** — individual cafe markers with permanent price labels, fitBounds, lazy init via IntersectionObserver, reset button, suburb click zooms to all cafes in that suburb
-- **Dashboard features** — suburb comparison tool, cheapest near me (geolocation), Sydney leaderboard with rating tiebreaker, salary calculator, price insights grid, methodology cards
-- **Email** — Resend SDK (replaced nodemailer), welcome email on signup, weekly digest, 3 branded HTML templates (welcome, digest, milestone)
-- **80 suburbs** across all Greater Sydney (was 46)
-- **Embed fixed** — CSP frame-ancestors, unsubscribe route, subscribers tab with CSV export
-- **UX density** — 25-30% less scroll, tighter spacing, larger text, merged methodology into distribution panel
-- **Marketing** — logo (friendly bean with eyes), Facebook cover PNG, 10 launch posts
-- **Performance** — server-side data injection, lazy map, admin caching, lightweight queries
-- **Security** — timing-safe auth, trust proxy, prompt injection protection, rate limiter hardening
+- **Guinndex redesign (Latte Art v1)** — Dark-to-light three-zone layout on main index.html: espresso hero, gradient bridge with 8 region cards, light milk content zone. Single Origin colour palette with coffee-process CSS variables.
+- **Percentile tier system** — Budget (≤P25), Mid-range, Premium (≥P75) auto-calculated from live data. Tier badges, region card colours, map marker colours all tied to percentiles.
+- **Sydney in Coffees** — 20 dynamic comparison cards (house price, rent, avo toast, diesel, SCG, Opera House, pokies, etc.) calculated from live average price.
+- **Full 5-agent audit** — HTML structure, CSS, JS, webhook, admin. Fixed 16 issues: XSS in regionConfigJson, field name mismatch (suburb/sample_size), 6 duplicate font-sizes, 3 broken hovers, hardcoded hex, WCAG contrast, duplicate ID, missing label for=, division-by-zero guards.
+- **Editorial v2 (rejected)** — Dark FT-meets-specialty-coffee design. User rejected ("very bad").
+- **Editorial v3** — Light mode, terracotta accent (#C4654A), Source Serif 4 + Inter. Tailwind CDN. Paper texture, card depth, hover lifts, editorial typography. Served at /v3.
+- **ElevenLabs Conversational AI** — New caller-elevenlabs.js replaces Twilio+OpenAI. Single API call per café, no WebSocket bridge needed. Post-call webhook at /webhook/elevenlabs-call-complete. Half the cost per call.
+- **Supabase migrations 003-005** — subscribers table, user_price_submissions, constraints, RLS policies, performance indexes, get_call_stats() function. Subscribe form now working.
+- **Subscriber fix** — RLS was blocking because anon key was being used. Fixed by switching to service_role key (sb_secret_*).
 
 ## In Progress
 
-- Guinndex-inspired redesign (dark theme, regional grouping, premium vs budget framing)
+- ElevenLabs agent setup (user needs to create agent in dashboard, get API key + agent ID + phone number ID)
+- Decide whether v3 replaces main index.html
 
 ## Blocked
 
 - Resend domain verification (need DNS records in Cloudflare for flatwhiteindex.com.au)
-- Supabase FK schema cache (NOTIFY pgrst, 'reload schema' — user has run it)
 
 ## Next Steps
 
-1. **Guinndex-inspired redesign** — dark theme option, regional suburb grouping, premium vs budget hero framing
-2. **Run migrations 004 + 005** in Supabase SQL editor
-3. **Set up Resend** — add API key + verify domain DNS records
-4. **Call more suburbs** — 80 suburbs available, many uncalled
+1. **Set up ElevenLabs agent** — create at elevenlabs.io/agents, add phone number, configure post-call webhook to /webhook/elevenlabs-call-complete, update .env with ELEVENLABS_* vars
+2. **Test ElevenLabs calling** — make a test call to verify the full pipeline works
+3. **Call more suburbs** — 80 suburbs available, many uncalled
+4. **Decide on v3** — if user likes v3, swap it to be the main page
 5. **Scheduled auto-dispatch** — cron job for business hours calling
 6. **Price history tracking** — re-call cafes monthly, show trends
-7. **WhatsApp price submission** — text-based crowdsourcing
+7. **Set up Resend** — DNS records in Cloudflare
+8. **WhatsApp price submission** — text-based crowdsourcing
 
 ## Active Beads Issues
 
@@ -49,27 +48,31 @@
 ## Context
 
 > - Production: Proxmox LXC 700 via systemd `flatwhite-webhook`
-> - Deploy: admin portal Deploy button (git pull + syntax check + restart) OR terminal `cd /opt/flatwhiteindex && git pull origin master && npm install && systemctl restart flatwhite-webhook`
+> - Deploy: `cd /opt/flatwhiteindex && git pull origin master && npm install && systemctl restart flatwhite-webhook`
 > - Admin: https://flatwhiteindex.com.au/admin (ADMIN_SECRET in .env)
 > - Umami: analytics.agenticconsciousness.com.au, website ID d35f6ff1-35d8-4c68-890d-5aa312d6039c
 > - Email: Resend SDK (RESEND_API_KEY in .env), welcome auto-sends on signup
-> - Voice: Twilio + OpenAI Realtime (CALL_PROVIDER=twilio), prompt in caller-twilio.js
+> - Voice: ElevenLabs Conversational AI (CALL_PROVIDER=elevenlabs), also supports twilio and bland
 > - Hidden suburbs: right-click suburb buttons in admin, persists to hidden-suburbs.json
 > - Embed: works via iframe (frame-ancestors * in CSP)
 > - Logo: friendly coffee bean with big eyes, gradient body, steam wisps (72px in header)
 > - Test runner: `npm test` — 36/36 passing throughout
 > - specs/ is gitignored — use `git add -f`
+> - Region config: suburb-regions.json (8 regions, inlined by server)
+> - Migrations: 001-005 all run in Supabase
+> - Supabase key: must be service_role (sb_secret_*), not anon (sb_publishable_*)
 
 ## Files Modified
 
 ```
-webhook.js, db.js, utils.js (new), index.js, cafes.js
-caller-bland.js, caller-twilio.js
-public/index.html, public/admin.html, public/press.html, public/melbourne.html
-public/robots.txt, public/sitemap.xml, public/llms.txt
-public/og-image-1200x630.png (new), public/logo.svg (new), public/leaflet.css
-env.example, package.json, package-lock.json
-scripts/email-templates.js (new), scripts/send-weekly-digest.js, scripts/generate-og-image.js (new)
-specs/migrations/004_constraints_and_rls.sql (new), specs/migrations/005_performance.sql (new)
-marketing/ (new) — logo.svg, logo.png, logo-512.png, logo-192.png, facebook-cover.svg, facebook-cover.png, launch-posts.md
+public/index.html — Latte Art reskin (CSS variables, three zones, regions, tiers, coffees section)
+public/index-v2.html (new) — dark editorial design (rejected)
+public/index-v3.html (new) — light editorial design with terracotta accent
+webhook.js — regionConfigJson injection, XSS fix, /v2 + /v3 routes, ElevenLabs webhook
+caller-elevenlabs.js (new) — ElevenLabs Conversational AI outbound calls
+caller.js — updated router for elevenlabs provider
+suburb-regions.json (new) — 8 Sydney region mappings
+env.example — added ELEVENLABS_* variables, updated CALL_PROVIDER options
+docs/superpowers/specs/2026-03-31-guinndex-redesign-design.md (new)
+docs/superpowers/plans/2026-03-31-guinndex-redesign.md (new)
 ```
