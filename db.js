@@ -405,7 +405,9 @@ export async function searchCafes(query = '', statusFilter = null, limit = 100) 
     q = q.eq("status", statusFilter);
   }
   if (query) {
-    q = q.ilike("name", `%${query}%`);
+    // [SECURITY] Escape LIKE wildcards to prevent pattern injection
+    const escaped = query.replace(/[%_\\]/g, '\\$&');
+    q = q.ilike("name", `%${escaped}%`);
   }
   const { data, error } = await q;
   if (error) throw new Error(`searchCafes: ${error.message}`);

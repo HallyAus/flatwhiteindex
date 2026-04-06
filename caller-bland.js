@@ -58,6 +58,10 @@ export async function dispatchCalls(cafes, batchSize) {
 }
 
 async function dispatchSingleCall(cafe) {
+  // [SECURITY] Validate phone number format before sending to API
+  if (!cafe.phone || !/^\+\d{8,15}$/.test(cafe.phone)) {
+    throw new Error(`Invalid phone number format for ${cafe.name}`);
+  }
   const res = await fetch(`${BLAND_API}/calls`, {
     method: "POST",
     headers: {

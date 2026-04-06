@@ -41,7 +41,9 @@ async function elevenLabsRequest(path, body) {
 
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`ElevenLabs API ${res.status}: ${text}`);
+    // [SECURITY] Log full error server-side, throw generic message
+    console.error(`ElevenLabs API ${res.status}: ${text}`);
+    throw new Error(`ElevenLabs API error (${res.status})`);
   }
 
   return res.json();
@@ -85,6 +87,10 @@ export async function dispatchCalls(cafes, batchSize) {
 }
 
 async function dispatchSingleCall(cafe, agentId, phoneNumberId) {
+  // [SECURITY] Validate phone number format before sending to API
+  if (!cafe.phone || !/^\+\d{8,15}$/.test(cafe.phone)) {
+    throw new Error(`Invalid phone number format for ${cafe.name}`);
+  }
   const cafeName = sanitiseForPrompt(cafe.name);
   const prompt = AGENT_PROMPT.replace('{{cafe_name}}', cafeName);
 
