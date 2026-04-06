@@ -197,18 +197,42 @@
   .tab-count { background: var(--red); color: white; font-size: 0.6rem; padding: 1px 5px; border-radius: 8px; margin-left: 4px; }
 </style>
 <script defer src="https://analytics.agenticconsciousness.com.au/script.js" data-website-id="d35f6ff1-35d8-4c68-890d-5aa312d6039c"></script>
+<script src="/vendor/simplewebauthn-browser.umd.min.js"></script>
 </head>
 <body>
 
 <div class="login-page" id="loginPage">
   <div class="login-box">
     <h1>☕ Flat White Index</h1>
-    <p class="sub">Admin access — enter your secret key.</p>
-    <div class="login-error" id="loginError">Invalid key. Try again.</div>
-    <form onsubmit="doLogin(event)">
-      <input type="password" id="secretInput" placeholder="Admin secret" autocomplete="off" autofocus>
-      <button type="submit">Sign in</button>
-    </form>
+    <div id="bootstrapMode" style="display:none;">
+      <p class="sub">No admins yet — register the first one.</p>
+      <div class="login-error" id="bootstrapError"></div>
+      <input type="text" id="bootstrapUsername" placeholder="Choose a username" autocomplete="username">
+      <input type="password" id="bootstrapKey" placeholder="Admin secret (setup key)" autocomplete="off">
+      <button onclick="doBootstrap()">Register with passkey</button>
+    </div>
+    <div id="loginMode" style="display:none;">
+      <p class="sub">Sign in with your passkey.</p>
+      <div class="login-error" id="loginError"></div>
+      <button onclick="doPasskeyLogin()">Sign in with passkey</button>
+    </div>
+    <div id="inviteMode" style="display:none;">
+      <p class="sub">You've been invited — register your passkey.</p>
+      <div class="login-error" id="inviteError"></div>
+      <input type="text" id="inviteUsername" placeholder="Choose a username" autocomplete="username">
+      <button onclick="doInviteRegister()">Register with passkey</button>
+    </div>
+    <div id="legacyMode" style="display:none;">
+      <p class="sub">Admin access — enter your secret key.</p>
+      <div class="login-error" id="legacyError"></div>
+      <form onsubmit="doLegacyLogin(event)">
+        <input type="password" id="secretInput" placeholder="Admin secret" autocomplete="off">
+        <button type="submit">Sign in with key</button>
+      </form>
+    </div>
+    <div id="loginToggle" style="margin-top:1rem;text-align:center;">
+      <a href="#" id="toggleLegacy" style="font-size:0.78rem;color:var(--text-dim);" onclick="event.preventDefault();toggleLegacyMode()">Use secret key instead</a>
+    </div>
   </div>
 </div>
 
@@ -216,6 +240,7 @@
   <div class="topbar">
     <h1>☕ Admin</h1>
     <div class="topbar-right">
+      <button class="btn btn-sm btn-ghost" onclick="doLogout()" style="font-size:0.78rem;">Logout</button>
       <div class="server-dot" id="serverDot" title="Server connected"></div>
       <button class="btn btn-ghost btn-sm" onclick="showServerLogs()">📋 Logs</button>
       <button class="btn btn-ocean btn-sm" id="deployBtn" onclick="deployCode()">🚀 Deploy</button>
@@ -380,6 +405,21 @@
         <div class="panel-head"><h2>Environment</h2></div>
         <div class="panel-body" id="sysEnv"><div class="empty">Loading...</div></div>
       </div>
+      <div class="panel" style="margin-top:1rem;">
+        <div class="panel-head"><h2>Admin Users</h2><button class="btn btn-sm btn-primary" onclick="createInvite()">+ Invite Admin</button></div>
+        <div class="panel-body" id="sysAdmins"><div class="empty">Loading...</div></div>
+      </div>
+      <div id="inviteResultModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;align-items:center;justify-content:center;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:2rem;max-width:480px;width:90%;">
+          <h3 style="margin-bottom:1rem;color:var(--cream);">Invite Link</h3>
+          <p style="font-size:0.82rem;color:var(--text-dim);margin-bottom:0.5rem;">Share this link — expires in 24 hours, single use.</p>
+          <input id="inviteLinkInput" readonly style="width:100%;padding:0.6rem;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--cream);font-size:0.82rem;margin-bottom:1rem;">
+          <div style="display:flex;gap:0.5rem;">
+            <button class="btn btn-primary" onclick="copyInvite()">Copy</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('inviteResultModal').style.display='none'">Close</button>
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
@@ -430,50 +470,176 @@
 </div>
 
 <script>
-let token = sessionStorage.getItem('admin_token') || '';
 let isLive = false;
 let jobRunning = false;
 let pollTimer = null;
 let _debounceTimers = {};
 
-if (token) verifyAndShow();
-
 // --- AUTH ---
-async function doLogin(e) {
+const { startRegistration, startAuthentication } = SimpleWebAuthnBrowser;
+let currentUser = null;
+const inviteCode = new URLSearchParams(window.location.search).get('invite');
+
+(async function initAuth() {
+  // Check existing session
+  try {
+    const meRes = await fetch('/api/admin/auth/me', { credentials: 'same-origin' });
+    if (meRes.ok) {
+      const { user } = await meRes.json();
+      currentUser = user;
+      const statusRes = await api('/api/admin/status');
+      if (statusRes.ok) {
+        const data = await statusRes.json();
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('app').classList.add('active');
+        updateStats(data);
+        startPolling();
+        loadReviewCount();
+        loadSuburbProgress();
+        const sel = document.getElementById('suburbSelect');
+        Object.entries(SUBURB_MAP).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; sel.appendChild(o); });
+        return;
+      }
+    }
+  } catch {}
+
+  // Also check legacy Bearer token from sessionStorage
+  if (token) {
+    try {
+      const res = await api('/api/admin/status');
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('loginPage').classList.add('hidden');
+        document.getElementById('app').classList.add('active');
+        updateStats(data);
+        startPolling();
+        loadReviewCount();
+        loadSuburbProgress();
+        const sel = document.getElementById('suburbSelect');
+        Object.entries(SUBURB_MAP).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; sel.appendChild(o); });
+        return;
+      }
+    } catch {}
+  }
+
+  // Determine mode
+  if (inviteCode) {
+    document.getElementById('inviteMode').style.display = '';
+    document.getElementById('loginToggle').style.display = 'none';
+    return;
+  }
+  try {
+    const res = await fetch('/api/admin/auth/status');
+    const { needsBootstrap } = await res.json();
+    if (needsBootstrap) {
+      document.getElementById('bootstrapMode').style.display = '';
+      document.getElementById('loginToggle').style.display = 'none';
+    } else {
+      document.getElementById('loginMode').style.display = '';
+    }
+  } catch {
+    document.getElementById('legacyMode').style.display = '';
+    document.getElementById('loginToggle').style.display = 'none';
+  }
+})();
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+async function doBootstrap() {
+  const username = document.getElementById('bootstrapUsername').value.trim();
+  const key = document.getElementById('bootstrapKey').value.trim();
+  if (!username || !key) return showError('bootstrapError', 'Username and setup key required.');
+  try {
+    const chalRes = await fetch('/api/admin/auth/bootstrap', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json', 'X-Bootstrap-Key': key },
+      body: JSON.stringify({ username }),
+    });
+    if (!chalRes.ok) { const e = await chalRes.json(); return showError('bootstrapError', e.error || 'Bootstrap failed.'); }
+    const { options, challengeId } = await chalRes.json();
+    const credential = await startRegistration({ optionsJSON: options });
+    const regRes = await fetch('/api/admin/auth/register', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challengeId, credential }),
+    });
+    if (!regRes.ok) { const e = await regRes.json(); return showError('bootstrapError', e.error || 'Registration failed.'); }
+    window.location.reload();
+  } catch (err) { showError('bootstrapError', err.message || 'Passkey registration failed.'); }
+}
+
+async function doPasskeyLogin() {
+  document.getElementById('loginError').style.display = 'none';
+  try {
+    const chalRes = await fetch('/api/admin/auth/login-challenge', { method: 'POST', credentials: 'same-origin' });
+    if (!chalRes.ok) return showError('loginError', 'Could not start login.');
+    const { options, challengeId } = await chalRes.json();
+    const credential = await startAuthentication({ optionsJSON: options });
+    const verRes = await fetch('/api/admin/auth/login-verify', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challengeId, credential }),
+    });
+    if (!verRes.ok) { const e = await verRes.json(); return showError('loginError', e.error || 'Login failed.'); }
+    window.location.reload();
+  } catch (err) { showError('loginError', err.message || 'Passkey authentication failed.'); }
+}
+
+async function doInviteRegister() {
+  const username = document.getElementById('inviteUsername').value.trim();
+  if (!username) return showError('inviteError', 'Username required.');
+  try {
+    const chalRes = await fetch('/api/admin/auth/invite-challenge', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, invite: inviteCode }),
+    });
+    if (!chalRes.ok) { const e = await chalRes.json(); return showError('inviteError', e.error || 'Invite invalid or expired.'); }
+    const { options, challengeId } = await chalRes.json();
+    const credential = await startRegistration({ optionsJSON: options });
+    const regRes = await fetch('/api/admin/auth/register', {
+      method: 'POST', credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ challengeId, credential }),
+    });
+    if (!regRes.ok) { const e = await regRes.json(); return showError('inviteError', e.error || 'Registration failed.'); }
+    window.location.href = '/admin';
+  } catch (err) { showError('inviteError', err.message || 'Passkey registration failed.'); }
+}
+
+let token = sessionStorage.getItem('admin_token') || '';
+async function doLegacyLogin(e) {
   e.preventDefault();
   token = document.getElementById('secretInput').value.trim();
   if (!token) return;
-  if (!(await verifyAndShow())) {
-    document.getElementById('loginError').style.display = 'block';
-    token = '';
-  }
+  const res = await fetch('/api/admin/status', { headers: { 'Authorization': 'Bearer ' + token } });
+  if (!res.ok) { showError('legacyError', 'Invalid key.'); token = ''; return; }
+  sessionStorage.setItem('admin_token', token);
+  window.location.reload();
 }
 
-async function verifyAndShow() {
-  try {
-    const res = await api('/api/admin/status');
-    if (!res.ok) return false;
-    const data = await res.json();
-    sessionStorage.setItem('admin_token', token);
-    document.getElementById('loginPage').classList.add('hidden');
-    document.getElementById('app').classList.add('active');
-    updateStats(data);
-    log('Connected to server.', 's');
-    startPolling();
-    loadReviewCount();
-    loadSuburbProgress();
-    // Populate dropdown from SUBURB_MAP
-    const sel = document.getElementById('suburbSelect');
-    Object.entries(SUBURB_MAP).forEach(([k, v]) => { const o = document.createElement('option'); o.value = k; o.textContent = v; sel.appendChild(o); });
-    return true;
-  } catch { return false; }
+function toggleLegacyMode() {
+  document.getElementById('loginMode').style.display = 'none';
+  document.getElementById('legacyMode').style.display = '';
+  document.getElementById('toggleLegacy').textContent = 'Use passkey instead';
+  document.getElementById('toggleLegacy').onclick = (e) => {
+    e.preventDefault();
+    document.getElementById('legacyMode').style.display = 'none';
+    document.getElementById('loginMode').style.display = '';
+    document.getElementById('toggleLegacy').textContent = 'Use secret key instead';
+    document.getElementById('toggleLegacy').onclick = (e2) => { e2.preventDefault(); toggleLegacyMode(); };
+  };
 }
 
-function logout() {
+async function doLogout() {
+  await fetch('/api/admin/auth/logout', { method: 'POST', credentials: 'same-origin' });
   sessionStorage.removeItem('admin_token');
   token = '';
-  stopPolling();
-  location.reload();
+  window.location.reload();
 }
 
 // --- DEPLOY ---
@@ -576,7 +742,9 @@ async function reconnectLoop() {
 
 // --- API HELPER ---
 function api(url, opts = {}) {
-  return fetch(url, { ...opts, headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json', ...opts.headers } });
+  const headers = { 'Content-Type': 'application/json', ...opts.headers };
+  if (token) headers['Authorization'] = 'Bearer ' + token;
+  return fetch(url, { ...opts, headers, credentials: 'same-origin' });
 }
 
 // --- TABS ---
@@ -1064,9 +1232,37 @@ async function loadSystem() {
     document.getElementById('sysEnv').innerHTML = '<div class="env-grid">' + Object.entries(d.env).map(([k, v]) =>
       `<div class="env-item"><div class="env-dot ${v ? 'set' : 'missing'}"></div><span class="env-name">${k}</span></div>`
     ).join('') + '</div>';
+
+    await loadAdminUsers();
   } catch (err) {
     document.getElementById('sysServer').innerHTML = '<div class="empty">Error: ' + esc(err.message) + '</div>';
   }
+}
+
+async function createInvite() {
+  try {
+    const res = await api('/api/admin/auth/invite', { method: 'POST' });
+    if (!res.ok) return log('Failed to create invite', 'e');
+    const { inviteUrl } = await res.json();
+    document.getElementById('inviteLinkInput').value = inviteUrl;
+    document.getElementById('inviteResultModal').style.display = 'flex';
+  } catch (err) { log('Invite error: ' + err.message, 'e'); }
+}
+
+function copyInvite() {
+  navigator.clipboard.writeText(document.getElementById('inviteLinkInput').value);
+  log('Invite link copied!', 's');
+}
+
+async function loadAdminUsers() {
+  try {
+    const res = await api('/api/admin/auth/users');
+    if (!res.ok) return;
+    const users = await res.json();
+    document.getElementById('sysAdmins').innerHTML = users.map(u =>
+      `<div class="sys-item"><span class="label">${esc(u.username)}</span><span class="val">${u.admin_credentials?.length || 0} passkey(s) — joined ${timeAgo(u.created_at)}</span></div>`
+    ).join('') || '<div class="empty">No admins</div>';
+  } catch {}
 }
 
 // --- HELPERS ---
