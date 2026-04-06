@@ -373,6 +373,25 @@ export async function updateCredentialCounter(credentialId, newCounter) {
 }
 
 // ---------------------------------------------------------------------------
+// Cookie options — shared by all route handlers that set/clear the session cookie
+// ---------------------------------------------------------------------------
+
+/**
+ * Secure cookie options for the admin session token.
+ * httpOnly prevents JS access; sameSite=lax protects against CSRF while
+ * allowing top-level navigations (e.g. redirect after login).
+ */
+export const SESSION_COOKIE = "fwi_session";
+
+export const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  maxAge: SESSION_TTL_DAYS * 24 * 60 * 60 * 1000,
+  path: "/",
+};
+
+// ---------------------------------------------------------------------------
 // 3. WebAuthn flows
 // ---------------------------------------------------------------------------
 
