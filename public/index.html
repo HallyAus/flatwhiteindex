@@ -1728,10 +1728,28 @@
 
 <!-- Umami Analytics (self-hosted, cookie-free) -->
 <script defer src="https://analytics.agenticconsciousness.com.au/script.js" data-website-id="d35f6ff1-35d8-4c68-890d-5aa312d6039c"></script>
-<!-- PostHog analytics -->
+<!-- PostHog analytics — full suite -->
 <script>
 !function(t,e){var o,n,p,r;e.__SV||(window.posthog=e,e._i=[],e.init=function(i,s,a){function g(t,e){var o=e.split(".");2==o.length&&(t=t[o[0]],e=o[1]),t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}}(p=t.createElement("script")).type="text/javascript",p.crossOrigin="anonymous",p.async=!0,p.src=s.api_host.replace(".i.posthog.com","-assets.i.posthog.com")+"/static/array.js",(r=t.getElementsByTagName("script")[0]).parentNode.insertBefore(p,r);var u=e;for(void 0!==a?u=e[a]=[]:a="posthog",u.people=u.people||[],u.toString=function(t){var e="posthog";return"posthog"!==a&&(e+="."+a),t||(e+=" (stub)"),e},u.people.toString=function(){return u.toString(1)+".people (stub)"},o="init capture register register_once register_for_session unregister unregister_for_session getFeatureFlag getFeatureFlagPayload isFeatureEnabled reloadFeatureFlags updateEarlyAccessFeatureEnrollment getEarlyAccessFeatures on onFeatureFlags onSessionId getSurveys getActiveMatchingSurveys renderSurvey canRenderSurvey getNextSurveyStep identify setPersonProperties group resetGroups setPersonPropertiesForFlags resetPersonPropertiesForFlags setGroupPropertiesForFlags resetGroupPropertiesForFlags reset get_distinct_id getGroups get_session_id get_session_replay_url alias set_config startSessionRecording stopSessionRecording sessionRecordingStarted captureException loadToolbar get_property getSessionProperty createPersonProfile opt_in_capturing opt_out_capturing has_opted_in_capturing has_opted_out_capturing clear_opt_in_out_capturing debug getPageviewId".split(" "),n=0;n<o.length;n++)g(u,o[n]);e._i.push([i,s,a])},e.__SV=1)}(document,window.posthog||[]);
-posthog.init('phc_AUTXvNZkCQVUVJjTEqMUzTkqLtz4iEQvvDQ4zsu3Hetw',{api_host:'https://us.i.posthog.com',person_profiles:'identified_only'});
+posthog.init('phc_AUTXvNZkCQVUVJjTEqMUzTkqLtz4iEQvvDQ4zsu3Hetw',{
+  api_host:'https://us.i.posthog.com',
+  person_profiles:'identified_only',
+  autocapture: true,
+  capture_pageview: true,
+  capture_pageleave: true,
+  capture_performance: true,
+  enable_heatmaps: true,
+  enable_recording_console_log: true,
+  session_recording: {
+    recordCrossOriginIframes: true,
+    maskAllInputs: false,
+    maskInputFn: function(text, element) {
+      if (element?.type === 'password') return '*'.repeat(text.length);
+      return text;
+    },
+  },
+  scroll_subbehavior: 'full',
+});
 </script>
 </head>
 <body>
@@ -2594,6 +2612,7 @@ function highlightSuburb(name) {
 }
 
 function clickSuburb(name) {
+  posthog.capture('suburb_clicked', { suburb: name });
   highlightSuburb(name);
   document.getElementById('selectedInfo').textContent = name;
   updateHash(name);
@@ -2959,6 +2978,7 @@ function subscribeEmail(e) {
   e.preventDefault();
   const email = document.getElementById('newsletterEmail').value;
   if (!email) return;
+  posthog.capture('newsletter_subscribed', { source: 'footer' });
 
   fetch('/api/subscribe', {
     method: 'POST',
@@ -2984,6 +3004,7 @@ function subscribeEmail(e) {
 
 // ─── UI HELPERS ───────────────────────────────────────────────────────────────
 function openModal() {
+  posthog.capture('modal_opened', { modal: 'submit_price' });
   document.getElementById('modal').classList.add('open');
   document.getElementById('successMsg').style.display = 'none';
 }
@@ -2998,6 +3019,7 @@ function submitPrice() {
   const priceSmall = document.getElementById('cafePriceSmall').value;
   const priceLarge = document.getElementById('cafePriceLarge').value;
   if (!name || !suburb || (!priceSmall && !priceLarge)) return;
+  posthog.capture('price_submitted', { cafe: name, suburb, price_small: priceSmall, price_large: priceLarge });
 
   fetch('/api/submit-price', {
     method: 'POST',
@@ -3027,6 +3049,7 @@ document.addEventListener('keydown', function(e) {
 
 // ─── SUBURB RECON ─────────────────────────────────────────────────────────────
 function openReconModal() {
+  posthog.capture('modal_opened', { modal: 'request_suburb' });
   document.getElementById('reconModal').classList.add('open');
   document.getElementById('reconSuccess').style.display = 'none';
 }
@@ -3039,6 +3062,7 @@ function submitRecon() {
   const suburb = document.getElementById('reconSuburb').value;
   if (!suburb) return;
   const email = document.getElementById('reconEmail').value;
+  posthog.capture('suburb_requested', { suburb });
 
   fetch('/api/subscribe', {
     method: 'POST',
@@ -3064,6 +3088,7 @@ document.getElementById('reconModal').addEventListener('click', function(e) {
 
 // ─── SHARE ────────────────────────────────────────────────────────────────────
 function shareSuburb(name, price, btnEl) {
+  posthog.capture('suburb_shared', { suburb: name, price });
   const text = `A flat white in ${name} costs $${price.toFixed(2)} on average ☕ Check your suburb at flatwhiteindex.com.au/#suburb=${encodeURIComponent(name)}`;
 
   if (navigator.share) {
@@ -3079,6 +3104,7 @@ function shareSuburb(name, price, btnEl) {
 function calcSalary() {
   const salary = parseFloat(document.getElementById('salaryInput').value);
   if (!salary || salary < 20000) return;
+  posthog.capture('salary_calculated', { salary });
 
   const avgPrice = 5.80; // Sydney average
   const hourlyRate = salary / (52 * 38); // 52 weeks, 38 hr work week (AU standard)
@@ -3120,6 +3146,7 @@ function compareSuburbs() {
   const s1 = currentSuburbs.find(s => s.name === name1);
   const s2 = currentSuburbs.find(s => s.name === name2);
   if (!s1 || !s2) return;
+  posthog.capture('suburbs_compared', { suburb_1: name1, suburb_2: name2, price_1: s1.price, price_2: s2.price });
 
   const diff = Math.abs(s1.price - s2.price);
   const annual = diff * 365;
@@ -3148,6 +3175,7 @@ function compareSuburbs() {
 
 // ─── CHEAPEST NEAR ME ─────────────────────────────────────────────────────────
 function findNearMe() {
+  posthog.capture('near_me_clicked');
   const btn = document.getElementById('nearmeBtn');
   const result = document.getElementById('nearmeResult');
 
@@ -3228,6 +3256,7 @@ function formatDist(km) {
 
 // ─── EMBED ────────────────────────────────────────────────────────────────────
 function copyEmbed(btnEl) {
+  posthog.capture('embed_copied');
   const code = document.getElementById('embedCode').textContent;
   navigator.clipboard.writeText(code).then(() => {
     if (btnEl) { btnEl.textContent = 'Copied!'; setTimeout(() => btnEl.textContent = 'Copy', 2000); }
