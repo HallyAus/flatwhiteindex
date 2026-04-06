@@ -5,6 +5,8 @@ import { saveCallResult, getCallByBlandId, getPriceStats, getCallStats, getDisco
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import cookieParser from "cookie-parser";
+import { getAdminUserCount, generateBootstrapRegOptions, generateInviteRegOptions, verifyAndCompleteRegistration, generateLoginChallenge, verifyAndCompleteLogin, validateSession, destroySession, createInvite, getAdminUsers, SESSION_COOKIE, cookieOptions } from "./auth.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -44,6 +46,7 @@ app.set('trust proxy', 1);
 // [SECURITY] Body size limit — prevent DoS via large payloads
 app.use(express.json({ limit: '64kb' }));
 app.use(express.urlencoded({ extended: false, limit: '64kb' }));
+app.use(cookieParser());
 
 // [SECURITY] Basic security headers + CSP
 app.use((req, res, next) => {
@@ -51,7 +54,7 @@ app.use((req, res, next) => {
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-XSS-Protection', '0');
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
-  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' https://analytics.agenticconsciousness.com.au",
@@ -538,10 +541,14 @@ app.post("/api/subscribe", async (req, res) => {
 // --- Unsubscribe ---
 
 app.get("/unsubscribe", async (req, res) => {
+  if (!rateLimit('unsub:' + (req.ip || 'unknown'), 5)) {
+    return res.status(429).send('Too many requests');
+  }
   const email = req.query.email ? decodeURIComponent(req.query.email).toLowerCase().trim() : null;
-  if (!email) return res.redirect('/');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return res.redirect('/');
   try {
     await deleteSubscriber(email);
+    // [SECURITY] Static HTML response — no user input reflected
     res.send(`<!DOCTYPE html><html lang="en-AU"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribed</title></head><body style="font-family:-apple-system,sans-serif;background:#F7F3ED;display:flex;align-items:center;justify-content:center;min-height:100vh;margin:0;"><div style="text-align:center;padding:2rem;"><div style="font-size:3rem;margin-bottom:1rem;">☕</div><h1 style="color:#2C1A0E;font-size:1.4rem;">You've been unsubscribed</h1><p style="color:#6B5840;margin:1rem 0;">No more emails from us. You can always come back.</p><a href="/" style="color:#8E5A28;">← Back to Flat White Index</a></div></body></html>`);
     console.log(`📧 Unsubscribed: ${email.slice(0, 3)}***`);
   } catch {
@@ -587,18 +594,171 @@ app.post("/api/submit-price", async (req, res) => {
   }
 });
 
+// --- Auth routes (under /api/admin/auth) ---
+
+app.get("/api/admin/auth/status", async (req, res) => {
+  try {
+    const count = await getAdminUserCount();
+    res.json({ needsBootstrap: count === 0 });
+  } catch {
+    res.json({ needsBootstrap: false });
+  }
+});
+
+app.get("/api/admin/auth/me", async (req, res) => {
+  const sessionToken = req.cookies?.[SESSION_COOKIE];
+  if (!sessionToken) return res.status(401).json({ error: "No session" });
+  const user = await validateSession(sessionToken);
+  if (!user) {
+    res.clearCookie(SESSION_COOKIE, { path: cookieOptions.path });
+    return res.status(401).json({ error: "Session expired" });
+  }
+  res.json({ user: { id: user.id, username: user.username } });
+});
+
+app.post("/api/admin/auth/bootstrap", async (req, res) => {
+  if (!rateLimit('auth-bootstrap:' + (req.ip || 'unknown'), 3)) {
+    return res.status(429).json({ error: "Too many attempts" });
+  }
+  const bootstrapKey = req.headers['x-bootstrap-key'];
+  const secret = process.env.ADMIN_SECRET;
+  if (!secret || !bootstrapKey || !safeCompare(bootstrapKey, secret)) {
+    return res.status(403).json({ error: "Invalid bootstrap key" });
+  }
+  const { username } = req.body;
+  if (!username || typeof username !== 'string' || !/^[a-zA-Z0-9_-]{2,50}$/.test(username)) {
+    return res.status(400).json({ error: "Username must be 2-50 chars (letters, numbers, _ -)" });
+  }
+  try {
+    const { options, challengeId } = await generateBootstrapRegOptions(username.trim());
+    res.json({ options, challengeId });
+  } catch (err) {
+    console.error("Bootstrap error:", err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post("/api/admin/auth/invite-challenge", async (req, res) => {
+  if (!rateLimit('auth-invite:' + (req.ip || 'unknown'), 5)) {
+    return res.status(429).json({ error: "Too many attempts" });
+  }
+  const { username, invite } = req.body;
+  if (!username || typeof username !== 'string' || !/^[a-zA-Z0-9_-]{2,50}$/.test(username)) {
+    return res.status(400).json({ error: "Username must be 2-50 chars (letters, numbers, _ -)" });
+  }
+  if (!invite) return res.status(400).json({ error: "Invite code required" });
+  try {
+    const { options, challengeId } = await generateInviteRegOptions(username.trim(), invite);
+    res.json({ options, challengeId });
+  } catch (err) {
+    console.error("Invite challenge error:", err.message);
+    res.status(400).json({ error: "Invalid or expired invite" });
+  }
+});
+
+app.post("/api/admin/auth/register", async (req, res) => {
+  if (!rateLimit('auth-register:' + (req.ip || 'unknown'), 5)) {
+    return res.status(429).json({ error: "Too many attempts" });
+  }
+  const { challengeId, credential } = req.body;
+  if (!challengeId || !credential) return res.status(400).json({ error: "Missing challengeId or credential" });
+  try {
+    const { user, session } = await verifyAndCompleteRegistration(challengeId, credential);
+    res.cookie(SESSION_COOKIE, session.token, cookieOptions);
+    res.json({ ok: true, user: { username: user.username } });
+  } catch (err) {
+    console.error("Registration error:", err.message);
+    res.status(400).json({ error: err.message });
+  }
+});
+
+app.post("/api/admin/auth/login-challenge", async (req, res) => {
+  if (!rateLimit('auth-login:' + (req.ip || 'unknown'), 10)) {
+    return res.status(429).json({ error: "Too many attempts" });
+  }
+  try {
+    const { options, challengeId } = await generateLoginChallenge();
+    res.json({ options, challengeId });
+  } catch (err) {
+    console.error("Login challenge error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.post("/api/admin/auth/login-verify", async (req, res) => {
+  if (!rateLimit('auth-verify:' + (req.ip || 'unknown'), 10)) {
+    return res.status(429).json({ error: "Too many attempts" });
+  }
+  const { challengeId, credential } = req.body;
+  if (!challengeId || !credential) return res.status(400).json({ error: "Missing challengeId or credential" });
+  try {
+    const { user, session } = await verifyAndCompleteLogin(challengeId, credential);
+    res.cookie(SESSION_COOKIE, session.token, cookieOptions);
+    res.json({ ok: true, user: { username: user.username } });
+  } catch (err) {
+    console.error("Login verify error:", err.message);
+    res.status(401).json({ error: "Authentication failed" });
+  }
+});
+
+app.post("/api/admin/auth/logout", async (req, res) => {
+  const token = req.cookies?.[SESSION_COOKIE];
+  if (token) await destroySession(token);
+  res.clearCookie(SESSION_COOKIE, { path: cookieOptions.path });
+  res.json({ ok: true });
+});
+
 // --- Admin panel (protected by ADMIN_SECRET) ---
 
-function verifyAdmin(req, res, next) {
-  const secret = process.env.ADMIN_SECRET;
-  if (!secret) return res.status(503).json({ error: "Admin not configured" });
-
-  const provided = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-  if (!provided || !safeCompare(provided, secret)) {
-    return res.status(401).json({ error: "Unauthorized" });
+async function verifyAdmin(req, res, next) {
+  // 1. Session cookie (primary — passkey auth)
+  const sessionToken = req.cookies?.[SESSION_COOKIE];
+  if (sessionToken) {
+    const user = await validateSession(sessionToken);
+    if (user) {
+      req.adminUser = user;
+      return next();
+    }
+    res.clearCookie(SESSION_COOKIE, { path: cookieOptions.path });
   }
-  next();
+
+  // 2. Bearer token fallback (ADMIN_SECRET for CLI/API access)
+  const secret = process.env.ADMIN_SECRET;
+  if (secret) {
+    const provided = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+    if (provided && safeCompare(provided, secret)) {
+      req.adminUser = { id: null, username: 'api-key' };
+      return next();
+    }
+  }
+
+  return res.status(401).json({ error: "Unauthorized" });
 }
+
+app.post("/api/admin/auth/invite", verifyAdmin, async (req, res) => {
+  if (!rateLimit('auth-invite-create:' + (req.ip || 'unknown'), 5)) {
+    return res.status(429).json({ error: "Too many attempts" });
+  }
+  try {
+    const { code, expiresAt } = await createInvite(req.adminUser.id);
+    const baseUrl = process.env.WEBHOOK_BASE_URL || 'https://flatwhiteindex.com.au';
+    const inviteUrl = `${baseUrl}/admin?invite=${encodeURIComponent(code)}`;
+    res.json({ inviteCode: code, inviteUrl, expiresAt });
+  } catch (err) {
+    console.error("Invite create error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+app.get("/api/admin/auth/users", verifyAdmin, async (req, res) => {
+  try {
+    const users = await getAdminUsers();
+    res.json(users);
+  } catch (err) {
+    console.error("List admins error:", err.message);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 // Admin status — returns stats + avg price (cached 15s)
 let adminStatusCache = null;
@@ -629,7 +789,7 @@ app.get("/api/admin/review-count", verifyAdmin, async (req, res) => {
     const count = await getReviewCount();
     res.json({ count });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -662,7 +822,7 @@ app.post("/api/admin/reprocess", verifyAdmin, async (req, res) => {
     console.log(`🔄 Reprocessed ${reviews.length} reviews: ${fixed} prices extracted, ${voicemails} reclassified as voicemail, ${unchanged} unchanged`);
     res.json({ ok: true, total: reviews.length, fixed, voicemails, unchanged });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -694,7 +854,7 @@ app.post("/api/admin/deploy", verifyAdmin, async (req, res) => {
     }
 
     output.push('$ npm install --omit=dev');
-    const installCode = await runCmd(output, 'npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
+    const installCode = await runCmd(output, 'npm', ['install', '--omit=dev'], { timeout: 60000 });
     if (installCode !== 0) {
       output.push('⚠️ npm install failed — rolling back');
       await runCmd(output, 'git', ['checkout', '.']);
@@ -706,7 +866,7 @@ app.post("/api/admin/deploy", verifyAdmin, async (req, res) => {
     if (checkCode !== 0) {
       output.push('❌ Syntax error — rolling back');
       await runCmd(output, 'git', ['checkout', '.']);
-      await runCmd(output, 'npm', ['install', '--omit=dev'], { shell: true, timeout: 60000 });
+      await runCmd(output, 'npm', ['install', '--omit=dev'], { timeout: 60000 });
       return res.json({ ok: false, output: output.join('\n'), message: 'Syntax error — rolled back' });
     }
 
@@ -803,7 +963,7 @@ app.get("/api/admin/suburb-progress", verifyAdmin, async (req, res) => {
     suburbProgressCacheTime = now;
     res.json(suburbProgressCache);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -901,7 +1061,7 @@ app.get("/api/admin/calls", verifyAdmin, async (req, res) => {
     const data = await getRecentCalls(limit, status);
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -912,7 +1072,7 @@ app.patch("/api/admin/calls/:id/price", verifyAdmin, async (req, res) => {
     await updateCallPrice(req.params.id, price_small ?? null, price_large ?? null, approve !== false);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -925,7 +1085,7 @@ app.patch("/api/admin/calls/:id/status", verifyAdmin, async (req, res) => {
     await updateCallStatus(req.params.id, status);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -935,7 +1095,7 @@ app.delete("/api/admin/calls/:id", verifyAdmin, async (req, res) => {
     await deleteCall(req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -945,7 +1105,7 @@ app.post("/api/admin/calls/:id/retry", verifyAdmin, async (req, res) => {
     await retryCall(req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -955,7 +1115,7 @@ app.post("/api/admin/calls/bulk-retry", verifyAdmin, async (req, res) => {
     const count = await bulkRetryFailed();
     res.json({ ok: true, cleared: count });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -965,7 +1125,7 @@ app.get("/api/admin/review", verifyAdmin, async (req, res) => {
     const data = await getNeedsReviewCalls();
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -978,17 +1138,22 @@ app.get("/api/admin/cafes", verifyAdmin, async (req, res) => {
     const data = await searchCafes(query, status, limit);
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
 // Admin: update a cafe
 app.patch("/api/admin/cafes/:id", verifyAdmin, async (req, res) => {
   try {
+    // [SECURITY] Validate status if provided
+    const validStatuses = ["active", "excluded", "pending", "no_phone", "duplicate"];
+    if (req.body.status && !validStatuses.includes(req.body.status)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
     await updateCafe(req.params.id, req.body);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -998,7 +1163,7 @@ app.delete("/api/admin/cafes/:id", verifyAdmin, async (req, res) => {
     await deleteCafe(req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -1008,7 +1173,7 @@ app.get("/api/admin/subscribers", verifyAdmin, async (req, res) => {
     const data = await getSubscribers();
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -1018,7 +1183,7 @@ app.delete("/api/admin/subscribers/:email", verifyAdmin, async (req, res) => {
     await deleteSubscriber(decodeURIComponent(req.params.email));
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -1028,7 +1193,7 @@ app.get("/api/admin/submissions", verifyAdmin, async (req, res) => {
     const data = await getUserSubmissions();
     res.json(data);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -1038,7 +1203,7 @@ app.delete("/api/admin/submissions/:id", verifyAdmin, async (req, res) => {
     await deleteUserSubmission(req.params.id);
     res.json({ ok: true });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error(err); res.status(500).json({ error: "Internal server error" });
   }
 });
 
@@ -1111,7 +1276,7 @@ function validateEnv() {
 }
 
 // ElevenLabs post-call webhook — receives conversation results
-app.post("/webhook/elevenlabs-call-complete", async (req, res) => {
+app.post("/webhook/elevenlabs-call-complete", verifyWebhookOrigin, async (req, res) => {
   // [SECURITY] Rate limit
   if (!rateLimit('webhook', 100)) {
     return res.status(429).json({ error: "Too many requests" });
