@@ -58,7 +58,7 @@ const AGENT_CONFIG = {
       language: 'en',
       prompt: { prompt: AGENT_PROMPT, temperature: 0.4, max_tokens: 300 },
     },
-    tts: { voice_id: VOICE_ID, model_id: 'eleven_multilingual_v2', speed: 0.8 },
+    tts: { voice_id: VOICE_ID, model_id: 'eleven_multilingual_v2', speed: 0.85 },
     conversation: { max_duration_seconds: 60 },
     tools: [
       { type: 'end_call', description: 'Hang up the phone call. Use after saying goodbye or when reaching voicemail.' },
