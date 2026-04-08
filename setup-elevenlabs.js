@@ -49,7 +49,7 @@ async function findVoice() {
     gender: 'female',
     language: 'en',
     page_size: '20',
-    sort: 'usage_character_count_7d',
+    sort: 'trending',
   });
   const res = await elApi('GET', `/v1/shared-voices?${params}`);
   const voices = res.voices || [];
