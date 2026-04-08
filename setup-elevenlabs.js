@@ -25,13 +25,11 @@ const API_KEY = process.env.ELEVENLABS_API_KEY;
 // 16-17s — Mia: "Legend, cheers!" → end_call
 // Total: ~17 seconds
 
-const FIRST_MESSAGE = '';
+const FIRST_MESSAGE = 'Hey! Is this {{cafe_name}}?';
 
 const AGENT_PROMPT = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang. Speak at a natural, relaxed pace — not rushed.
 
-IMPORTANT: You are the CALLER. Wait for the café to pick up and say hello first. Once they greet you, respond with "Hey! Is this {{cafe_name}}?"
-
-After they confirm, say "Awesome — quick one, how much is a regular flat white?"
+After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
 
 When they say a price, confirm it: "Sweet, so [their price] yeah?"
 
