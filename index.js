@@ -60,8 +60,13 @@ const EXCLUDED_EXACT = ["bp"];
 
 export function isExcludedChain(name) {
   const nameLower = name.toLowerCase();
-  return EXCLUDED_CHAINS.some(chain => nameLower.includes(chain))
-    || EXCLUDED_VENUES.some(venue => nameLower.includes(venue))
+  // Always exclude chains (Starbucks, McDonalds, etc.)
+  if (EXCLUDED_CHAINS.some(chain => nameLower.includes(chain))) return true;
+  // If the name contains cafe/coffee/espresso/roaster, it's likely a real cafe — don't exclude
+  const cafeSignals = ["cafe", "café", "coffee", "espresso", "roaster", "brew", "barista", "latte"];
+  if (cafeSignals.some(signal => nameLower.includes(signal))) return false;
+  // Otherwise check venue exclusions
+  return EXCLUDED_VENUES.some(venue => nameLower.includes(venue))
     || EXCLUDED_EXACT.some(word => new RegExp(`\\b${word}\\b`).test(nameLower));
 }
 
