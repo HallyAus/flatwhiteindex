@@ -47,6 +47,8 @@ RULES:
 const WEBHOOK_URL = (process.env.WEBHOOK_BASE_URL || 'https://flatwhiteindex.com.au')
   + '/webhook/elevenlabs-call-complete';
 
+const VOICE_ID = process.env.ELEVENLABS_VOICE_ID || '56bWURjYFHyYyVf490Dp';
+
 const AGENT_CONFIG = {
   conversation_config: {
     agent: {
@@ -54,6 +56,7 @@ const AGENT_CONFIG = {
       language: 'en',
       prompt: { prompt: AGENT_PROMPT, temperature: 0.4, max_tokens: 300 },
     },
+    tts: { voice_id: VOICE_ID },
     conversation: { max_duration_seconds: 60 },
     tools: [
       { type: 'end_call', description: 'Hang up the phone call. Use after saying goodbye or when reaching voicemail.' },
