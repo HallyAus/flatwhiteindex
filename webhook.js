@@ -663,8 +663,8 @@ app.post("/api/admin/auth/register", async (req, res) => {
   const { challengeId, credential } = req.body;
   if (!challengeId || !credential) return res.status(400).json({ error: "Missing challengeId or credential" });
   try {
-    const { user, session } = await verifyAndCompleteRegistration(challengeId, credential);
-    res.cookie(SESSION_COOKIE, session.token, cookieOptions);
+    const { user, token } = await verifyAndCompleteRegistration(challengeId, credential);
+    res.cookie(SESSION_COOKIE, token, cookieOptions);
     res.json({ ok: true, user: { username: user.username } });
   } catch (err) {
     console.error("Registration error:", err.message);
