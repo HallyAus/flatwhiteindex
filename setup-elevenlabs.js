@@ -13,6 +13,61 @@ import 'dotenv/config';
 const API_BASE = 'https://api.elevenlabs.io';
 const API_KEY = process.env.ELEVENLABS_API_KEY;
 
+// Timeline:
+// 0s   — call connects
+// 1-2s — pause (first_message starts with "..." to add natural delay)
+// 2-3s — Mia: "Hey! Is this [cafe]?"
+// 3-5s — cafe responds
+// 5-7s — Mia: "Awesome — quick one, how much is a regular flat white?"
+// 7-12s — cafe gives price
+// 12-14s — Mia: "Sweet, so [price] yeah?"
+// 14-16s — cafe confirms
+// 16-17s — Mia: "Legend, cheers!" → end_call
+// Total: ~17 seconds
+
+const FIRST_MESSAGE = '... Hey! Is this {{cafe_name}}?';
+
+const AGENT_PROMPT = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang. Speak at a natural, relaxed pace — not rushed.
+
+After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
+
+When they say a price, confirm it: "Sweet, so [their price] yeah?"
+
+Once confirmed, say "Legend, cheers!" and IMMEDIATELY use end_call. Do NOT say anything after "cheers".
+
+RULES:
+- If voicemail or recorded message: end_call immediately, say nothing.
+- If they don't do flat whites: "No wukkas!" then end_call.
+- If annoyed or refuse: "All good!" then end_call.
+- NEVER guess a price. If unclear: "Sorry, how much was that again?"
+- If asked who you are: "Just a quick price check for a coffee guide."
+- If asked if you're AI: "Yeah I am! Just checking coffee prices for a guide."
+- Be quick and breezy. Do not ramble.`;
+
+const WEBHOOK_URL = (process.env.WEBHOOK_BASE_URL || 'https://flatwhiteindex.com.au')
+  + '/webhook/elevenlabs-call-complete';
+
+const AGENT_CONFIG = {
+  conversation_config: {
+    agent: {
+      first_message: FIRST_MESSAGE,
+      language: 'en',
+      prompt: { prompt: AGENT_PROMPT, temperature: 0.4, max_tokens: 300 },
+    },
+    conversation: { max_duration_seconds: 60 },
+    tools: [
+      { type: 'end_call', description: 'Hang up the phone call. Use after saying goodbye or when reaching voicemail.' },
+    ],
+  },
+  platform_settings: {
+    data_collection: {
+      price: { type: 'string', description: 'The price of a regular flat white in AUD as quoted by the cafe, e.g. "5.50"' },
+      serves_flat_white: { type: 'string', description: 'Whether the cafe serves flat whites — "yes", "no", or "unknown"' },
+    },
+    webhook: { url: WEBHOOK_URL },
+  },
+};
+
 if (!API_KEY) {
   console.error('❌ ELEVENLABS_API_KEY not set in .env');
   process.exit(1);
@@ -98,67 +153,12 @@ async function findVoice() {
 async function createAgent(voiceId) {
   console.log('\n🤖 Creating Mia agent...');
 
-  const agentPrompt = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang.
-
-After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
-
-When they say a price, confirm it: "Sweet, so [their price] yeah?"
-
-Once confirmed, say "Legend, cheers!" and IMMEDIATELY use end_call. Do NOT say anything after "cheers".
-
-RULES:
-- If voicemail or recorded message: end_call immediately, say nothing.
-- If they don't do flat whites: "No wukkas!" then end_call.
-- If annoyed or refuse: "All good!" then end_call.
-- NEVER guess a price. If unclear: "Sorry, how much was that again?"
-- If asked who you are: "Just a quick price check for a coffee guide."
-- If asked if you're AI: "Yeah I am! Just checking coffee prices for a guide."
-- Be quick. The whole call should be under 20 seconds.`;
-
-  const webhookUrl = process.env.WEBHOOK_BASE_URL
-    ? `${process.env.WEBHOOK_BASE_URL}/webhook/elevenlabs-call-complete`
-    : 'https://flatwhiteindex.com.au/webhook/elevenlabs-call-complete';
+  const config = structuredClone(AGENT_CONFIG);
+  config.conversation_config.tts = { voice_id: voiceId };
 
   const res = await elApi('POST', '/v1/convai/agents/create', {
     name: 'Mia — Flat White Index',
-    conversation_config: {
-      agent: {
-        first_message: 'Hey! Is this {{cafe_name}}?',
-        language: 'en',
-        prompt: {
-          prompt: agentPrompt,
-          temperature: 0.4,
-          max_tokens: 300,
-        },
-      },
-      tts: {
-        voice_id: voiceId,
-      },
-      conversation: {
-        max_duration_seconds: 60,
-      },
-      tools: [
-        {
-          type: 'end_call',
-          description: 'Hang up the phone call. Use this after saying goodbye, or when reaching voicemail.',
-        },
-      ],
-    },
-    platform_settings: {
-      data_collection: {
-        price: {
-          type: 'string',
-          description: 'The price of a regular flat white in AUD as quoted by the cafe, e.g. "5.50"',
-        },
-        serves_flat_white: {
-          type: 'string',
-          description: 'Whether the cafe serves flat whites — "yes", "no", or "unknown"',
-        },
-      },
-      webhook: {
-        url: webhookUrl,
-      },
-    },
+    ...config,
   });
 
   const agentId = res.agent_id;
@@ -199,66 +199,7 @@ async function importPhoneNumber(agentId) {
 
 async function updateAgent(agentId) {
   console.log(`\n🔄 Updating agent ${agentId}...`);
-
-  const agentPrompt = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang.
-
-After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
-
-When they say a price, confirm it: "Sweet, so [their price] yeah?"
-
-Once confirmed, say "Legend, cheers!" and IMMEDIATELY use end_call. Do NOT say anything after "cheers".
-
-RULES:
-- If voicemail or recorded message: end_call immediately, say nothing.
-- If they don't do flat whites: "No wukkas!" then end_call.
-- If annoyed or refuse: "All good!" then end_call.
-- NEVER guess a price. If unclear: "Sorry, how much was that again?"
-- If asked who you are: "Just a quick price check for a coffee guide."
-- If asked if you're AI: "Yeah I am! Just checking coffee prices for a guide."
-- Be quick. The whole call should be under 20 seconds.`;
-
-  const webhookUrl = process.env.WEBHOOK_BASE_URL
-    ? `${process.env.WEBHOOK_BASE_URL}/webhook/elevenlabs-call-complete`
-    : 'https://flatwhiteindex.com.au/webhook/elevenlabs-call-complete';
-
-  await elApi('PATCH', `/v1/convai/agents/${agentId}`, {
-    conversation_config: {
-      agent: {
-        first_message: 'Hey! Is this {{cafe_name}}?',
-        language: 'en',
-        prompt: {
-          prompt: agentPrompt,
-          temperature: 0.4,
-          max_tokens: 300,
-        },
-      },
-      conversation: {
-        max_duration_seconds: 60,
-      },
-      tools: [
-        {
-          type: 'end_call',
-          description: 'Hang up the phone call. Use after saying goodbye or when reaching voicemail.',
-        },
-      ],
-    },
-    platform_settings: {
-      data_collection: {
-        price: {
-          type: 'string',
-          description: 'The price of a regular flat white in AUD as quoted by the cafe, e.g. "5.50"',
-        },
-        serves_flat_white: {
-          type: 'string',
-          description: 'Whether the cafe serves flat whites — "yes", "no", or "unknown"',
-        },
-      },
-      webhook: {
-        url: webhookUrl,
-      },
-    },
-  });
-
+  await elApi('PATCH', `/v1/convai/agents/${agentId}`, AGENT_CONFIG);
   console.log('  ✓ Agent updated');
 }
 

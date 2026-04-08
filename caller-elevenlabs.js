@@ -4,7 +4,7 @@ import { chunk, sleep, sanitiseForPrompt } from "./utils.js";
 // ElevenLabs Conversational AI — outbound phone calls via Twilio integration
 // Replaces the Twilio+OpenAI Realtime stack with a single ElevenLabs API
 
-const AGENT_PROMPT = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang.
+const AGENT_PROMPT = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang. Speak at a natural, relaxed pace — not rushed.
 
 After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
 
@@ -19,7 +19,7 @@ RULES:
 - NEVER guess a price. If unclear: "Sorry, how much was that again?"
 - If asked who you are: "Just a quick price check for a coffee guide."
 - If asked if you're AI: "Yeah I am! Just checking coffee prices for a guide."
-- Be quick. The whole call should be under 20 seconds.`;
+- Be quick and breezy. Do not ramble.`;
 
 const API_BASE = 'https://api.elevenlabs.io/v1/convai';
 
