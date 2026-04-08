@@ -25,11 +25,13 @@ const API_KEY = process.env.ELEVENLABS_API_KEY;
 // 16-17s — Mia: "Legend, cheers!" → end_call
 // Total: ~17 seconds
 
-const FIRST_MESSAGE = '... Hey! Is this {{cafe_name}}?';
+const FIRST_MESSAGE = '';
 
 const AGENT_PROMPT = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang. Speak at a natural, relaxed pace — not rushed.
 
-After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
+IMPORTANT: You are the CALLER. Wait for the café to pick up and say hello first. Once they greet you, respond with "Hey! Is this {{cafe_name}}?"
+
+After they confirm, say "Awesome — quick one, how much is a regular flat white?"
 
 When they say a price, confirm it: "Sweet, so [their price] yeah?"
 
@@ -206,6 +208,27 @@ async function updateAgent(agentId) {
   console.log('  ✓ Agent updated');
 }
 
+// --- Step 3c: Verify or re-import phone number ---
+
+async function ensurePhoneNumber(agentId) {
+  const phoneNumberId = process.env.ELEVENLABS_PHONE_NUMBER_ID;
+  if (phoneNumberId) {
+    // Check if it still exists
+    try {
+      await elApi('GET', `/v1/convai/phone-numbers/${phoneNumberId}`);
+      return phoneNumberId;
+    } catch {
+      console.log('  ⚠ Phone number ID no longer valid, re-importing...');
+    }
+  }
+  // Re-import
+  const newId = await importPhoneNumber(agentId);
+  if (newId) {
+    console.log(`\n  ⚠ Update your .env: ELEVENLABS_PHONE_NUMBER_ID=${newId}`);
+  }
+  return newId;
+}
+
 // --- Step 4: Fetch recent conversation logs ---
 
 async function fetchLogs(agentId) {
@@ -292,15 +315,18 @@ async function main() {
   if (updateMode) {
     if (!agentId) { console.error('❌ ELEVENLABS_AGENT_ID not set'); process.exit(1); }
     await updateAgent(agentId);
-    if (testMode) await testCall(agentId, phoneNumberId);
+    if (testMode) {
+      phoneNumberId = await ensurePhoneNumber(agentId);
+      if (phoneNumberId) await testCall(agentId, phoneNumberId);
+      else console.error('❌ No phone number available for test call');
+    }
     return;
   }
 
   if (testOnly) {
-    if (!agentId || !phoneNumberId) {
-      console.error('❌ --test-only requires ELEVENLABS_AGENT_ID and ELEVENLABS_PHONE_NUMBER_ID in .env');
-      process.exit(1);
-    }
+    if (!agentId) { console.error('❌ ELEVENLABS_AGENT_ID not set'); process.exit(1); }
+    phoneNumberId = await ensurePhoneNumber(agentId);
+    if (!phoneNumberId) { console.error('❌ No phone number available'); process.exit(1); }
     await testCall(agentId, phoneNumberId);
     return;
   }
