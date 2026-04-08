@@ -98,26 +98,22 @@ async function findVoice() {
 async function createAgent(voiceId) {
   console.log('\n🤖 Creating Mia agent...');
 
-  const agentPrompt = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang. Follow these steps IN ORDER. Do NOT skip steps.
+  const agentPrompt = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang.
 
-STEP 1: Say "Hey! Is this {{cafe_name}}?" then STOP and WAIT for their reply.
+After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
 
-STEP 2: ONLY after they confirm, say "Awesome — quick one, how much is a regular flat white?" then STOP and WAIT.
+When they say a price, confirm it: "Sweet, so [their price] yeah?"
 
-STEP 3: When they say a price, confirm it: "Sweet, so [their price] yeah?" then WAIT for confirmation.
+Once confirmed, say "Legend, cheers!" and IMMEDIATELY use end_call. Do NOT say anything after "cheers".
 
-STEP 4: Once confirmed, say "Legend, cheers for that! Have a good one." then IMMEDIATELY use the end_call tool to hang up.
-
-CRITICAL RULES:
-- After Step 4, you MUST call the end_call tool. Do NOT keep talking.
-- If you reach voicemail or a recorded message, use end_call immediately.
-- If they don't do flat whites: "No wukkas, cheers!" then end_call.
-- If they seem annoyed or refuse: "All good, sorry to bug ya!" then end_call.
+RULES:
+- If voicemail or recorded message: end_call immediately, say nothing.
+- If they don't do flat whites: "No wukkas!" then end_call.
+- If annoyed or refuse: "All good!" then end_call.
 - NEVER guess a price. If unclear: "Sorry, how much was that again?"
-- If asked who you are: "Just doing a quick price check for a coffee guide."
-- If asked if you're AI: "Yeah I am! Just checking coffee prices around Sydney for a price guide."
-- Be patient — wait for them to finish speaking before responding.
-- Keep the whole call under 30 seconds. Be quick and breezy.`;
+- If asked who you are: "Just a quick price check for a coffee guide."
+- If asked if you're AI: "Yeah I am! Just checking coffee prices for a guide."
+- Be quick. The whole call should be under 20 seconds.`;
 
   const webhookUrl = process.env.WEBHOOK_BASE_URL
     ? `${process.env.WEBHOOK_BASE_URL}/webhook/elevenlabs-call-complete`
@@ -127,7 +123,7 @@ CRITICAL RULES:
     name: 'Mia — Flat White Index',
     conversation_config: {
       agent: {
-        first_message: '',
+        first_message: 'Hey! Is this {{cafe_name}}?',
         language: 'en',
         prompt: {
           prompt: agentPrompt,
@@ -199,7 +195,106 @@ async function importPhoneNumber(agentId) {
   return phoneNumberId;
 }
 
-// --- Step 4: Test call ---
+// --- Step 3b: Update existing agent ---
+
+async function updateAgent(agentId) {
+  console.log(`\n🔄 Updating agent ${agentId}...`);
+
+  const agentPrompt = `You are Mia, a friendly young Aussie woman calling a café. You speak casually with natural Australian slang.
+
+After they respond to your greeting, say "Awesome — quick one, how much is a regular flat white?"
+
+When they say a price, confirm it: "Sweet, so [their price] yeah?"
+
+Once confirmed, say "Legend, cheers!" and IMMEDIATELY use end_call. Do NOT say anything after "cheers".
+
+RULES:
+- If voicemail or recorded message: end_call immediately, say nothing.
+- If they don't do flat whites: "No wukkas!" then end_call.
+- If annoyed or refuse: "All good!" then end_call.
+- NEVER guess a price. If unclear: "Sorry, how much was that again?"
+- If asked who you are: "Just a quick price check for a coffee guide."
+- If asked if you're AI: "Yeah I am! Just checking coffee prices for a guide."
+- Be quick. The whole call should be under 20 seconds.`;
+
+  const webhookUrl = process.env.WEBHOOK_BASE_URL
+    ? `${process.env.WEBHOOK_BASE_URL}/webhook/elevenlabs-call-complete`
+    : 'https://flatwhiteindex.com.au/webhook/elevenlabs-call-complete';
+
+  await elApi('PATCH', `/v1/convai/agents/${agentId}`, {
+    conversation_config: {
+      agent: {
+        first_message: 'Hey! Is this {{cafe_name}}?',
+        language: 'en',
+        prompt: {
+          prompt: agentPrompt,
+          temperature: 0.4,
+          max_tokens: 300,
+        },
+      },
+      conversation: {
+        max_duration_seconds: 60,
+      },
+      tools: [
+        {
+          type: 'end_call',
+          description: 'Hang up the phone call. Use after saying goodbye or when reaching voicemail.',
+        },
+      ],
+    },
+    platform_settings: {
+      data_collection: {
+        price: {
+          type: 'string',
+          description: 'The price of a regular flat white in AUD as quoted by the cafe, e.g. "5.50"',
+        },
+        serves_flat_white: {
+          type: 'string',
+          description: 'Whether the cafe serves flat whites — "yes", "no", or "unknown"',
+        },
+      },
+      webhook: {
+        url: webhookUrl,
+      },
+    },
+  });
+
+  console.log('  ✓ Agent updated');
+}
+
+// --- Step 4: Fetch recent conversation logs ---
+
+async function fetchLogs(agentId) {
+  console.log(`\n📋 Recent conversations for agent ${agentId}:\n`);
+
+  const res = await elApi('GET', `/v1/convai/conversations?agent_id=${agentId}&page_size=10`);
+  const convos = res.conversations || [];
+
+  if (convos.length === 0) {
+    console.log('  No conversations yet.');
+    return;
+  }
+
+  for (const c of convos) {
+    const duration = c.call_duration_secs || c.metadata?.call_duration_secs || '?';
+    const status = c.status || 'unknown';
+    const startTime = c.start_time || c.created_at || '';
+    console.log(`  ${c.conversation_id} — ${status} — ${duration}s — ${startTime}`);
+
+    // Fetch transcript if available
+    try {
+      const detail = await elApi('GET', `/v1/convai/conversations/${c.conversation_id}`);
+      const transcript = (detail.transcript || []).map(t => {
+        const role = t.role === 'agent' ? 'Mia' : 'Caller';
+        return `    [${role}]: ${t.message}`;
+      }).join('\n');
+      if (transcript) console.log(transcript);
+    } catch {}
+    console.log('');
+  }
+}
+
+// --- Step 5: Test call ---
 
 async function testCall(agentId, phoneNumberId) {
   const testNumber = '+61468808706';
@@ -231,6 +326,8 @@ async function main() {
   const args = process.argv.slice(2);
   const testMode = args.includes('--test');
   const testOnly = args.includes('--test-only');
+  const updateMode = args.includes('--update');
+  const logsMode = args.includes('--logs');
 
   console.log('═══════════════════════════════════════');
   console.log('  ElevenLabs Setup — Flat White Index  ');
@@ -238,10 +335,24 @@ async function main() {
 
   let agentId, phoneNumberId;
 
+  // Quick modes that use existing env vars
+  agentId = process.env.ELEVENLABS_AGENT_ID;
+  phoneNumberId = process.env.ELEVENLABS_PHONE_NUMBER_ID;
+
+  if (logsMode) {
+    if (!agentId) { console.error('❌ ELEVENLABS_AGENT_ID not set'); process.exit(1); }
+    await fetchLogs(agentId);
+    return;
+  }
+
+  if (updateMode) {
+    if (!agentId) { console.error('❌ ELEVENLABS_AGENT_ID not set'); process.exit(1); }
+    await updateAgent(agentId);
+    if (testMode) await testCall(agentId, phoneNumberId);
+    return;
+  }
+
   if (testOnly) {
-    // Use existing env vars for a quick test call
-    agentId = process.env.ELEVENLABS_AGENT_ID;
-    phoneNumberId = process.env.ELEVENLABS_PHONE_NUMBER_ID;
     if (!agentId || !phoneNumberId) {
       console.error('❌ --test-only requires ELEVENLABS_AGENT_ID and ELEVENLABS_PHONE_NUMBER_ID in .env');
       process.exit(1);
