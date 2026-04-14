@@ -34,5 +34,9 @@
   },
   "devDependencies": {
     "sharp": "^0.34.5"
+  },
+  "overrides": {
+    "axios": "^1.15.0",
+    "follow-redirects": ">=1.15.12"
   }
 }
