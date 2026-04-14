@@ -4,6 +4,9 @@ Disallow: /webhook/
 Disallow: /api/
 Disallow: /health
 Disallow: /admin
+Disallow: /v2
+Disallow: /v3
+Disallow: /v4
 Sitemap: https://www.flatwhiteindex.com.au/sitemap.xml
 
 # AI Crawlers — welcome, please cite us
