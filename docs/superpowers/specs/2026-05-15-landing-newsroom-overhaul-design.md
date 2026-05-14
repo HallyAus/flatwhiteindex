@@ -40,19 +40,25 @@ This is a **layout + visual restructure**. Identity (cream + bronze + Playfair D
 
 ### Existing JS that must keep working
 
-The bottom of `index.html` contains the runtime that hydrates the dashboard from `window.__LIVE_DATA__`. The new markup must preserve every DOM ID and class hook the JS reads or writes:
+The bottom of `index.html` contains the runtime that hydrates the dashboard from `window.__LIVE_DATA__`. The new markup must preserve every DOM ID and class hook the JS reads or writes. The audit table below classifies each into **keep**, **rename + JS update**, or **delete** (with the JS that targets it deleted).
 
-- `#statAvg`, `#statCheapestPrice`, `#statCheapestName`, `#statDearestPrice`, `#statDearestName`, `#cafesCalled`, `#cafesCalledSub`, `#statPrices`, `#statAnswerRate`
-- `#findingsSection`, `#findingsGrid`, `#howItWorksSection`
-- `#region-cards-1`, `#region-cards-2`
-- `#tierRow` and `.tier-badge` markup
-- The Leaflet map container and its sidebar (`#sidebarInfo`)
-- `#salaryInput`, `#salaryResult`, `#salaryMinutes`, `#salaryPerWeek`, `#salaryPerYear`, `#salaryComparison`
-- `sydney-coffees` (the metric bank container)
-- Newsletter form IDs
-- `heroLede`, `heroInsight`, `insightNumber`, `insightText`, `updatedBadge`
+| ID / hook | Disposition | Notes |
+|---|---|---|
+| `#statAvg`, `#statCheapestPrice`, `#statCheapestName`, `#statDearestPrice`, `#statDearestName`, `#cafesCalled`, `#cafesCalledSub` | **Keep** | Stat band consumers. |
+| `#statPrices`, `#statAnswerRate` | **Delete** | The 5th "Prices Collected" card is removed; corresponding JS lines deleted. |
+| `#findingsSection`, `#findingsGrid` | **Delete** | Replaced editorially by hero deck + pull quotes + methodology. JS that populates `#findingsGrid` is deleted. |
+| `#howItWorksSection` | **Delete** | Replaced by the inline methodology block at section 13. |
+| `#tierRow`, `.tier-badge` | **Delete** | Tier semantics now live in the leaderboard colour pairs. Associated JS removed. |
+| `#region-cards-1`, `#region-cards-2` | **Rename + JS update** | Merged into a single `#region-cards` container; `renderRegionCards()` updated to write to the single container. |
+| Leaflet map container + `#sidebarInfo` | **Keep** | Untouched. |
+| `#salaryInput`, `#salaryResult`, `#salaryMinutes`, `#salaryPerWeek`, `#salaryPerYear`, `#salaryComparison` | **Keep** | All preserved; only the card template HTML around them is restyled. |
+| `#sydney-coffees` | **Keep** | Container ID preserved. The card template inside `renderSydneyCoffees()` is rewritten; everything else (data array, category map, compute function, render function) untouched. |
+| Newsletter form IDs | **Keep** | Form action and validation preserved. |
+| `#heroLede` | **Keep** | Selector for live-data injection of the lede sentence. The new hero deck takes its content. |
+| `#heroInsight`, `#insightNumber`, `#insightText` | **Delete** | Hidden-until-JS-runs insight strip removed; the byline rule + stat band carry that role now. |
+| `#updatedBadge` | **Rename + JS update** | Becomes the masthead `.nr-meta` element with the same "Updated <date>" text. JS selector updated. |
 
-Any ID renamed must have its JS consumer updated in the same change.
+Any ID kept or renamed must round-trip through the smoke test in §Implementation strategy.
 
 ## Page choreography (top to bottom)
 
@@ -71,7 +77,7 @@ Sections in order — each is a self-contained block with its own section-rule l
 | 9 | Pull quote 2 | Methodology hook. |
 | 10 | Map | Section rule "Explore" + full-width Leaflet container. Sidebar list retained. |
 | 11 | Salary calculator | Section rule "In context" + widget card with annual-salary input + 3-up result grid (minutes / weekly / annual). |
-| 12 | Sydney in Coffees | Section rule "Sydney in coffees" + Playfair H2 + featured stat (compound investment, full-width dark band) + 5 categorised 2-col grids. All 18 existing comparisons preserved. |
+| 12 | Sydney in Coffees | Section rule "Sydney in coffees" + Playfair H2 + featured stat (median Sydney house, full-width dark band) + 5 categorised 2-col grids. All 22 existing entries preserved (1 featured + 21 categorised). |
 | 13 | Methodology | Section rule "How we know" + cream prose block. Inline link to `/press.html`. |
 | 14 | Newsletter | Section rule "Subscribe" + dark band ("The Friday Pour") + email form. |
 | 15 | Footer | Single horizontal rule with brand line + footer nav. |
@@ -100,7 +106,7 @@ Single CSS class. The hairline is generated via `::before`. No JS hook.
 ```
 
 - H1 retains the keyword extension via `<span class="sr-only">` if needed for SEO; the visible H1 carries the editorial headline. The bronze `<em>` is non-italic (`font-style: normal; color: var(--accent)`).
-- The 847 figure in the deck is server-injected via existing `__LIVE_DATA__.total_cafes`. Default to "hundreds of" if unset.
+- The 847 figure in the deck is server-injected via existing `__LIVE_DATA__.total_cafes`. Default to "hundreds of" if unset. The "23 suburbs" figure is also injected, computed client-side as `__LIVE_DATA__.suburbs.length`. If either is unavailable, the deck falls back to a non-numeric form ("every independent cafe in Sydney's suburbs").
 - Byline rule replaces the previous "Live data" badge as the freshness signal.
 
 ### Stat band
@@ -141,12 +147,12 @@ Widget card. Single salary input, "Calculate" button. Result region is a 3-up gr
 
 ### Sydney in Coffees
 
-The full metric bank, preserving all 18 comparisons and 5 categories from the existing `COFFEE_COMPARISONS` array.
+The full metric bank, preserving all 22 entries (1 featured + 21 categorised across 5 categories) from the existing `COFFEE_COMPARISONS` array in `public/index.html:1952`.
 
-- **Featured stat** — full-width dark band (`--ink` bg, `--canvas` text, bronze sub). The compound-investment metric (`📈 daily flat white invested at 7% over 30 years`) is featured by default.
-- **5 categories**, each with: section header (Playfair name + DM Sans count) + 2-col card grid. Categories: Cost of Living, Getting Around, Sydney Experiences, Work & Money, Only in Australia.
-- **Each metric card**: 3-col grid (icon · description + source · bold value + unit).
-- The existing `renderSydneyCoffees(avgPrice)` function is reused unchanged — only the card template inside the function is rewritten to match the new visual.
+- **Featured stat** — full-width dark band (`--ink` bg, `--canvas` text, bronze sub). The featured entry is the one already flagged `featured: true` in the array — the median Sydney house comparison (`🏠 Median Sydney house price ÷ avg coffee price`). No re-featuring; consume what's there.
+- **5 categories**, each with: section header (Playfair name + DM Sans count) + 2-col card grid. Categories from the existing `CATEGORY_LABELS` map: `cost` → Cost of Living (4 entries), `transport` → Getting Around (4), `experiences` → Sydney Experiences (5), `money` → Work & Money (4), `aussie` → Only in Australia (4).
+- **Each metric card**: 3-col grid (icon · description + source · bold value + unit). The `compute` field (`minutes`, `annual`, `compound`, `pct_wage`) and `invert` flag continue to drive value formatting via the existing `computeCoffeeValue()` function.
+- The existing `renderSydneyCoffees(avgPrice)` function (`public/index.html:1994`) is reused unchanged — only the card template HTML literal inside the function is rewritten to match the new visual. The function still groups by `category`, picks the `featured: true` entry first, and walks each category in `CATEGORY_LABELS` order.
 
 ### Pull quotes (2 instances)
 
@@ -156,7 +162,7 @@ Static editorial copy in the markup. Quote 1 sits between the chart and the lead
 
 ### Methodology
 
-Cream prose block (`--paper-warm` bg, 22px padding). Single paragraph with 1–2 inline bronze links (to `/press.html` and to the data export). Same content as the current methodology section, condensed.
+Cream prose block (`--paper-warm` bg, 22px padding). Single paragraph with 2 inline bronze links: `/press.html` (full methodology) and `/api/dashboard` (data export — the existing JSON endpoint). Same content as the current methodology section, condensed.
 
 ### Newsletter
 
@@ -188,16 +194,16 @@ Typography: Playfair Display (700) for headlines, values, and italic pull quotes
 
 ## Mobile
 
-Breakpoints stay at 540px and 720px (existing).
+Existing breakpoints (`public/index.html:1153-1202`) are 480px, 540px, 640px, 780px, 900px. The new layout reuses these — no new breakpoints introduced.
 
-- Stat band: 4 → 2 columns at 720px; the hero stat (Sydney average) spans full-width at 540px (the existing fix from the SEO commit). Other 3 stats compress.
-- Distribution chart: bars stay flexible; annotation callout repositions below the chart at <640px.
-- Leaderboard pair: 2 → 1 column at 540px.
-- Region cards: 4 → 2 columns at 720px, 2 columns retained at 540px (don't collapse to 1; the value is in the comparison).
-- Sydney in Coffees: 2 → 1 column at 540px. Featured stat stays full-width at all breakpoints.
-- Map: full-width always; height reduces to 240px at 540px.
-- Newsletter: 2-col → stacked at 720px.
-- Pull quotes: same layout, font reduces from 22px to 18px at 540px.
+- **Stat band**: 4 cols at 780px+. 2 cols at 540–779px. At ≤540px, hero stat (Sydney average) spans full-width via the existing `.stat-card.hero-stat { grid-column: 1 / -1 }` fix; the 5th card (already removed) is no longer the dominant card.
+- **Distribution chart**: bars stay flexible at all sizes. Annotation callout repositions to a row below the chart at ≤640px (use the 640px breakpoint).
+- **Leaderboard pair**: 2 → 1 column at ≤640px.
+- **Region cards**: 4 cols at 900px+. 2 cols at 540–899px. 2 cols retained at ≤540px (don't collapse to 1 — comparison value matters more than card width).
+- **Sydney in Coffees**: 2 → 1 column at ≤540px. Featured stat stays full-width at all breakpoints.
+- **Map**: full-width always; height reduces to 240px at ≤540px.
+- **Newsletter**: 2-col → stacked at ≤780px.
+- **Pull quotes**: same layout, font reduces from 22px to 18px at ≤540px.
 
 ## Accessibility
 
@@ -243,9 +249,11 @@ Single PR, single commit per logical chunk:
 
 ## Risks
 
-- **JS coupling drift.** The existing index.html script reads ~30 IDs. A renamed ID without a JS update will silently break a widget. Mitigation: visual smoke test enumerates every dynamic widget.
-- **`__LIVE_DATA__.distribution` may not exist** in the current cache shape. The dashboard cache builder in `webhook.js` (`buildDashboardCache`) needs to expose a histogram-ready shape. If not present, the chart hides itself rather than rendering placeholders. **Action item for plan**: verify cache shape before implementation; if absent, add a `distribution: { buckets: [{lo, hi, count, isMode}] }` field server-side.
-- **Page weight.** The current index.html is ~3000 lines. The rewrite must come in lighter, not heavier, to justify the change. Target: ≤ 2400 lines including inline CSS and JS, achieved by removing the duplicated SEO aside, the masthead SVG animations (already done), and consolidating duplicated stat-card markup.
+- **JS coupling drift.** The existing index.html script reads ~30 IDs. A renamed ID without a JS update will silently break a widget. Mitigation: visual smoke test enumerates every dynamic widget; the implementation plan must explicitly map every removed ID to "kept", "renamed (with JS update)", or "deleted (with JS removal)".
+- **`#findingsSection` / `#findingsGrid` and `#howItWorksSection`** are listed in the JS-must-keep-working set but the new choreography (sections 1–15) does not include them. Both currently render between the stats strip and the region cards: `findingsSection` is hidden until live data arrives and shows computed insights; `howItWorksSection` is shown when no data yet. **Decision for the plan**: drop both. The hero deck + the new pull quotes carry the editorial role that "findings" used to play, and the methodology block at section 13 replaces "how it works". The associated JS that writes to `#findingsGrid` is also deleted.
+- **Tier badges (`#tierRow`, `.tier-badge`)** are listed in the JS-keep set but no choreography section mentions them. **Decision for the plan**: drop them. Tier semantics are visually encoded in the leaderboard (good/warn colour pairs on cheapest/dearest) and are no longer needed as a separate explainer row.
+- **`__LIVE_DATA__.distribution` already exists** in the current cache shape. `buildDashboardCache()` (`webhook.js:509-511`) emits `distribution` as `Array<{label: string, count: number, max: number}>` keyed across 11 fixed buckets ($3.50–$3.99 through $6.50+). The new chart consumes this shape as-is. No server change required. The "mode" highlight is computed client-side as the bucket with the largest `count`.
+- **Page weight.** The current index.html is ~2915 lines. The rewrite targets **≤ 2400 lines** including inline CSS and JS. The 500-line cut accounts for: duplicated SEO aside (~12 lines), masthead SVG animations (~8 lines, already done), removed `#findingsSection` + `#howItWorksSection` blocks (~110 lines markup + ~80 lines JS), removed `#tierRow` (~10 lines), removed 5th stat card and merged stat-card markup (~40 lines), consolidated region grids from two to one container (~20 lines), and CSS deduplication of duplicated style rules between the dashboard and tools sections (~250 lines). If the budget cannot be hit without compromising the design, the implementation plan must surface the overage rather than silently expanding scope.
 
 ## Acceptance criteria
 
