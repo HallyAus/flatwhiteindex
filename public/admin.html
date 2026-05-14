@@ -240,11 +240,10 @@
   <div class="topbar">
     <h1>☕ Admin</h1>
     <div class="topbar-right">
-      <button class="btn btn-sm btn-ghost" onclick="doLogout()" style="font-size:0.78rem;">Logout</button>
       <div class="server-dot" id="serverDot" title="Server connected"></div>
       <button class="btn btn-ghost btn-sm" onclick="showServerLogs()">📋 Logs</button>
       <button class="btn btn-ocean btn-sm" id="deployBtn" onclick="deployCode()">🚀 Deploy</button>
-      <button class="logout-btn" onclick="logout()">Sign out</button>
+      <button class="logout-btn" onclick="doLogout()">Sign out</button>
     </div>
   </div>
 
@@ -1278,6 +1277,11 @@ function timeAgo(ts) {
 function debounce(fn, ms) { return (...args) => { clearTimeout(_debounceTimers[fn.name]); _debounceTimers[fn.name] = setTimeout(() => fn(...args), ms); }; }
 function openModal(id) { document.getElementById(id).classList.add('open'); }
 function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal-bg.open').forEach((m) => m.classList.remove('open'));
+  }
+});
 
 async function refreshStats() {
   try {
