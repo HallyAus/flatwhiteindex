@@ -619,5 +619,17 @@ export async function verifyAndCompleteLogin(challengeId, credential) {
 
   const session = await createSession(dbCred.user_id);
 
-  return { token: session.token, sessionId: session.sessionId, userId: dbCred.user_id };
+  // Look up username for the response payload
+  const { data: userRow } = await supabase()
+    .from("admin_users")
+    .select("username")
+    .eq("id", dbCred.user_id)
+    .single();
+
+  return {
+    token: session.token,
+    sessionId: session.sessionId,
+    userId: dbCred.user_id,
+    username: userRow?.username ?? null,
+  };
 }

@@ -84,11 +84,13 @@ let indexHtml = null;
 let indexV2Html = null;
 let indexV3Html = null;
 let indexV4Html = null;
+let indexV5Html = null;
 let regionConfigJson = '{}';
 try { indexHtml = readFileSync(join(__dirname, 'public', 'index.html'), 'utf-8'); } catch {}
 try { indexV2Html = readFileSync(join(__dirname, 'public', 'index-v2.html'), 'utf-8'); } catch {}
 try { indexV3Html = readFileSync(join(__dirname, 'public', 'index-v3.html'), 'utf-8'); } catch {}
 try { indexV4Html = readFileSync(join(__dirname, 'public', 'index-v4.html'), 'utf-8'); } catch {}
+try { indexV5Html = readFileSync(join(__dirname, 'public', 'index-v5.html'), 'utf-8'); } catch {}
 try { regionConfigJson = readFileSync(join(__dirname, 'suburb-regions.json'), 'utf-8'); } catch {}
 
 app.get("/", async (req, res) => {
@@ -133,6 +135,14 @@ app.get("/v3", async (req, res) => {
   } catch {
     res.sendFile(join(__dirname, 'public', 'index-v3.html'));
   }
+});
+
+// V5 SEO-tuned content landing — content-first, FAQ-rich, AI-citable
+app.get("/v5", async (req, res) => {
+  if (!indexV5Html) return res.sendFile(join(__dirname, 'public', 'index-v5.html'));
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  res.setHeader('Cache-Control', 'public, max-age=300');
+  res.send(indexV5Html);
 });
 
 // V4 teal modern redesign with live data injection
@@ -715,9 +725,9 @@ app.post("/api/admin/auth/login-verify", async (req, res) => {
   const { challengeId, credential } = req.body;
   if (!challengeId || !credential) return res.status(400).json({ error: "Missing challengeId or credential" });
   try {
-    const { user, session } = await verifyAndCompleteLogin(challengeId, credential);
-    res.cookie(SESSION_COOKIE, session.token, cookieOptions);
-    res.json({ ok: true, user: { username: user.username } });
+    const { token, userId, username } = await verifyAndCompleteLogin(challengeId, credential);
+    res.cookie(SESSION_COOKIE, token, cookieOptions);
+    res.json({ ok: true, user: { id: userId, username } });
   } catch (err) {
     console.error("Login verify error:", err.message);
     res.status(401).json({ error: "Authentication failed" });
@@ -1356,8 +1366,9 @@ app.post("/webhook/elevenlabs-call-complete", verifyWebhookOrigin, async (req, r
       status,
       price_small: status === 'completed' ? price_small : null,
       price_large: status === 'completed' ? price_large : null,
-      transcript,
+      raw_transcript: transcript,
       needs_review: status === 'completed' ? needs_review : false,
+      completed_at: new Date().toISOString(),
     });
 
     // Invalidate dashboard cache
