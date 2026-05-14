@@ -117,9 +117,11 @@ Drops the existing 5th "Prices Collected" card. The "Cafes called" card now show
 
 ### Distribution histogram
 
-A new component. ~13 bars; the modal bar is rendered in `--ink` with an inline label above it. Annotation callout is a small cream card pinned top-right inside the chart card with a hard-left-rule in `--ink`. X-axis labels are sparse (only `$4.00`, `$5.00`, `$5.80 avg`, `$6.00`, `$6.50`, `$7.00+`).
+A new component. **7 bars** matching the existing 7-bucket cache shape (`$3–3.99`, `$4–4.49`, `$4.50–4.99`, `$5–5.49`, `$5.50–5.99`, `$6–6.49`, `$6.50+`). The modal bar — the bucket with the largest `count`, computed client-side — is rendered in `--ink` with an inline label above it ("$5.50 · mode" or whichever bucket wins). Annotation callout is a small cream card pinned top-right inside the chart card with a hard-left-rule in `--ink`.
 
-Hydration: a small script reads `__LIVE_DATA__.distribution` (an array of `{bucket, count}`). If the data isn't available, the section is hidden (`display:none`) — not shown with placeholders.
+X-axis labels render under each bar using the bucket's existing `label` field. To avoid crowding, every bar gets its label but visually compressed: 9px DM Sans, vertical-aligned to top, with the modal bucket's label bolded. The Sydney average ($5.80) is overlaid as a thin vertical bronze marker line crossing the bars at the interpolated x-position, with a small "avg $5.80" floating label above the chart.
+
+Hydration: reads `__LIVE_DATA__.distribution` directly — `Array<{label: string, count: number, max: number}>`, 7 entries. The mode is computed client-side as the entry with the highest `count`. If the array is empty or undefined, the entire section is hidden (`display:none`) rather than rendering placeholders.
 
 ### Leaderboard pair
 
@@ -234,7 +236,7 @@ Single PR, single commit per logical chunk:
 1. **CSS extraction** — pull the rewritten `<style>` block. New CSS sits inline in the same `<style>` element to preserve the no-build-step constraint.
 2. **Markup rewrite** — rewrite `<body>` from masthead to footer, preserving all required IDs.
 3. **JS verification** — confirm every getElementById call in the existing script still resolves; rename JS-side any IDs that needed restructuring. Sydney in Coffees uses the existing render function; only its card template HTML changes inside the function.
-4. **Visual smoke test** — open `/` locally, confirm: live data hydrates, stat band populates, chart renders, leaderboards populate, region cards render, map loads, find-near-me works, salary calc works, Sydney in Coffees renders all 18 cards, newsletter form submits.
+4. **Visual smoke test** — open `/` locally, confirm: live data hydrates, stat band populates, distribution chart renders 7 bars with the modal bar in `--ink`, leaderboards populate, region cards render, map loads, find-near-me works, salary calc works, Sydney in Coffees renders all 22 cards (1 featured + 21 categorised across 5 categories), newsletter form submits.
 5. **Commit and ship** — single feat commit; deploy via the existing `git pull && npm install && systemctl restart` flow (no migration, no env change, no dependency).
 
 ## Out of scope (deferred)
@@ -252,13 +254,13 @@ Single PR, single commit per logical chunk:
 - **JS coupling drift.** The existing index.html script reads ~30 IDs. A renamed ID without a JS update will silently break a widget. Mitigation: visual smoke test enumerates every dynamic widget; the implementation plan must explicitly map every removed ID to "kept", "renamed (with JS update)", or "deleted (with JS removal)".
 - **`#findingsSection` / `#findingsGrid` and `#howItWorksSection`** are listed in the JS-must-keep-working set but the new choreography (sections 1–15) does not include them. Both currently render between the stats strip and the region cards: `findingsSection` is hidden until live data arrives and shows computed insights; `howItWorksSection` is shown when no data yet. **Decision for the plan**: drop both. The hero deck + the new pull quotes carry the editorial role that "findings" used to play, and the methodology block at section 13 replaces "how it works". The associated JS that writes to `#findingsGrid` is also deleted.
 - **Tier badges (`#tierRow`, `.tier-badge`)** are listed in the JS-keep set but no choreography section mentions them. **Decision for the plan**: drop them. Tier semantics are visually encoded in the leaderboard (good/warn colour pairs on cheapest/dearest) and are no longer needed as a separate explainer row.
-- **`__LIVE_DATA__.distribution` already exists** in the current cache shape. `buildDashboardCache()` (`webhook.js:509-511`) emits `distribution` as `Array<{label: string, count: number, max: number}>` keyed across 11 fixed buckets ($3.50–$3.99 through $6.50+). The new chart consumes this shape as-is. No server change required. The "mode" highlight is computed client-side as the bucket with the largest `count`.
+- **`__LIVE_DATA__.distribution` already exists** in the current cache shape. `buildDashboardCache()` (`webhook.js:502-511`) emits `distribution` as `Array<{label: string, count: number, max: number}>` keyed across **7 fixed buckets** ($3–3.99, $4–4.49, $4.50–4.99, $5–5.49, $5.50–5.99, $6–6.49, $6.50+). The new chart consumes this shape as-is. No server change required. The "mode" highlight is computed client-side as the bucket with the largest `count`.
 - **Page weight.** The current index.html is ~2915 lines. The rewrite targets **≤ 2400 lines** including inline CSS and JS. The 500-line cut accounts for: duplicated SEO aside (~12 lines), masthead SVG animations (~8 lines, already done), removed `#findingsSection` + `#howItWorksSection` blocks (~110 lines markup + ~80 lines JS), removed `#tierRow` (~10 lines), removed 5th stat card and merged stat-card markup (~40 lines), consolidated region grids from two to one container (~20 lines), and CSS deduplication of duplicated style rules between the dashboard and tools sections (~250 lines). If the budget cannot be hit without compromising the design, the implementation plan must surface the overage rather than silently expanding scope.
 
 ## Acceptance criteria
 
 - `/` loads with the new layout and correct live data.
-- Every widget present in the current dashboard renders and functions: stat band, distribution chart, leaderboards, find-near-me, region cards, map, salary calculator, Sydney in Coffees (all 5 categories, all 18 metrics, featured stat), methodology block, newsletter.
+- Every widget present in the current dashboard renders and functions: stat band, distribution chart (7 bars, modal bar highlighted), leaderboards, find-near-me, region cards, map, salary calculator, Sydney in Coffees (all 5 categories, all 22 entries — 1 featured median-house + 4 cost + 4 transport + 5 experiences + 4 money + 4 aussie), methodology block, newsletter.
 - All 49 existing tests pass without modification.
 - `npm audit` reports 0 vulnerabilities.
 - The hero H1 contains a single H1 element; the rest of the page uses H2/H3 in document order.
