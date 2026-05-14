@@ -5,54 +5,54 @@
 
 ## Last Updated
 
-- **Date:** 2026-04-04
+- **Date:** 2026-04-27
 - **Branch:** master
-- **Focus:** CLAUDE.md rewrite (lean + compaction rules)
+- **Focus:** Audit + new SEO/GEO landing page (v5), strike-distance keyword targeting
 
-## Accomplished (this session — 1 commit expected)
+## Accomplished (this session — uncommitted)
 
-- **Lean CLAUDE.md** — Rewrote from ~130 lines to ~70. Removed beads section (not installed), auto-update memory table (redundant with system auto-memory), progressive disclosure, workflow ritual (hooks handle it), template placeholders. Added compaction rules.
-- **Session-start hook verified** — Already existed in `.claude/settings.json`, injects date/branch/commits/HANDOFF.md. No changes needed.
+- **New v5 landing page** — `public/index-v5.html` (35KB, content-first, FAQ-rich) served at `/v5`. Distinct visual language from broadsheet (`/`) and teal (`/v4`). Schema: Article + FAQPage (7 Q&As) + BreadcrumbList + Dataset (CC BY 4.0) + speakable selectors. `noindex,follow` + robots Disallow during preview.
+- **Live `index.html` SEO rewrite** — title now `Sydney Flat White Price: $5.80 Average — Live Cost by Suburb 2026` (number-in-title for CTR); meta description leads with the answer; OG/Twitter synced.
+- **Strike-distance keyword targeting** — added SEO answer block after hero (H3 "What is the average coffee price in Sydney?" + answer paragraph + "also searched as" line including misspelling `average coffe price`). Hero copy + JS branches now lead with `$5.80` and use `coffee prices Sydney`.
+- **FAQPage schema extended** — 3 new Q&As exact-matching `average coffee price sydney`, `coffee prices sydney 2026`, `coffee price in sydney`.
+- **Wiring** — `webhook.js` loads + serves `/v5`; `robots.txt` blocks `/v5`; `sitemap.xml` lastmod refreshed to 2026-04-27 with home `changefreq` lifted to weekly.
+- **All 49 tests pass.**
 
 ## In Progress
 
-- ElevenLabs agent setup (user needs to create agent in dashboard, get API key + agent ID + phone number ID)
-- Decide whether v3 replaces main index.html
+- Cloudflare redirect rule needed: non-www → www (301) — *unchanged from prior session, still the real fix for GSC "/" cannibalisation warnings*
+- **v5 needs user review** before promoting to `index.html` (or deciding to keep current broadsheet + just absorb the SEO edits). v4 likely deletable.
+- Admin dashboard conversation history (ElevenLabs logs in admin UI)
+- **Deploy pending** — uncommitted local changes; prior 2 commits also still not yet deployed to production LXC 700
 
 ## Blocked
 
-- Resend domain verification (need DNS records in Cloudflare for flatwhiteindex.com.au)
+- Resend domain verification (need DNS records in Cloudflare)
 
 ## Next Steps
 
-1. **Set up ElevenLabs agent** — create at elevenlabs.io/agents, add phone number, configure post-call webhook to /webhook/elevenlabs-call-complete, update .env with ELEVENLABS_* vars
-2. **Test ElevenLabs calling** — make a test call to verify the full pipeline works
-3. **Call more suburbs** — 80 suburbs available, many uncalled
-4. **Decide on v3** — if user likes v3, swap it to be the main page
-5. **Scheduled auto-dispatch** — cron job for business hours calling
-6. **Price history tracking** — re-call cafes monthly, show trends
-7. **Set up Resend** — DNS records in Cloudflare
-8. **WhatsApp price submission** — text-based crowdsourcing
+1. **Commit current changes** — title/meta/SEO block on index.html, new index-v5.html, /v5 route, robots.txt, sitemap, HANDOFF
+2. **Deploy to production** — `cd /opt/flatwhiteindex && git pull origin master && npm install && systemctl restart flatwhite-webhook`
+3. **Set Cloudflare redirect** — non-www → www 301 redirect rule (unblocks GSC false-positive cannibalisation)
+4. **Resubmit sitemap** — in Google Search Console after deploy
+5. **Review /v5** — preview at /v5; if approved, copy contents into index.html and delete v2/v3/v4/v5 files + their routes
+5. **Update .env on server** — `ELEVENLABS_PHONE_NUMBER_ID=phnum_8201knnhpqv3evh89y0h9c8vxhcf`
+6. **Run live batch** — Chippendale failed due to old phone ID, retry after .env fix
+7. **Admin conversation history** — show ElevenLabs call transcripts in admin dashboard
+8. **Call more suburbs** — 80+ suburbs available
+9. **Scheduled auto-dispatch** — cron job for business hours calling
+10. **Price history tracking** — re-call cafes monthly, show trends
+11. **Set up Resend** — DNS records in Cloudflare
+12. **Monitor SEO** — check Search Console in 2 weeks for cannibalisation resolution and CTR improvement
 
-## Context
+## Gotchas
 
-> - Production: Proxmox LXC 700 via systemd `flatwhite-webhook`
-> - Deploy: `cd /opt/flatwhiteindex && git pull origin master && npm install && systemctl restart flatwhite-webhook`
-> - Admin: https://flatwhiteindex.com.au/admin (ADMIN_SECRET in .env)
-> - Umami: analytics.agenticconsciousness.com.au, website ID d35f6ff1-35d8-4c68-890d-5aa312d6039c
-> - Email: Resend SDK (RESEND_API_KEY in .env), welcome auto-sends on signup
-> - Voice: ElevenLabs Conversational AI (CALL_PROVIDER=elevenlabs), also supports twilio and bland
-> - Hidden suburbs: right-click suburb buttons in admin, persists to hidden-suburbs.json
-> - Embed: works via iframe (frame-ancestors * in CSP)
-> - Logo: friendly coffee bean with big eyes, gradient body, steam wisps (72px in header)
-> - Test runner: `npm test` — 36/36 passing throughout
-> - specs/ is gitignored — use `git add -f`
-> - Region config: suburb-regions.json (8 regions, inlined by server)
-> - Migrations: 001-005 all run in Supabase
-> - Supabase key: must be service_role (sb_secret_*), not anon (sb_publishable_*)
-
-## Files Modified
-
-```
-CLAUDE.md — rewritten lean (~70 lines) with compaction rules
-```
+- Supabase key must be service_role (sb_secret_*), not anon
+- specs/ is gitignored — use `git add -f`
+- Migrations 001-006 all run in Supabase
+- Hidden suburbs: right-click in admin, persists to hidden-suburbs.json
+- ElevenLabs phone number IDs expire/disappear — `ensurePhoneNumber()` in setup script handles reimport
+- Old phone ID `phnum_5501*` is dead — must use `phnum_8201knnhpqv3evh89y0h9c8vxhcf`
+- WebAuthn RP_ID must be set in .env: `WEBAUTHN_RP_ID=flatwhiteindex.com.au`
+- `cookie-parser` npm package required — run `npm install` after pull
+- npm overrides in package.json for axios (^1.15.0) and follow-redirects (>=1.15.12) — transitive deps of twilio

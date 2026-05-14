@@ -34,6 +34,7 @@ async function elevenLabsRequest(path, body) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
+    signal: AbortSignal.timeout(20000),
   });
 
   if (!res.ok) {
@@ -89,7 +90,9 @@ async function dispatchSingleCall(cafe, agentId, phoneNumberId) {
     throw new Error(`Invalid phone number format for ${cafe.name}`);
   }
   const cafeName = sanitiseForPrompt(cafe.name);
-  const prompt = AGENT_PROMPT.replace('{{cafe_name}}', cafeName);
+  // Cafe name reaches the agent via dynamic_variables.cafe_name below; the
+  // override prompt is identical for every call so no substitution is needed.
+  const prompt = AGENT_PROMPT;
 
   const result = await elevenLabsRequest('/twilio/outbound-call', {
     agent_id: agentId,

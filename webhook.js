@@ -43,8 +43,14 @@ function saveHiddenSuburbs() {
 // [SECURITY] Trust first proxy (Cloudflare/nginx) for correct req.ip
 app.set('trust proxy', 1);
 
-// [SECURITY] Body size limit — prevent DoS via large payloads
-app.use(express.json({ limit: '64kb' }));
+// [SECURITY] Body size limit — prevent DoS via large payloads.
+// `verify` captures the raw body so webhook HMAC checks can re-hash
+// the bytes the provider signed (re-serialising JSON loses whitespace
+// and key order).
+app.use(express.json({
+  limit: '64kb',
+  verify: (req, _res, buf) => { req.rawBody = buf; },
+}));
 app.use(express.urlencoded({ extended: false, limit: '64kb' }));
 app.use(cookieParser());
 
@@ -61,8 +67,8 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline'",
     "font-src 'self'",
     "img-src 'self' data: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org",
-    "connect-src 'self' https://analytics.agenticconsciousness.com.au",
-    "frame-ancestors *",
+    "connect-src 'self' https://analytics.agenticconsciousness.com.au https://us.i.posthog.com https://us-assets.i.posthog.com",
+    "frame-ancestors 'self'",
   ].join('; '));
   next();
 });
@@ -79,112 +85,64 @@ app.use((req, res, next) => {
   next();
 });
 
+// Escape JSON for safe inlining inside a <script>: prevents </script>
+// breakout and U+2028 / U+2029 line-terminator XSS via cafe names etc.
+// Use \uXXXX patterns in the regex so the source file can be edited safely.
+function jsonForScript(obj) {
+  return JSON.stringify(obj)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026')
+    .replace(/\u2028/g, '\\u2028')
+    .replace(/\u2029/g, '\\u2029');
+}
+
 // Server-rendered index with live data injected (no demo data flash)
 let indexHtml = null;
-let indexV2Html = null;
-let indexV3Html = null;
-let indexV4Html = null;
-let indexV5Html = null;
-let regionConfigJson = '{}';
+let reportHtml = null;
+let regionConfig = {};
 try { indexHtml = readFileSync(join(__dirname, 'public', 'index.html'), 'utf-8'); } catch {}
-try { indexV2Html = readFileSync(join(__dirname, 'public', 'index-v2.html'), 'utf-8'); } catch {}
-try { indexV3Html = readFileSync(join(__dirname, 'public', 'index-v3.html'), 'utf-8'); } catch {}
-try { indexV4Html = readFileSync(join(__dirname, 'public', 'index-v4.html'), 'utf-8'); } catch {}
-try { indexV5Html = readFileSync(join(__dirname, 'public', 'index-v5.html'), 'utf-8'); } catch {}
-try { regionConfigJson = readFileSync(join(__dirname, 'suburb-regions.json'), 'utf-8'); } catch {}
+try { reportHtml = readFileSync(join(__dirname, 'public', 'sydney-coffee-price-report-2026.html'), 'utf-8'); } catch {}
+try { regionConfig = JSON.parse(readFileSync(join(__dirname, 'suburb-regions.json'), 'utf-8')); } catch {}
+
+async function ensureDashboardCache() {
+  const now = Date.now();
+  if (!dashboardCache || (now - dashboardCacheTime) >= CACHE_TTL) {
+    const [priceData, callStats, discoveredCafes] = await Promise.all([
+      getPriceStats(), getCallStats(), getDiscoveredCafes(),
+    ]);
+    buildDashboardCache(priceData, callStats, discoveredCafes);
+  }
+}
+
+function injectLiveData(html, { includeRegions = true } = {}) {
+  const regionFragment = includeRegions
+    ? `window.__REGION_CONFIG__=${jsonForScript(regionConfig)};`
+    : '';
+  const inject = `<script>window.__LIVE_DATA__=${jsonForScript(dashboardCache)};${regionFragment}</script>`;
+  return html.replace('</head>', inject + '</head>');
+}
 
 app.get("/", async (req, res) => {
   if (!indexHtml) return res.sendFile(join(__dirname, 'public', 'index.html'));
   try {
-    // Reuse the dashboard cache for zero-cost injection
-    const now = Date.now();
-    if (!dashboardCache || (now - dashboardCacheTime) >= CACHE_TTL) {
-      // Warm cache inline — same logic as /api/dashboard
-      const [priceData, callStats, discoveredCafes] = await Promise.all([
-        getPriceStats(), getCallStats(), getDiscoveredCafes(),
-      ]);
-      // Build cache (reuse from /api/dashboard handler)
-      buildDashboardCache(priceData, callStats, discoveredCafes);
-    }
-    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};window.__REGION_CONFIG__=${JSON.stringify(JSON.parse(regionConfigJson))};</script>`;
-    const html = indexHtml.replace('</head>', inject + '</head>');
+    await ensureDashboardCache();
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=60');
-    res.send(html);
+    res.send(injectLiveData(indexHtml));
   } catch {
     res.sendFile(join(__dirname, 'public', 'index.html'));
   }
 });
 
-// V3 editorial light-mode redesign with live data injection
-app.get("/v3", async (req, res) => {
-  if (!indexV3Html) return res.sendFile(join(__dirname, 'public', 'index-v3.html'));
-  try {
-    const now = Date.now();
-    if (!dashboardCache || (now - dashboardCacheTime) >= CACHE_TTL) {
-      const [priceData, callStats, discoveredCafes] = await Promise.all([
-        getPriceStats(), getCallStats(), getDiscoveredCafes(),
-      ]);
-      buildDashboardCache(priceData, callStats, discoveredCafes);
-    }
-    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};window.__REGION_CONFIG__=${JSON.stringify(JSON.parse(regionConfigJson))};</script>`;
-    const html = indexV3Html.replace('</head>', inject + '</head>');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=60');
-    res.send(html);
-  } catch {
-    res.sendFile(join(__dirname, 'public', 'index-v3.html'));
-  }
-});
-
-// V5 SEO-tuned content landing — content-first, FAQ-rich, AI-citable
-app.get("/v5", async (req, res) => {
-  if (!indexV5Html) return res.sendFile(join(__dirname, 'public', 'index-v5.html'));
+// SEO-tuned content report — answer-led, FAQ-rich, AI-citable.
+// Targets long-form coffee-price-in-Sydney queries while `/` keeps the live
+// interactive map/dashboard. Both surfaces self-canonical to their own URL.
+app.get("/sydney-coffee-price-report-2026", async (req, res) => {
+  if (!reportHtml) return res.sendStatus(404);
   res.setHeader('Content-Type', 'text/html; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=300');
-  res.send(indexV5Html);
-});
-
-// V4 teal modern redesign with live data injection
-app.get("/v4", async (req, res) => {
-  if (!indexV4Html) return res.sendFile(join(__dirname, 'public', 'index-v4.html'));
-  try {
-    const now = Date.now();
-    if (!dashboardCache || (now - dashboardCacheTime) >= CACHE_TTL) {
-      const [priceData, callStats, discoveredCafes] = await Promise.all([
-        getPriceStats(), getCallStats(), getDiscoveredCafes(),
-      ]);
-      buildDashboardCache(priceData, callStats, discoveredCafes);
-    }
-    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};window.__REGION_CONFIG__=${JSON.stringify(JSON.parse(regionConfigJson))};</script>`;
-    const html = indexV4Html.replace('</head>', inject + '</head>');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=60');
-    res.send(html);
-  } catch {
-    res.sendFile(join(__dirname, 'public', 'index-v4.html'));
-  }
-});
-
-// V2 editorial redesign with live data injection
-app.get("/v2", async (req, res) => {
-  if (!indexV2Html) return res.sendFile(join(__dirname, 'public', 'index-v2.html'));
-  try {
-    const now = Date.now();
-    if (!dashboardCache || (now - dashboardCacheTime) >= CACHE_TTL) {
-      const [priceData, callStats, discoveredCafes] = await Promise.all([
-        getPriceStats(), getCallStats(), getDiscoveredCafes(),
-      ]);
-      buildDashboardCache(priceData, callStats, discoveredCafes);
-    }
-    const inject = `<script>window.__LIVE_DATA__=${JSON.stringify(dashboardCache)};</script>`;
-    const html = indexV2Html.replace('</head>', inject + '</head>');
-    res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    res.setHeader('Cache-Control', 'public, max-age=60');
-    res.send(html);
-  } catch {
-    res.sendFile(join(__dirname, 'public', 'index-v2.html'));
-  }
+  res.send(reportHtml);
 });
 
 // [SECURITY] Serve ONLY the public/ directory — never the project root
@@ -335,8 +293,69 @@ function safeCompare(a, b) {
   return timingSafeEqual(bufA, bufB);
 }
 
+// [SECURITY] ElevenLabs HMAC webhook verification.
+// Format: ElevenLabs-Signature: t=<unix>,v0=<sha256_hex>
+// Signed payload: `${t}.${rawBody}` — uses req.rawBody captured by the
+// express.json verify hook so re-serialisation drift doesn't break sigs.
+// Returns 'ok' | 'no-secret' | 'no-signature' | 'bad-format' | 'expired' | 'mismatch'.
+async function verifyElevenLabsSignature(req) {
+  const secret = process.env.ELEVENLABS_WEBHOOK_SECRET;
+  if (!secret) return 'no-secret';
+  const header = req.headers['elevenlabs-signature'];
+  if (!header || typeof header !== 'string') return 'no-signature';
+  const parts = Object.fromEntries(
+    header.split(',').map(p => {
+      const idx = p.indexOf('=');
+      return idx < 0 ? [p.trim(), ''] : [p.slice(0, idx).trim(), p.slice(idx + 1).trim()];
+    })
+  );
+  if (!parts.t || !parts.v0) return 'bad-format';
+  const ts = parseInt(parts.t, 10);
+  if (!Number.isFinite(ts)) return 'bad-format';
+  // Reject signatures older than 30 minutes (replay protection)
+  if (Math.abs(Date.now() / 1000 - ts) > 1800) return 'expired';
+  const raw = req.rawBody ? req.rawBody.toString('utf-8') : JSON.stringify(req.body);
+  const { createHmac } = await import('node:crypto');
+  const expected = createHmac('sha256', secret).update(`${parts.t}.${raw}`).digest('hex');
+  return safeCompare(parts.v0, expected) ? 'ok' : 'mismatch';
+}
+
+// In-memory webhook idempotency. Voice providers retry on timeout, and
+// markCallDispatched destroys retry history, so duplicate webhooks for the
+// same external call can write to the wrong row. Tracks the last 24h of
+// processed call IDs per provider.
+const _processedWebhooks = new Map(); // 'provider:id' -> timestamp
+const WEBHOOK_DEDUPE_TTL_MS = 24 * 60 * 60 * 1000;
+function isWebhookProcessed(provider, id) {
+  if (!id) return false;
+  return _processedWebhooks.has(`${provider}:${id}`);
+}
+function markWebhookProcessed(provider, id) {
+  if (!id) return;
+  const now = Date.now();
+  _processedWebhooks.set(`${provider}:${id}`, now);
+  if (_processedWebhooks.size > 5000) {
+    const cutoff = now - WEBHOOK_DEDUPE_TTL_MS;
+    for (const [k, ts] of _processedWebhooks) {
+      if (ts < cutoff) _processedWebhooks.delete(k);
+    }
+  }
+}
+
 // [SECURITY] Webhook authentication — deny by default
 async function verifyWebhookOrigin(req, res, next) {
+  // ElevenLabs: prefer HMAC signature if configured. Falls through to
+  // shared-secret header check if the request isn't from ElevenLabs.
+  if (req.headers['elevenlabs-signature']) {
+    const status = await verifyElevenLabsSignature(req);
+    if (status === 'ok') return next();
+    if (status === 'mismatch' || status === 'expired' || status === 'bad-format') {
+      console.warn(`⚠️ ElevenLabs signature ${status}`);
+      return res.status(403).json({ error: "Invalid ElevenLabs signature" });
+    }
+    // 'no-secret' falls through to the shared-secret path so dev still works
+  }
+
   // Twilio: validate X-Twilio-Signature if auth token is configured
   if (process.env.TWILIO_AUTH_TOKEN && req.headers['x-twilio-signature']) {
     try {
@@ -387,6 +406,15 @@ app.post("/webhook/call-complete", verifyWebhookOrigin, async (req, res) => {
 
     const cafeId = payload.metadata?.cafe_id;
     const blandCallId = payload.call_id;
+
+    // [RELIABILITY] Idempotency: voice providers retry on timeout, and a
+    // duplicate webhook arriving after the next dispatch would write into
+    // the new attempt's row. Short-circuit on a known call_id.
+    if (isWebhookProcessed('bland', blandCallId)) {
+      console.log(`↩  Duplicate Bland webhook ignored: ${blandCallId}`);
+      return res.json({ ok: true, deduped: true });
+    }
+    markWebhookProcessed('bland', blandCallId);
 
     // [SECURITY] Cap transcript length
     const transcript = (payload.transcripts || [])
@@ -755,13 +783,21 @@ async function verifyAdmin(req, res, next) {
     res.clearCookie(SESSION_COOKIE, { path: cookieOptions.path });
   }
 
-  // 2. Bearer token fallback (ADMIN_SECRET for CLI/API access)
+  // 2. Bearer token fallback (ADMIN_SECRET for CLI/cron) — LOCALHOST ONLY.
+  // The secret is a permanent bearer with no rotation; if it leaks anywhere
+  // (systemd unit, env dump, log shipping) it would otherwise bypass WebAuthn
+  // entirely. Restrict to loopback so a remote attacker who finds the secret
+  // still can't reach this path through Cloudflare.
   const secret = process.env.ADMIN_SECRET;
   if (secret) {
-    const provided = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
-    if (provided && safeCompare(provided, secret)) {
-      req.adminUser = { id: null, username: 'api-key' };
-      return next();
+    const ip = req.ip || req.connection?.remoteAddress || '';
+    const isLocal = ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1';
+    if (isLocal) {
+      const provided = (req.headers.authorization || '').replace(/^Bearer\s+/i, '');
+      if (provided && safeCompare(provided, secret)) {
+        req.adminUser = { id: null, username: 'api-key-local' };
+        return next();
+      }
     }
   }
 
@@ -1319,6 +1355,13 @@ app.post("/webhook/elevenlabs-call-complete", verifyWebhookOrigin, async (req, r
     const payload = req.body;
     const conversationId = payload.conversation_id;
     const agentId = payload.agent_id;
+
+    // [RELIABILITY] Idempotency — see /webhook/call-complete for rationale.
+    if (isWebhookProcessed('elevenlabs', conversationId)) {
+      console.log(`↩  Duplicate ElevenLabs webhook ignored: ${conversationId}`);
+      return res.json({ ok: true, deduped: true });
+    }
+    markWebhookProcessed('elevenlabs', conversationId);
 
     // Extract transcript from ElevenLabs format
     const transcriptParts = (payload.transcript || []).map(t => {

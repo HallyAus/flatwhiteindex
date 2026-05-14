@@ -49,3 +49,10 @@ subscribers.json
 
 # Deploy state
 .last-deploy-sha
+
+# GSC Manager SEO reports
+_seo/
+
+# Local dev conveniences
+.superpowers/
+launch.cmd

@@ -28,9 +28,10 @@ export async function fetchSydneyCafes(bounds, suburbFilter = null) {
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": process.env.GOOGLE_PLACES_API_KEY,
-        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.location,places.rating",
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.location,places.rating,places.businessStatus",
       },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(15000),
     });
 
     const data = await res.json();
@@ -42,6 +43,9 @@ export async function fetchSydneyCafes(bounds, suburbFilter = null) {
     for (const place of data.places || []) {
       if (seen.has(place.id)) continue;
       seen.add(place.id);
+
+      // Skip cafes Google has marked as closed — no point calling them
+      if (place.businessStatus && place.businessStatus !== 'OPERATIONAL') continue;
 
       const phone = normalisePhoneAU(place.nationalPhoneNumber);
 

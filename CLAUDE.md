@@ -16,15 +16,15 @@ caller.js         Voice call router (dispatches to caller-elevenlabs.js or calle
 db.js             Supabase helpers (upsert cafe, log price, update status)
 index.js          Orchestrator: fetch cafes -> dispatch calls -> store results
 cafes.js          Google Places API cafe fetcher
-public/index.html Main dashboard (Latte Art design — three-zone layout)
-public/index-v3.html Editorial redesign (light mode, terracotta accent)
+public/index.html Live dashboard (broadsheet/editorial — map + suburbs + stats)
+public/sydney-coffee-price-report-2026.html  SEO content report (answer-led, FAQ-rich)
 suburb-regions.json  8 Sydney region mappings (inlined by server)
 ```
 
 ## Commands
 
 ```bash
-npm test                                       # 36 tests
+npm test                                       # 49 tests
 node webhook.js                                # start server (PORT in .env)
 node index.js --suburb=sydney_cbd --dry-run    # dry run (no calls)
 node index.js --suburb=sydney_cbd --batch-size=10  # live calls
@@ -59,7 +59,7 @@ Types: feat, fix, refactor, docs, test, chore
 | Learnings & gotchas | `strategy/learnings.md` |
 | Architecture decisions | `specs/decisions.md` |
 | Session handoff | `memory/HANDOFF.md` (auto-injected at session start) |
-| Profile & preferences | `.claude/rules/memory-*.md` (auto-loaded) |
+| Owner context & decisions | `.claude/rules/memory-context.md` (auto-loaded) |
 
 ## Compaction Rules
 
