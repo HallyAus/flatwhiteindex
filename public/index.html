@@ -197,251 +197,6 @@ a:hover { text-decoration: underline; }
 
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-/* ── HERO ───────────────────────────────────────────────────────── */
-.hero {
-  padding: clamp(1.5rem, 3vw, 2.5rem) 0 clamp(1rem, 2vw, 1.5rem);
-  border-bottom: 1px solid var(--rule);
-}
-
-.hero-headline {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 5vw, 3.4rem);
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.08;
-  color: var(--ink);
-  max-width: 720px;
-  margin-bottom: 0.75rem;
-}
-
-.hero-lede {
-  font-size: clamp(1rem, 2vw, 1.15rem);
-  color: var(--secondary);
-  max-width: 600px;
-  line-height: 1.6;
-}
-
-.hero-insight {
-  margin-top: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  border-left: 3px solid var(--accent);
-  padding: 0.6rem 1rem;
-  background: var(--accent-soft);
-  max-width: 600px;
-}
-
-.insight-number {
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 4vw, 3rem);
-  font-weight: 700;
-  color: var(--accent);
-  line-height: 1;
-  flex-shrink: 0;
-}
-
-.insight-text {
-  font-size: 0.9rem;
-  color: var(--secondary);
-  line-height: 1.45;
-}
-
-/* ── STATS STRIP ────────────────────────────────────────────────── */
-.stats-row {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 0;
-  padding: clamp(0.75rem, 1.5vw, 1.25rem) 0;
-  border-bottom: 1px solid var(--rule);
-}
-
-.stat-card {
-  text-align: center;
-  padding: 0.75rem 0.5rem;
-  border-right: 1px solid var(--rule);
-  background: transparent;
-  border-radius: 0;
-  border-top: none;
-  border-bottom: none;
-  border-left: none;
-  box-shadow: none;
-}
-
-.stat-card:last-child { border-right: none; }
-
-.stat-card.hero-stat {
-  background: transparent;
-  border-color: var(--rule);
-}
-
-.stat-label {
-  font-size: 0.65rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--tertiary);
-  margin-bottom: 4px;
-}
-
-.stat-value {
-  font-family: 'DM Sans', sans-serif;
-  font-size: clamp(1.4rem, 3vw, 2rem);
-  font-weight: 500;
-  color: var(--ink);
-  line-height: 1.1;
-}
-
-.stat-card.hero-stat .stat-value {
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
-  font-weight: 600;
-  color: var(--accent);
-}
-
-.stat-card.hero-stat .stat-label { color: var(--tertiary); }
-.stat-card.hero-stat .stat-sub { color: var(--tertiary); }
-
-.stat-value.good { color: var(--cheap); }
-.stat-value.warn { color: var(--premium); }
-
-.stat-sub {
-  font-size: 0.72rem;
-  color: var(--tertiary);
-  margin-top: 2px;
-}
-
-/* ── TIER BADGES ────────────────────────────────────────────────── */
-.tier-row {
-  display: flex;
-  justify-content: center;
-  gap: 8px;
-  padding: 0.75rem 0 1rem;
-}
-
-.tier-badge {
-  padding: 3px 10px;
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  border-radius: 2px;
-}
-
-.tier-budget { background: #E8F5EC; color: var(--cheap); }
-.tier-mid { background: #FDF6EE; color: var(--mid); }
-.tier-premium { background: #FDEDEB; color: var(--premium); }
-
-/* ── REGION CARDS ───────────────────────────────────────────────── */
-.region-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1px;
-  background: var(--rule);
-  border: 1px solid var(--rule);
-}
-
-.region-grid + .region-grid { border-top: none; }
-
-.region-card {
-  background: var(--surface);
-  padding: 1rem;
-  text-align: center;
-  cursor: pointer;
-  transition: background 0.15s;
-  position: relative;
-}
-
-.region-card:hover { background: var(--accent-soft); }
-
-.region-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 40px;
-  height: 2px;
-}
-
-.region-card.rc-budget::before { background: var(--cheap); }
-.region-card.rc-mid::before { background: var(--mid); }
-.region-card.rc-premium::before { background: var(--premium); }
-
-.region-name {
-  font-size: 0.68rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--secondary);
-}
-
-.region-price {
-  font-family: 'DM Sans', sans-serif;
-  font-size: 1.6rem;
-  font-weight: 500;
-  margin: 4px 0 2px;
-}
-
-.region-meta {
-  font-size: 0.62rem;
-  color: var(--tertiary);
-}
-
-.region-tier {
-  display: inline-block;
-  font-size: 0.52rem;
-  font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 2px;
-  margin-top: 4px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-}
-
-.region-tier.rt-b { background: #E8F5EC; color: var(--cheap); }
-.region-tier.rt-m { background: #FDF6EE; color: var(--mid); }
-.region-tier.rt-p { background: #FDEDEB; color: var(--premium); }
-
-/* ── FINDINGS / HOW IT WORKS ────────────────────────────────────── */
-.findings {
-  padding: clamp(1rem, 2vw, 1.5rem) 0;
-  border-bottom: 1px solid var(--rule);
-}
-
-.findings-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.75rem;
-}
-
-.findings-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 0.75rem;
-}
-
-.finding {
-  display: flex;
-  gap: 0.6rem;
-  align-items: flex-start;
-  padding: 0.75rem 0;
-  border-bottom: 1px solid var(--rule);
-}
-
-.finding:last-child { border-bottom: none; }
-
-.finding-icon { font-size: 1.1rem; flex-shrink: 0; line-height: 1.6; }
-
-.finding-text {
-  font-size: 0.9rem;
-  line-height: 1.6;
-  color: var(--ink);
-}
-
-.finding-text strong { font-weight: 600; }
-
 /* ── NEWSLETTER STRIP ───────────────────────────────────────────── */
 .newsletter-strip {
   background: var(--ink);
@@ -677,241 +432,16 @@ a:hover { text-decoration: underline; }
 }
 
 /* ── BOTTOM GRID — distribution + leaderboard ───────────────────── */
-.data-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  border: 1px solid var(--rule);
-  margin-top: clamp(1rem, 2vw, 1.5rem);
-}
-
-.data-panel {
-  background: var(--surface);
-}
-
-.data-panel + .data-panel { border-left: 1px solid var(--rule); }
-
-.section-title {
-  font-family: 'Playfair Display', serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  padding: 0.6rem 1rem;
-  border-bottom: 1px solid var(--rule);
-}
-
-/* Distribution chart */
-.dist-chart { padding: 0.75rem 1rem; }
-
-.dist-bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
-.dist-label { font-size: 0.75rem; font-weight: 500; width: 65px; flex-shrink: 0; color: var(--ink); }
-.dist-track { flex: 1; height: 18px; background: rgba(0,0,0,0.03); overflow: hidden; }
-.dist-fill { height: 100%; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); }
-.dist-count { font-size: 0.7rem; color: var(--tertiary); width: 30px; flex-shrink: 0; text-align: right; }
-.dist-annotation { font-size: 0.65rem; color: var(--tertiary); margin-left: 4px; font-style: italic; }
-
-/* Winner + podium + leaderboard */
-.winner-card {
-  background: var(--ink);
-  margin: 0.5rem;
-  border-radius: 3px;
-  padding: 0.75rem 1rem;
-  color: var(--canvas);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-}
-.winner-trophy { font-size: 1.6rem; line-height: 1; }
-.winner-info { flex: 1; }
-.winner-label { font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent); margin-bottom: 0.15rem; }
-.winner-name { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.1rem; }
-.winner-suburb { font-size: 0.78rem; color: rgba(253,251,247,0.6); }
-.winner-price { font-family: 'DM Sans', sans-serif; font-size: 1.5rem; font-weight: 600; color: var(--cheap); }
-
-.podium { display: flex; border-bottom: 1px solid var(--rule); }
-.podium-item { flex: 1; display: flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.6rem; border-right: 1px solid var(--rule); font-size: 0.8rem; }
-.podium-item:last-child { border-right: none; }
-.podium-medal { font-size: 1.2rem; flex-shrink: 0; }
-.podium-name { font-size: 0.78rem; font-weight: 500; line-height: 1.3; }
-.podium-sub { font-size: 0.68rem; color: var(--tertiary); }
-.podium-price { font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; color: var(--cheap); margin-left: auto; flex-shrink: 0; }
-
-.finds-list { padding: 0.25rem 0; }
-.find-row { display: flex; align-items: center; padding: 0.4rem 0.9rem; gap: 0.5rem; border-bottom: 1px solid var(--rule); }
-.find-row:last-child { border-bottom: none; }
-.find-row:hover { background: rgba(196,90,44,0.04); }
-.find-name { font-size: 0.85rem; font-weight: 400; }
-.find-suburb { font-size: 0.72rem; color: var(--tertiary); }
-.find-price { font-family: 'DM Sans', sans-serif; font-size: 0.95rem; font-weight: 600; color: var(--cheap); flex-shrink: 0; }
-
-/* ── PRICE INSIGHTS (inside distribution panel) ─────────────────── */
-#priceInsights {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 0.5rem;
-}
-
-/* ── SYDNEY IN COFFEES ──────────────────────────────────────────── */
-.coffees-section {
-  padding: clamp(1rem, 2vw, 1.5rem) 0;
-  border-top: 1px solid var(--rule);
-  margin-top: clamp(1rem, 2vw, 1.5rem);
-}
-
-.coffees-intro { font-size: 0.88rem; color: var(--secondary); margin-bottom: 1rem; }
-
-.coffees-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1px;
-  background: var(--rule);
-  border: 1px solid var(--rule);
-}
-
-.coffee-card {
-  background: var(--surface);
-  padding: 1rem;
-  position: relative;
-  overflow: hidden;
-}
-
-.coffee-icon { font-size: 1.3rem; margin-bottom: 0.25rem; }
-.coffee-number { font-family: 'DM Sans', sans-serif; font-size: 1.6rem; font-weight: 600; color: var(--ink); line-height: 1; }
-.coffee-unit { font-size: 0.68rem; color: var(--tertiary); margin-top: 2px; }
-.coffee-desc { font-size: 0.78rem; color: var(--secondary); margin-top: 0.3rem; line-height: 1.4; }
-.coffee-source { font-size: 0.58rem; color: var(--tertiary); font-style: italic; margin-top: 0.4rem; }
-
-.coffee-featured {
-  grid-column: 1 / -1;
-  background: var(--ink);
-  border: none;
-  color: var(--canvas);
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  padding: 1.5rem;
-}
-.coffee-featured .coffee-number { font-size: 2.6rem; color: var(--accent); }
-.coffee-featured .coffee-desc { color: rgba(253,251,247,0.55); }
-.coffee-featured .coffee-source { color: rgba(253,251,247,0.3); }
-
-.coffee-pun { border-left: 3px solid var(--accent); }
-.coffee-pun .coffee-number { color: var(--premium); }
-.pun-tag { display: inline-block; font-size: 0.55rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; background: #FDEDEB; color: var(--premium); padding: 2px 6px; border-radius: 2px; margin-bottom: 0.3rem; }
-
-.coffee-highlight {
-  background: var(--ink);
-  color: var(--canvas);
-}
-.coffee-highlight .coffee-number { color: var(--accent); }
-.coffee-highlight .coffee-desc { color: rgba(253,251,247,0.55); }
-
-.coffees-divider {
-  grid-column: 1 / -1;
-  text-align: center;
-  padding: 0.5rem 0;
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.15em;
-  color: var(--tertiary);
-  background: var(--canvas);
-  position: relative;
-}
-.coffees-divider::before, .coffees-divider::after {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: calc(50% - 70px);
-  height: 1px;
-  background: var(--rule);
-}
-.coffees-divider::before { left: 0; }
-.coffees-divider::after { right: 0; }
-
-/* ── TOOLS SECTION — salary, compare, near me ───────────────────── */
-.tools-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0;
-  border: 1px solid var(--rule);
-  margin-top: clamp(1rem, 2vw, 1.5rem);
-}
-
-.tool-panel {
-  background: var(--surface);
-  padding: 1.25rem;
-}
-
-.tool-panel + .tool-panel { border-left: 1px solid var(--rule); }
-
-.tool-panel h2 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 0.25rem;
-}
-
-.salary-calc-desc { font-size: 0.82rem; color: var(--secondary); margin-bottom: 0.6rem; }
-
-.salary-input-row {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-}
-
-.salary-input-row label { font-size: 0.78rem; font-weight: 500; color: var(--secondary); }
-
-.salary-input-row input {
-  width: 140px;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid var(--rule);
-  background: var(--surface);
-  border-radius: 3px;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 0.9rem;
-  color: var(--ink);
-}
-
-.salary-input-row input:focus { outline: none; border-color: var(--accent); }
-
-.salary-result { margin-top: 0.75rem; display: none; }
-
-.salary-result-card {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 0.75rem;
-  background: var(--accent-soft);
-  margin-bottom: 0.35rem;
-}
-
-.salary-minutes { font-family: 'DM Sans', sans-serif; font-size: 2rem; font-weight: 600; color: var(--ink); line-height: 1; }
-.salary-minutes-label { font-size: 0.78rem; color: var(--secondary); line-height: 1.4; }
-.salary-comparison { font-size: 0.78rem; color: var(--secondary); line-height: 1.6; padding: 0 0.25rem; }
-
-/* Compare */
-.compare-section { margin-top: 1rem; }
-.compare-row { display: flex; gap: 0.75rem; align-items: end; flex-wrap: wrap; }
-.compare-vs { font-size: 0.85rem; color: var(--secondary); font-weight: 500; padding-bottom: 0.55rem; }
+/* Compare result table (rendered into the .nr-widget #compareResult by compareSuburbs JS) */
 .compare-result { margin-top: 0.75rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--rule); border: 1px solid var(--rule); }
 .compare-card { background: var(--surface); padding: 0.75rem; text-align: center; }
 .compare-card h3 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 0.5rem; }
-.compare-price { font-family: 'DM Sans', sans-serif; font-size: 1.8rem; font-weight: 600; }
+.compare-price { font-family: 'DM Sans', sans-serif; font-size: 1.4rem; font-weight: 600; }
 .compare-meta { font-size: 0.78rem; color: var(--secondary); margin-top: 0.25rem; }
 .compare-diff { grid-column: 1 / -1; text-align: center; padding: 0.75rem; background: var(--ink); color: var(--canvas); font-size: 0.85rem; line-height: 1.5; }
-.compare-diff strong { font-family: 'DM Sans', sans-serif; font-size: 1.2rem; font-weight: 600; }
+.compare-diff strong { font-family: 'DM Sans', sans-serif; font-size: 1.1rem; font-weight: 600; }
 
-.field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 140px; }
-.field label { font-size: 0.75rem; font-weight: 600; color: var(--secondary); text-transform: uppercase; letter-spacing: 0.06em; }
-.field select {
-  width: 100%; padding: 0.55rem 0.75rem; border: 1px solid var(--rule);
-  background: var(--surface); border-radius: 3px;
-  font-family: 'DM Sans', sans-serif; font-size: 0.9rem; color: var(--ink);
-}
-.field select:focus { outline: none; border-color: var(--accent); }
-
-/* Near me */
-.nearme-section { margin-top: 1rem; }
+/* Near me list (rendered into #nearmeResult by findNearMe JS) */
 .nearme-list { display: flex; flex-direction: column; gap: 0; }
 .nearme-item {
   display: flex; align-items: center; gap: 0.75rem; padding: 0.55rem 0.75rem;
@@ -1150,25 +680,14 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .salary-comparison { overflow-wrap: break-word; }
 
 /* ── RESPONSIVE ─────────────────────────────────────────────────── */
-@media (max-width: 900px) {
-  .stats-row { grid-template-columns: repeat(3, 1fr); }
-  .region-grid { grid-template-columns: repeat(2, 1fr); }
-}
-
 @media (max-width: 780px) {
   .map-grid { grid-template-columns: 1fr; }
   .suburb-sidebar { border-left: none; border-top: 1px solid var(--rule); }
   .suburb-list { max-height: 300px; }
   .map-container { height: 320px; }
-  .data-grid { grid-template-columns: 1fr; }
-  .data-panel + .data-panel { border-left: none; border-top: 1px solid var(--rule); }
-  .tools-grid { grid-template-columns: 1fr; }
-  .tool-panel + .tool-panel { border-left: none; border-top: 1px solid var(--rule); }
-  .findings-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 640px) {
-  .newsletter-content { flex-direction: column; align-items: stretch; }
   .newsletter-form { flex-direction: column; }
   .newsletter-form input { width: 100%; }
   .footer-top { flex-direction: column; }
@@ -1176,27 +695,9 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 540px) {
-  .stats-row { grid-template-columns: repeat(2, 1fr); }
-  .stat-card.hero-stat { grid-column: 1 / -1; }
-  .stat-card:last-child { display: none; }
-  .region-grid { grid-template-columns: 1fr 1fr; }
   .masthead h1 { font-size: 1.5rem; }
-  .hero-headline { font-size: 1.8rem; }
-  .hero-lede { font-size: 0.95rem; }
-  .coffees-grid { grid-template-columns: 1fr; }
-  .coffee-featured { flex-direction: column; gap: 0.75rem; }
-  .coffee-featured .coffee-number { font-size: 2rem; }
-  .podium { flex-direction: column; }
-  .podium-item { border-right: none; border-bottom: 1px solid var(--rule); }
-  .podium-item:last-child { border-bottom: none; }
-  .winner-card { flex-wrap: wrap; }
-  .salary-input-row { flex-direction: column; align-items: stretch; }
-  .salary-input-row input { width: 100%; }
-  .salary-result-card { flex-wrap: wrap; }
-  .salary-result-card > div { flex: 1 1 45%; }
-  .compare-row { flex-direction: column; }
-  .compare-vs { padding: 0; text-align: center; }
   .masthead-icon { width: 36px; height: 36px; }
+  .compare-result { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 480px) {
@@ -1214,6 +715,499 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+
+/* ================================================================
+   NEWSROOM OVERHAUL — Pudding/FT-style data piece
+   Layered on top of the existing broadsheet identity.
+   ================================================================ */
+
+.nr-rule {
+  font-size: 0.62rem;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  margin: 2.25rem 0 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.nr-rule::before {
+  content: '';
+  display: inline-block;
+  width: 18px;
+  height: 1px;
+  background: var(--accent);
+}
+
+.nr-section { margin-top: 1rem; }
+
+.nr-hero { padding: 1.75rem 0 1rem; }
+.nr-hero-h {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(1.75rem, 5vw, 2.6rem);
+  line-height: 1.08;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.nr-hero-h em { font-style: normal; color: var(--accent); }
+.nr-hero-deck {
+  font-size: clamp(0.95rem, 2vw, 1.05rem);
+  color: var(--secondary);
+  margin-top: 0.75rem;
+  line-height: 1.55;
+  max-width: 36rem;
+}
+.nr-hero-deck strong { color: var(--ink); font-weight: 700; }
+.nr-hero-byline {
+  font-size: 0.7rem;
+  color: var(--tertiary);
+  margin-top: 0.875rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--rule);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* STAT BAND (cream full-bleed) */
+.nr-band {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  margin: 1.125rem calc(50% - 50vw) 0;
+  padding: 0.875rem clamp(1rem, 5vw, 2rem);
+  background: var(--milk);
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  max-width: 100vw;
+}
+.nr-band-stat {
+  padding: 0 0.875rem;
+  border-right: 1px dotted #C9BFAD;
+}
+.nr-band-stat:last-child { border-right: none; }
+.nr-band-l {
+  font-size: 0.58rem;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+.nr-band-v {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  line-height: 1.1;
+  margin-top: 0.125rem;
+  color: var(--ink);
+}
+.nr-band-v.good { color: var(--cheap); }
+.nr-band-v.warn { color: var(--premium); }
+.nr-band-s { font-size: 0.65rem; color: var(--secondary); margin-top: 0.125rem; }
+
+@media (max-width: 780px) {
+  .nr-band { grid-template-columns: repeat(2, 1fr); padding: 0.875rem 1rem; }
+  .nr-band-stat { padding-bottom: 0.5rem; padding-top: 0.5rem; }
+  .nr-band-stat:nth-child(2n) { border-right: none; }
+}
+@media (max-width: 540px) {
+  .nr-band-stat:first-child {
+    grid-column: 1 / -1;
+    border-right: none;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dotted #C9BFAD;
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* SECTION H2 (Playfair) + SUB */
+.nr-h {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 3vw, 1.5rem);
+  line-height: 1.2;
+  margin-top: 0.25rem;
+  color: var(--ink);
+}
+.nr-sub {
+  font-size: 0.85rem;
+  color: var(--secondary);
+  margin: 0.25rem 0 1.125rem;
+}
+
+/* DISTRIBUTION CHART */
+.nr-chart {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1.125rem 1rem 2rem;
+  position: relative;
+}
+.nr-chart-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 130px;
+}
+.nr-chart-bar {
+  flex: 1;
+  background: var(--accent);
+  opacity: 0.85;
+  border-radius: 2px 2px 0 0;
+  position: relative;
+  min-height: 2px;
+  transition: opacity 0.15s;
+}
+.nr-chart-bar:hover { opacity: 1; }
+.nr-chart-bar.mode { background: var(--ink); opacity: 1; }
+.nr-chart-bar .lbl {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.58rem;
+  color: var(--ink);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.nr-chart-axis { display: flex; gap: 4px; margin-top: 0.5rem; }
+.nr-chart-axis .t {
+  flex: 1;
+  text-align: center;
+  font-size: 0.55rem;
+  color: var(--secondary);
+  line-height: 1.3;
+}
+.nr-chart-axis .t.mode { color: var(--ink); font-weight: 700; }
+.nr-chart-callout {
+  position: absolute;
+  top: 1.125rem;
+  right: 1rem;
+  max-width: 11rem;
+  font-size: 0.72rem;
+  color: var(--ink);
+  line-height: 1.4;
+  padding: 0.625rem 0.75rem;
+  background: var(--milk);
+  border-left: 3px solid var(--ink);
+  border-radius: 0 3px 3px 0;
+}
+.nr-chart-callout strong { font-weight: 700; }
+@media (max-width: 640px) {
+  .nr-chart-callout {
+    position: static;
+    max-width: none;
+    margin-top: 0.875rem;
+  }
+}
+
+/* PULL QUOTE */
+.nr-pull {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: clamp(1.1rem, 2.5vw, 1.35rem);
+  line-height: 1.35;
+  color: var(--ink);
+  padding: 1.25rem 0 1.25rem 1.375rem;
+  border-left: 4px solid var(--accent);
+  margin: 2.25rem 0;
+  max-width: 38rem;
+}
+.nr-pull cite {
+  display: block;
+  font-family: 'DM Sans', sans-serif;
+  font-style: normal;
+  font-size: 0.7rem;
+  color: var(--tertiary);
+  margin-top: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+
+/* LEADERBOARD PAIR */
+.nr-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 1rem;
+}
+@media (max-width: 640px) {
+  .nr-pair { grid-template-columns: 1fr; gap: 1rem; }
+}
+.nr-col h4 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.625rem;
+  color: var(--ink);
+}
+.nr-row {
+  display: grid;
+  grid-template-columns: 22px 1fr 70px;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5625rem 0;
+  border-bottom: 1px dotted #D8CCB8;
+  font-size: 0.85rem;
+}
+.nr-row .rank {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  color: var(--accent);
+  font-size: 0.95rem;
+}
+.nr-row .name { color: var(--ink); }
+.nr-row .name small {
+  color: var(--tertiary);
+  font-size: 0.7rem;
+  display: block;
+  margin-top: 1px;
+}
+.nr-row .price { text-align: right; font-weight: 700; font-size: 0.95rem; }
+.nr-row .price.good { color: var(--cheap); }
+.nr-row .price.warn { color: var(--premium); }
+
+/* WIDGET CARDS (find-near-me, salary calc) */
+.nr-widget {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 1.375rem 1.5rem;
+  margin-top: 0.875rem;
+}
+.nr-widget p {
+  font-size: 0.85rem;
+  color: var(--secondary);
+  margin: 0;
+}
+.nr-widget .ctl {
+  display: flex;
+  gap: 0.625rem;
+  margin-top: 0.875rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.nr-widget .ctl input,
+.nr-widget .ctl select {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  background: var(--canvas);
+  font-family: inherit;
+  color: var(--ink);
+}
+.nr-widget .ctl input:focus,
+.nr-widget .ctl select:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+.nr-widget .ctl button {
+  padding: 0.5rem 1.125rem;
+  background: var(--ink);
+  color: var(--canvas);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.nr-widget .ctl button:hover { background: var(--crema); }
+.nr-widget .ctl-hint {
+  font-size: 0.78rem;
+  color: var(--tertiary);
+}
+.nr-widget .result {
+  margin-top: 0.875rem;
+  padding-top: 0.875rem;
+  border-top: 1px dotted #D8CCB8;
+  font-size: 0.85rem;
+}
+
+/* REGION CARDS */
+.nr-regions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.625rem;
+  margin-top: 1rem;
+}
+.nr-rcard {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 0.75rem;
+}
+.nr-rcard .rn {
+  font-size: 0.7rem;
+  color: var(--secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+}
+.nr-rcard .rv {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  margin-top: 0.25rem;
+  color: var(--ink);
+}
+.nr-rcard .rs { font-size: 0.65rem; color: var(--tertiary); margin-top: 0.125rem; }
+@media (max-width: 900px) {
+  .nr-regions { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* SYDNEY IN COFFEES — newsroom card grid */
+.nr-coffees {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem 0.875rem;
+}
+@media (max-width: 540px) { .nr-coffees { grid-template-columns: 1fr; } }
+.nr-cat {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin: 1.375rem 0 0.5rem;
+  padding-bottom: 0.25rem;
+  border-bottom: 1px solid var(--rule);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  color: var(--ink);
+}
+.nr-cat-count {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 0.68rem;
+  color: var(--tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.nr-cf {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  gap: 0.625rem;
+  padding: 0.625rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  align-items: center;
+}
+.nr-cf .icon { font-size: 1.125rem; line-height: 1; }
+.nr-cf .desc {
+  font-size: 0.75rem;
+  line-height: 1.35;
+  color: var(--secondary);
+}
+.nr-cf .desc small {
+  color: var(--tertiary);
+  font-size: 0.62rem;
+  display: block;
+  margin-top: 1px;
+}
+.nr-cf .val {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--ink);
+  text-align: right;
+  line-height: 1;
+}
+.nr-cf .val small {
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 400;
+  font-size: 0.55rem;
+  color: var(--tertiary);
+  display: block;
+  margin-top: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.nr-cf-feat {
+  grid-column: 1 / -1;
+  background: var(--ink);
+  color: var(--canvas);
+  border-color: var(--ink);
+  padding: 1rem 1.125rem;
+}
+.nr-cf-feat .desc { color: var(--milk); font-size: 0.85rem; }
+.nr-cf-feat .desc small { color: var(--tertiary); }
+.nr-cf-feat .val { color: var(--canvas); font-size: 1.5rem; }
+.nr-cf-feat .val small { color: var(--accent); }
+
+/* METHODOLOGY block */
+.nr-method {
+  background: var(--milk);
+  padding: 1.375rem 1.625rem;
+  border-radius: 4px;
+  margin-top: 0.875rem;
+  font-size: 0.85rem;
+  line-height: 1.65;
+  color: var(--secondary);
+}
+.nr-method strong { color: var(--ink); }
+.nr-method a { color: var(--accent); font-weight: 500; }
+
+/* DARK NEWSLETTER BAND */
+.nr-nl {
+  background: var(--ink);
+  color: var(--milk);
+  padding: 1.625rem 1.75rem;
+  border-radius: 4px;
+  margin-top: 0.875rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+.nr-nl h4 {
+  font-family: 'Playfair Display', serif;
+  font-weight: 700;
+  font-size: 1.125rem;
+  color: var(--canvas);
+  margin: 0;
+}
+.nr-nl p { font-size: 0.75rem; opacity: 0.7; margin-top: 0.25rem; color: var(--milk); }
+.nr-nl form { display: flex; gap: 0.5rem; }
+.nr-nl input {
+  padding: 0.5625rem 0.75rem;
+  border: 1px solid var(--secondary);
+  background: #2A2018;
+  color: var(--canvas);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  min-width: 200px;
+  font-family: inherit;
+}
+.nr-nl input::placeholder { color: var(--tertiary); }
+.nr-nl button {
+  padding: 0.5625rem 1rem;
+  background: var(--accent);
+  color: var(--canvas);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+}
+.nr-nl button:hover { background: #B14A22; }
+.nr-nl-success {
+  font-size: 0.85rem;
+  color: var(--cheap);
+  background: var(--canvas);
+  padding: 0.875rem 1.125rem;
+  border-radius: 3px;
+  display: none;
+  grid-column: 1 / -1;
+}
+@media (max-width: 780px) {
+  .nr-nl { grid-template-columns: 1fr; }
+  .nr-nl form { flex-direction: column; }
+  .nr-nl input { min-width: 0; }
 }
 </style>
 
@@ -1312,7 +1306,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   "dateModified": "2026-05-15",
   "speakable": {
     "@type": "SpeakableSpecification",
-    "cssSelector": [".hero-lede", ".hero-insight", ".seo-answer p"]
+    "cssSelector": [".nr-hero-h", ".nr-hero-deck", ".nr-band-v", ".nr-h"]
   },
   "inLanguage": "en-AU"
 }
@@ -1502,262 +1496,220 @@ posthog.init('phc_AUTXvNZkCQVUVJjTEqMUzTkqLtz4iEQvvDQ4zsu3Hetw',{
   </header>
 
   <!-- ================================================================
-       HERO
+       HERO — answer-led editorial
        ================================================================ -->
-  <section class="hero">
-    <h2 class="hero-headline">Sydney flat white price, suburb by suburb</h2>
-    <p class="hero-lede" id="heroLede">The average flat white in Sydney costs <strong>$5.80</strong>, ranging from <strong>$4.00</strong> in Ashfield to <strong>$7.20</strong> in Darling Harbour. Live coffee prices Sydney-wide, collected by direct phone call to 847 independent cafes.</p>
-    <div class="hero-insight" id="heroInsight" style="display:none;">
-      <span class="insight-number" id="insightNumber"></span>
-      <span class="insight-text" id="insightText"></span>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       SEO ANSWER BLOCK — captures "average coffee price sydney",
-       "coffee prices sydney", "coffee price in sydney" + misspelling
-       ================================================================ -->
-  <section class="seo-answer" aria-labelledby="seo-answer-heading" style="margin: 1.25rem 0 0; padding: 1.25rem 1.5rem; background: var(--accent-soft); border-left: 3px solid var(--accent); border-radius: 4px;">
-    <h3 id="seo-answer-heading" style="font-family: 'Playfair Display', serif; font-size: 1.15rem; font-weight: 700; margin-bottom: 0.5rem; color: var(--ink);">What is the average coffee price in Sydney?</h3>
-    <p style="font-size: 0.95rem; line-height: 1.65; color: var(--ink); margin: 0;">
-      The average coffee price in Sydney is <strong>$5.80</strong> for a regular flat white (April 2026). Coffee prices Sydney-wide span <strong>$4.00 to $7.20</strong> depending on the suburb — inner west suburbs like Ashfield, Marrickville and Strathfield consistently price under $5.00, while harbour and eastern suburbs (Mosman, Double Bay, Darling Harbour) sit above $6.50. The single most common price across the city is $5.50.
-      <span style="display: block; margin-top: 0.5rem; font-size: 0.82rem; color: var(--secondary);">Also searched as: <em>coffee price in sydney</em>, <em>coffee prices sydney</em>, <em>average coffe price</em> (common misspelling), <em>flat white sydney</em>.</span>
-    </p>
-  </section>
-
-  <!-- ================================================================
-       STATS STRIP
-       ================================================================ -->
-  <section class="stats-row" aria-label="Key statistics">
-    <div class="stat-card hero-stat">
-      <div class="stat-label">Sydney Average</div>
-      <div class="stat-value" id="statAvg">&mdash;</div>
-      <div class="stat-sub">flat white, regular</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Cheapest Suburb</div>
-      <div class="stat-value good" id="statCheapestPrice">&mdash;</div>
-      <div class="stat-sub" id="statCheapestName">awaiting calls</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Most Expensive</div>
-      <div class="stat-value warn" id="statDearestPrice">&mdash;</div>
-      <div class="stat-sub" id="statDearestName">awaiting calls</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Cafes Called</div>
-      <div class="stat-value" id="cafesCalled">0</div>
-      <div class="stat-sub" id="cafesCalledSub">independent cafes</div>
-    </div>
-    <div class="stat-card">
-      <div class="stat-label">Prices Collected</div>
-      <div class="stat-value" id="statPrices">0</div>
-      <div class="stat-sub" id="statAnswerRate">awaiting calls</div>
-    </div>
-  </section>
-
-  <!-- Tier badges -->
-  <div class="tier-row" id="tierRow">
-    <span class="tier-badge tier-budget">Budget &le; P25</span>
-    <span class="tier-badge tier-mid">Mid-range</span>
-    <span class="tier-badge tier-premium">Premium &ge; P75</span>
+  <div class="nr-hero">
+    <div class="nr-rule">The Sydney Coffee Report &middot; 2026</div>
+    <h2 class="nr-hero-h">The cost of a coffee in Sydney, <em>suburb by suburb</em>.</h2>
+    <p class="nr-hero-deck" id="heroLede">We rang every independent cafe in Sydney and asked the same question: <strong>how much for a regular flat white?</strong> Here is what they said.</p>
+    <div class="nr-hero-byline">By Flat White Index &middot; Live data from cafe phone calls &middot; CC&nbsp;BY&nbsp;4.0</div>
   </div>
+
+  <!-- ================================================================
+       STAT BAND — 4-up cream band, full-bleed
+       ================================================================ -->
+  <section class="nr-band" aria-label="Key statistics">
+    <div class="nr-band-stat">
+      <div class="nr-band-l">Sydney average</div>
+      <div class="nr-band-v" id="statAvg" aria-label="Sydney average flat white price">&mdash;</div>
+      <div class="nr-band-s">flat white, regular</div>
+    </div>
+    <div class="nr-band-stat">
+      <div class="nr-band-l">Cheapest suburb</div>
+      <div class="nr-band-v good" id="statCheapestPrice">&mdash;</div>
+      <div class="nr-band-s" id="statCheapestName">awaiting calls</div>
+    </div>
+    <div class="nr-band-stat">
+      <div class="nr-band-l">Most expensive</div>
+      <div class="nr-band-v warn" id="statDearestPrice">&mdash;</div>
+      <div class="nr-band-s" id="statDearestName">awaiting calls</div>
+    </div>
+    <div class="nr-band-stat">
+      <div class="nr-band-l">Cafes called</div>
+      <div class="nr-band-v" id="cafesCalled">0</div>
+      <div class="nr-band-s" id="cafesCalledSub">independent cafes</div>
+    </div>
+  </section>
 </div>
 
 <!-- ================================================================
-     REGION CARDS
-     ================================================================ -->
-<div class="page-wrap" role="region" aria-label="Regional price comparison">
-  <div class="region-grid" id="region-cards-1"></div>
-  <div class="region-grid" id="region-cards-2"></div>
-</div>
-
-<!-- ================================================================
-     MAIN CONTENT
+     MAIN CONTENT — newsroom choreography
      ================================================================ -->
 <div class="content" role="main" id="content">
 
-  <!-- KEY FINDINGS — hidden until we have real data -->
-  <section class="findings" id="findingsSection" style="display:none;">
-    <h2 class="findings-title">What the data tells us</h2>
-    <div class="findings-grid" id="findingsGrid"></div>
+  <!-- DISTRIBUTION HISTOGRAM -->
+  <section class="nr-section" id="distributionSection" style="display:none;">
+    <div class="nr-rule">The shape of the data</div>
+    <h2 class="nr-h">Most Sydney cafes price between $5 and $6.</h2>
+    <p class="nr-sub">Histogram of every flat white price collected. The mode is highlighted.</p>
+    <div class="nr-chart">
+      <div class="nr-chart-bars" id="distBars"></div>
+      <div class="nr-chart-axis" id="distAxis"></div>
+      <div class="nr-chart-callout" id="distCallout"></div>
+    </div>
   </section>
 
-  <!-- HOW IT WORKS — shown when no data yet -->
-  <section class="findings" id="howItWorksSection">
-    <div class="section-label">How it works</div>
-    <h2 class="findings-title">Four steps to every price</h2>
-    <div class="findings-grid">
-      <div class="finding">
-        <div class="finding-icon" role="img" aria-label="Location">1.</div>
-        <div class="finding-text"><strong>Discover.</strong> We find every cafe in Sydney using Google Places — suburb by suburb, across the whole metro area.</div>
+  <!-- PULL QUOTE 1 -->
+  <blockquote class="nr-pull">
+    The Sydney middle is around $5.50. But $7 cafes now appear in six suburbs &mdash; none more than 15 minutes from the harbour.
+    <cite>Finding</cite>
+  </blockquote>
+
+  <!-- LEADERBOARD PAIR -->
+  <section class="nr-section">
+    <div class="nr-rule">The extremes</div>
+    <h2 class="nr-h">Where it's cheap, and where it's not.</h2>
+    <div class="nr-pair">
+      <div class="nr-col">
+        <h4>Cheapest five suburbs</h4>
+        <div id="leaderCheap"></div>
       </div>
-      <div class="finding">
-        <div class="finding-icon" role="img" aria-label="Phone call">2.</div>
-        <div class="finding-text"><strong>Call.</strong> Our AI voice agent Mia phones each cafe and asks one question: "How much is a regular flat white?"</div>
-      </div>
-      <div class="finding">
-        <div class="finding-icon" role="img" aria-label="Statistics">3.</div>
-        <div class="finding-text"><strong>Extract.</strong> Prices are pulled from the call transcript, verified, and added to the index in real time.</div>
-      </div>
-      <div class="finding">
-        <div class="finding-icon" role="img" aria-label="Map">4.</div>
-        <div class="finding-text"><strong>Map.</strong> Every price lands on this dashboard — sorted by suburb, plotted on the map, updated live.</div>
+      <div class="nr-col">
+        <h4>Dearest five suburbs</h4>
+        <div id="leaderDear"></div>
       </div>
     </div>
-    <p style="margin-top:1rem; font-size:0.88rem; color:var(--secondary); line-height:1.6;">Want the full detail? Read our <a href="/press.html" style="color:var(--accent);">methodology, key findings, and data licensing</a>.</p>
+  </section>
+
+  <!-- FIND CHEAPEST NEAR ME -->
+  <section class="nr-section">
+    <div class="nr-rule">For you</div>
+    <h2 class="nr-h">Find the cheapest flat white near you.</h2>
+    <div class="nr-widget">
+      <p>Use your location and we'll surface the cheapest cafes within walking distance.</p>
+      <div class="ctl">
+        <button id="nearmeBtn" type="button" onclick="findNearMe()">Use my location</button>
+        <span class="ctl-hint">&mdash; or &mdash;</span>
+        <select id="compare1" aria-label="Suburb 1" style="flex:1;min-width:140px;"></select>
+        <span class="ctl-hint">vs</span>
+        <select id="compare2" aria-label="Suburb 2" style="flex:1;min-width:140px;"></select>
+        <button type="button" onclick="compareSuburbs()">Compare</button>
+      </div>
+      <div class="result" id="nearmeResult" style="display:none;"></div>
+      <div class="result" id="compareResult" style="display:none;"></div>
+    </div>
+  </section>
+
+  <!-- REGION CARDS — single merged container -->
+  <section class="nr-section">
+    <div class="nr-rule">By region</div>
+    <h2 class="nr-h">Eight Sydney regions, one number each.</h2>
+    <div class="nr-regions" id="region-cards" role="region" aria-label="Regional price comparison"></div>
+  </section>
+
+  <!-- PULL QUOTE 2 -->
+  <blockquote class="nr-pull">
+    Inner-west cafes pay less rent and source from specialty roasters who price the bean lower than chain wholesalers. That's why a $5 flat white still exists in 2026.
+    <cite>Why prices vary &middot; methodology</cite>
+  </blockquote>
+
+  <!-- MAP + SUBURB LIST -->
+  <section class="nr-section">
+    <div class="nr-rule">Explore</div>
+    <h2 class="nr-h">Tap a cafe. Compare a street.</h2>
+    <p class="nr-sub">Every cafe surveyed is pinned. Click any pin for the price and the call transcript.</p>
+    <section class="map-grid">
+      <div class="map-panel">
+        <div class="map-header">
+          <h3 class="panel-title" style="font-size:0.95rem;">Price Map</h3>
+          <div style="display:flex;gap:0.5rem;align-items:center;">
+            <span style="font-size:0.78rem;color:var(--secondary);" id="selectedInfo">Click a suburb or cafe</span>
+            <button onclick="resetMapView()" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:2px 8px;font-size:0.68rem;color:var(--secondary);cursor:pointer;">Reset</button>
+          </div>
+        </div>
+        <div class="map-container">
+          <div id="leaflet-map" role="application" aria-label="Interactive map showing flat white prices by Sydney suburb"></div>
+        </div>
+        <details class="embed-section">
+          <summary><h3 style="display:inline;font-size:0.9rem;">Embed this data</h3></summary>
+          <p class="embed-desc">Add the Flat White Index to your article or website.</p>
+          <div class="embed-code-wrapper">
+            <code class="embed-code" id="embedCode">&lt;iframe src="https://www.flatwhiteindex.com.au/" width="100%" height="600" frameborder="0" title="Flat White Index — Sydney Coffee Prices"&gt;&lt;/iframe&gt;</code>
+            <button class="embed-copy-btn" onclick="copyEmbed(this)">Copy</button>
+          </div>
+        </details>
+      </div>
+      <div class="suburb-sidebar">
+        <div class="sidebar-header">
+          <h3 class="panel-title" style="font-size:0.95rem;">By Suburb</h3>
+          <div id="sidebarInfo" style="font-size:0.72rem; color:var(--tertiary);">tap map to filter</div>
+        </div>
+        <div class="suburb-list" id="suburbList"></div>
+        <div style="padding: 0.25rem 0.9rem 0;">
+          <div class="progress-bar-outer" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" aria-label="Data collection progress">
+            <div class="progress-bar-inner" style="width: 40%"></div>
+          </div>
+          <div class="progress-label" id="progressLabel">Loading data...</div>
+        </div>
+      </div>
+    </section>
+  </section>
+
+  <!-- SALARY CALCULATOR -->
+  <section class="nr-section">
+    <div class="nr-rule">In context</div>
+    <h2 class="nr-h">How much of your day does one flat white cost?</h2>
+    <div class="nr-widget">
+      <p>Enter your annual salary; we'll tell you the minutes-of-work-per-coffee, the weekly cost of a daily habit, and the annual total.</p>
+      <div class="ctl">
+        <span class="ctl-hint">Annual salary (AUD)</span>
+        <input type="number" id="salaryInput" placeholder="85000" step="1000" min="20000" max="500000" inputmode="numeric" style="width:140px;">
+        <button onclick="calcSalary()" type="button">Calculate</button>
+      </div>
+      <div class="salary-result" id="salaryResult">
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:0.875rem;padding-top:0.875rem;border-top:1px dotted #D8CCB8;">
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--ink);" id="salaryMinutes">&mdash;</div>
+            <div style="font-size:0.7rem;color:var(--secondary);">minutes of work<br>per flat white</div>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--accent);" id="salaryPerWeek">&mdash;</div>
+            <div style="font-size:0.7rem;color:var(--secondary);">per week<br>(1/day)</div>
+          </div>
+          <div>
+            <div style="font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:700;color:var(--accent);" id="salaryPerYear">&mdash;</div>
+            <div style="font-size:0.7rem;color:var(--secondary);">per year<br>(5 days/week)</div>
+          </div>
+        </div>
+        <div style="font-size:0.78rem;color:var(--secondary);margin-top:0.75rem;" id="salaryComparison"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SYDNEY IN COFFEES (template populated by renderSydneyCoffees) -->
+  <div id="sydney-coffees"></div>
+
+  <!-- METHODOLOGY -->
+  <section class="nr-section">
+    <div class="nr-rule">How we know</div>
+    <div class="nr-method">
+      Every price on this page was collected by direct phone call. An AI voice agent named Mia rings each independent cafe and asks: <strong>"How much is a regular flat white?"</strong> Prices are extracted from the call transcript and stored in our open dataset (<a href="/api/dashboard">JSON export</a>, CC&nbsp;BY&nbsp;4.0). Chain cafes are excluded &mdash; only independents are surveyed. Calls run 9am&ndash;4pm AEST, weekdays only. Sample size for every suburb is shown next to each row. <a href="/press.html">Read the full methodology &rarr;</a>
+    </div>
   </section>
 
   <!-- NEWSLETTER -->
-  <section class="newsletter-strip">
-    <div class="newsletter-content">
-      <div class="newsletter-text">
-        <strong>The Flat White Index, monthly.</strong>
-        <span>Every suburb. Verified prices. Free.</span>
+  <section class="nr-section">
+    <div class="nr-rule">Subscribe</div>
+    <div class="nr-nl">
+      <div>
+        <h4>The Friday Pour</h4>
+        <p>Weekly digest: which suburb went up, which went down, and the new cafes we surveyed.</p>
       </div>
       <form class="newsletter-form" onsubmit="subscribeEmail(event)">
         <label for="newsletterEmail" class="sr-only">Email address</label>
-        <input type="email" id="newsletterEmail" placeholder="your@email.com" required aria-label="Email address" autocomplete="email">
-        <button type="submit" class="newsletter-btn">Subscribe</button>
+        <input type="email" id="newsletterEmail" placeholder="you@example.com" required aria-label="Email address" autocomplete="email">
+        <button type="submit">Subscribe</button>
       </form>
-      <div class="newsletter-success" id="newsletterSuccess">Thanks! You'll get the first report soon.</div>
+      <div class="nr-nl-success" id="newsletterSuccess">Thanks! You'll get the first report soon.</div>
     </div>
   </section>
 
-  <!-- MELBOURNE CALLOUT -->
-  <section style="text-align:center; padding:1.25rem; margin-bottom:1.5rem; background:var(--rule); border-radius:8px;">
-    <p style="margin:0; font-size:0.9rem; color:var(--secondary); line-height:1.6;">We're expanding south. <a href="/melbourne.html" style="color:var(--accent); font-weight:500;">Melbourne is coming soon</a> — 3,000+ cafes to call. Get notified when it launches.</p>
-  </section>
+  <!-- MELBOURNE CALLOUT (compact) -->
+  <p style="text-align:center; font-size:0.85rem; color:var(--secondary); margin-top:1.25rem;">
+    We're expanding south. <a href="/melbourne.html" style="color:var(--accent); font-weight:500;">Melbourne is coming soon</a> &mdash; 3,000+ cafes to call.
+  </p>
 
-  <!-- ================================================================
-       MAP + SUBURB LIST
-       ================================================================ -->
-  <section class="map-grid">
-    <div class="map-panel">
-      <div class="map-header">
-        <h2 class="panel-title">Price Map</h2>
-        <div style="display:flex;gap:0.5rem;align-items:center;">
-          <span style="font-size:0.78rem;color:var(--secondary);" id="selectedInfo">Click a suburb or cafe</span>
-          <button onclick="resetMapView()" style="background:none;border:1px solid var(--rule);border-radius:3px;padding:2px 8px;font-size:0.68rem;color:var(--secondary);cursor:pointer;">Reset</button>
-        </div>
-      </div>
-      <div class="map-container">
-        <div id="leaflet-map" role="application" aria-label="Interactive map showing flat white prices by Sydney suburb"></div>
-      </div>
-      <!-- Embed -->
-      <details class="embed-section">
-        <summary><h2>Embed this data</h2></summary>
-        <p class="embed-desc">Add the Flat White Index to your article or website.</p>
-        <div class="embed-code-wrapper">
-          <code class="embed-code" id="embedCode">&lt;iframe src="https://www.flatwhiteindex.com.au/" width="100%" height="600" frameborder="0" title="Flat White Index — Sydney Coffee Prices"&gt;&lt;/iframe&gt;</code>
-          <button class="embed-copy-btn" onclick="copyEmbed(this)">Copy</button>
-        </div>
-      </details>
-    </div>
-
-    <!-- SUBURB LIST SIDEBAR -->
-    <div class="suburb-sidebar">
-      <div class="sidebar-header">
-        <h2 class="panel-title">By Suburb</h2>
-        <div id="sidebarInfo" style="font-size:0.72rem; color:var(--tertiary);">tap map to filter</div>
-      </div>
-      <div class="suburb-list" id="suburbList"></div>
-      <div style="padding: 0.25rem 0.9rem 0;">
-        <div class="progress-bar-outer" role="progressbar" aria-valuenow="40" aria-valuemin="0" aria-valuemax="100" aria-label="Data collection progress">
-          <div class="progress-bar-inner" style="width: 40%"></div>
-        </div>
-        <div class="progress-label" id="progressLabel">Loading data...</div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       DISTRIBUTION + LEADERBOARD
-       ================================================================ -->
-  <section class="data-grid">
-    <div class="data-panel">
-      <h2 class="section-title">Price Distribution</h2>
-      <div class="dist-chart" id="distChart"></div>
-      <div style="border-top:1px solid var(--rule); padding:0.75rem 1rem;">
-        <div id="priceInsights"></div>
-      </div>
-    </div>
-    <div class="data-panel">
-      <h2 class="section-title">Sydney Leaderboard</h2>
-      <div class="winner-card" id="winnerCard"></div>
-      <div class="podium" id="podium"></div>
-      <div class="finds-list" id="findsList"></div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       SYDNEY IN COFFEES
-       ================================================================ -->
-  <div class="coffees-section" id="sydney-coffees"></div>
-
-  <!-- ================================================================
-       TOOLS — Salary Calculator + Compare Suburbs
-       ================================================================ -->
-  <section class="tools-grid">
-    <div class="tool-panel">
-      <div class="section-label">Calculator</div>
-      <h2>How long do you work for a coffee?</h2>
-      <p class="salary-calc-desc">Enter your annual salary to see how many minutes of your workday a flat white costs.</p>
-      <div class="salary-input-row">
-        <label for="salaryInput">Annual salary (AUD)</label>
-        <input type="number" id="salaryInput" placeholder="85,000" step="1000" min="20000" max="500000" inputmode="numeric">
-        <button class="newsletter-btn" onclick="calcSalary()" style="padding:0.55rem 1.1rem;">Calculate</button>
-      </div>
-      <div class="salary-result" id="salaryResult">
-        <div class="salary-result-card">
-          <div>
-            <div class="salary-minutes" id="salaryMinutes">&mdash;</div>
-            <div class="salary-minutes-label">minutes of work<br>per flat white</div>
-          </div>
-          <div>
-            <div class="salary-minutes" id="salaryPerWeek" style="font-size:1.4rem; color:var(--accent);">&mdash;</div>
-            <div class="salary-minutes-label">per week<br>(1 coffee/day)</div>
-          </div>
-          <div>
-            <div class="salary-minutes" id="salaryPerYear" style="font-size:1.4rem; color:var(--accent);">&mdash;</div>
-            <div class="salary-minutes-label">per year<br>(5 days/week)</div>
-          </div>
-        </div>
-        <div class="salary-comparison" id="salaryComparison"></div>
-      </div>
-    </div>
-
-    <div class="tool-panel">
-      <div class="section-label">Compare</div>
-      <h2 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:0.5rem;">Compare Suburbs</h2>
-      <div class="compare-row">
-        <div class="field">
-          <label for="compare1">Suburb 1</label>
-          <select id="compare1"></select>
-        </div>
-        <div class="compare-vs">vs</div>
-        <div class="field">
-          <label for="compare2">Suburb 2</label>
-          <select id="compare2"></select>
-        </div>
-        <button class="newsletter-btn" onclick="compareSuburbs()" style="align-self:flex-end;">Compare</button>
-      </div>
-      <div id="compareResult" style="display:none;"></div>
-
-      <!-- CHEAPEST NEAR ME -->
-      <div class="nearme-section">
-        <hr class="rule" style="margin:1rem 0;">
-        <div class="section-label">Location</div>
-        <h3 style="font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:0.5rem;">Cheapest Near Me</h3>
-        <button class="newsletter-btn" id="nearmeBtn" onclick="findNearMe()">Find cheapest near me</button>
-        <div id="nearmeResult" style="display:none; margin-top:0.75rem;"></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- ================================================================
-       CONTRIBUTE
-       ================================================================ -->
+  <!-- CONTRIBUTE -->
   <div class="contribute-strip">
     <div class="contribute-text">
       <h3>Help us grow the index</h3>
@@ -1929,22 +1881,57 @@ function aggregateRegions(suburbs) {
 }
 
 function renderRegionCards(regions) {
-  const grid1 = document.getElementById('region-cards-1');
-  const grid2 = document.getElementById('region-cards-2');
-  if (!grid1 || !grid2) return;
-  const first4 = regions.slice(0, 4);
-  const rest = regions.slice(4);
-  grid1.innerHTML = first4.map(regionCardHTML).join('');
-  grid2.innerHTML = rest.map(regionCardHTML).join('');
+  const grid = document.getElementById('region-cards');
+  if (!grid) return;
+  grid.innerHTML = regions.map(regionCardHTML).join('');
 }
 
 function regionCardHTML(r) {
-  return `<div class="region-card ${TIER_CSS[r.tier]}">
-    <div class="region-name">${esc(r.label)}</div>
-    <div class="region-price" style="color:${TIER_COLOR[r.tier]};">$${r.avgPrice.toFixed(2)}</div>
-    <div class="region-meta">${r.cafeCount} cafés · ${r.suburbCount} suburbs</div>
-    <div class="region-tier ${TIER_BADGE[r.tier]}">${TIER_LABEL[r.tier]}</div>
+  return `<div class="nr-rcard">
+    <div class="rn">${esc(r.label)}</div>
+    <div class="rv" style="color:${TIER_COLOR[r.tier]};">$${r.avgPrice.toFixed(2)}</div>
+    <div class="rs">${r.cafeCount} cafés &middot; ${r.suburbCount} suburbs</div>
   </div>`;
+}
+
+// ─── NEWSROOM HISTOGRAM ─────────────────────────────────────────────────────
+function renderDistributionNewsroom(distribution) {
+  const section = document.getElementById('distributionSection');
+  if (!section || !Array.isArray(distribution) || distribution.length === 0) return;
+  const totalCount = distribution.reduce((sum, b) => sum + (b.count || 0), 0);
+  if (totalCount === 0) return;
+  const modeIdx = distribution.reduce((best, b, i, arr) => b.count > arr[best].count ? i : best, 0);
+  const max = Math.max(...distribution.map(b => b.count || 0), 1);
+  const bars = distribution.map((b, i) => {
+    const h = ((b.count || 0) / max) * 100;
+    const isMode = i === modeIdx;
+    return `<div class="nr-chart-bar${isMode ? ' mode' : ''}" style="height:${h.toFixed(1)}%" title="${esc(b.label)}: ${b.count} cafes">${isMode ? `<span class="lbl">${esc(b.label)} &middot; mode</span>` : ''}</div>`;
+  }).join('');
+  const axis = distribution.map((b, i) => `<div class="t${i === modeIdx ? ' mode' : ''}">${esc(b.label)}</div>`).join('');
+  document.getElementById('distBars').innerHTML = bars;
+  document.getElementById('distAxis').innerHTML = axis;
+  const modePct = ((distribution[modeIdx].count / totalCount) * 100).toFixed(0);
+  document.getElementById('distCallout').innerHTML = `<strong>${distribution[modeIdx].count}</strong> cafes (${modePct}%) price in the <strong>${esc(distribution[modeIdx].label)}</strong> band — the most common bracket.`;
+  section.style.display = '';
+}
+
+// ─── NEWSROOM LEADERBOARDS ──────────────────────────────────────────────────
+function renderLeaderboardsNewsroom(suburbs) {
+  if (!Array.isArray(suburbs) || suburbs.length === 0) return;
+  const withPrice = suburbs.filter(s => s.price != null && s.name && s.name !== 'Unknown');
+  if (withPrice.length === 0) return;
+  const cheap = [...withPrice].sort((a, b) => a.price - b.price).slice(0, 5);
+  const dear = [...withPrice].sort((a, b) => b.price - a.price).slice(0, 5);
+  const row = (s, i, kind) => `
+    <div class="nr-row">
+      <span class="rank">${i + 1}</span>
+      <span class="name">${esc(s.name)}<small>${s.count || 0} cafes</small></span>
+      <span class="price ${kind}">$${s.price.toFixed(2)}</span>
+    </div>`;
+  const cheapEl = document.getElementById('leaderCheap');
+  const dearEl = document.getElementById('leaderDear');
+  if (cheapEl) cheapEl.innerHTML = cheap.map((s, i) => row(s, i, 'good')).join('');
+  if (dearEl) dearEl.innerHTML = dear.map((s, i) => row(s, i, 'warn')).join('');
 }
 
 // ─── SYDNEY IN COFFEES ──────────────────────────────────────────────────────
@@ -2001,37 +1988,44 @@ function renderSydneyCoffees(avgPrice) {
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(c);
   });
-  let html = `<h2 style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:600;margin-bottom:0.3rem;">Sydney in Coffees ☕</h2>
-    <p class="coffees-intro">How far does a flat white go in Sydney? We did the maths.</p>`;
+
+  let html = `
+    <section class="nr-section">
+      <div class="nr-rule">Sydney in coffees</div>
+      <h2 class="nr-h">What else does $${avgPrice.toFixed(2)} buy?</h2>
+      <p class="nr-sub">Every Sydney expense, expressed in flat whites. Live numbers, real sources.</p>`;
+
   if (featured) {
     const val = Math.round(featured.raw / avgPrice).toLocaleString('en-AU');
-    html += `<div class="coffee-card coffee-featured" style="margin-bottom:10px;">
-      <div><div class="coffee-icon" style="font-size:2rem;">${featured.icon}</div></div>
-      <div style="flex:1;position:relative;z-index:1;">
-        <div class="coffee-number">${val}</div>
-        <div class="coffee-unit">${esc(featured.unit)}</div>
-        <div class="coffee-desc">${esc(featured.desc)} — $${featured.raw.toLocaleString('en-AU')} at $${avgPrice.toFixed(2)} per cup</div>
-        <div class="coffee-source">${esc(featured.source)}</div>
-      </div>
-    </div>`;
+    html += `
+      <div class="nr-coffees" style="grid-template-columns:1fr;">
+        <div class="nr-cf nr-cf-feat">
+          <div class="icon" style="font-size:1.625rem;">${featured.icon}</div>
+          <div class="desc">${esc(featured.desc)} &mdash; $${featured.raw.toLocaleString('en-AU')} at $${avgPrice.toFixed(2)} per cup<small>${esc(featured.source)}</small></div>
+          <div class="val">${val}<small>${esc(featured.unit)}</small></div>
+        </div>
+      </div>`;
   }
-  html += '<div class="coffees-grid">';
-  for (const [cat, items] of Object.entries(grouped)) {
-    html += `<div class="coffees-divider">${CATEGORY_LABELS[cat] || cat}</div>`;
+
+  // Walk categories in declared order (cost, transport, experiences, money, aussie)
+  for (const catKey of Object.keys(CATEGORY_LABELS)) {
+    const items = grouped[catKey];
+    if (!items || items.length === 0) continue;
+    html += `<div class="nr-cat">${CATEGORY_LABELS[catKey]}<span class="nr-cat-count">${items.length} metrics</span></div>`;
+    html += `<div class="nr-coffees">`;
     for (const item of items) {
       const val = computeCoffeeValue(item, avgPrice);
-      const extra = item.pun ? ' coffee-pun' : item.compute === 'minutes' ? ' coffee-highlight' : '';
-      html += `<div class="coffee-card${extra}">`;
-      if (item.pun) html += '<div class="pun-tag">Price check</div>';
-      html += `<div class="coffee-icon">${item.icon}</div>
-        <div class="coffee-number">${val}</div>
-        <div class="coffee-unit">${esc(item.unit)}</div>
-        <div class="coffee-desc">${esc(item.desc)}</div>
-        <div class="coffee-source">${esc(item.source)}</div>
-      </div>`;
+      html += `
+        <div class="nr-cf">
+          <div class="icon">${item.icon}</div>
+          <div class="desc">${esc(item.desc)}<small>${esc(item.source)}</small></div>
+          <div class="val">${val}<small>${esc(item.unit)}</small></div>
+        </div>`;
     }
+    html += `</div>`;
   }
-  html += '</div>';
+
+  html += `</section>`;
   el.innerHTML = html;
 }
 
@@ -2415,7 +2409,6 @@ function updateStats(suburbs, totalCafes, pricesCollected, avgPrice) {
   document.getElementById('statDearestPrice').textContent = '$' + dearest.price.toFixed(2);
   document.getElementById('statDearestName').textContent = dearest.name;
   if (totalCafes != null) document.getElementById('cafesCalled').textContent = totalCafes.toLocaleString();
-  if (pricesCollected != null) document.getElementById('statPrices').textContent = pricesCollected.toLocaleString();
 }
 
 // ─── DATA LOADING ─────────────────────────────────────────────────────────────
@@ -2457,25 +2450,18 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
 
   updateStats(suburbs, totalCafes, pricesCollected, avgPrice);
 
-  // Region cards + tier badges
-  const { regions, tiers } = aggregateRegions(suburbs);
+  // Region cards (single merged container)
+  const { regions } = aggregateRegions(suburbs);
   renderRegionCards(regions);
-  const tierRow = document.getElementById('tierRow');
-  if (tierRow && tiers.budget) {
-    tierRow.innerHTML = `
-      <span class="tier-badge tier-budget">Budget ≤ $${tiers.budget.toFixed(2)}</span>
-      <span class="tier-badge tier-mid">Mid-range</span>
-      <span class="tier-badge tier-premium">Premium ≥ $${tiers.premium.toFixed(2)}</span>
-    `;
-  }
+
+  // Newsroom: leaderboards + histogram
+  renderLeaderboardsNewsroom(suburbs);
+  renderDistributionNewsroom(distData);
 
   // Sydney in Coffees
   renderSydneyCoffees(avgPrice);
 
   if (suburbs.length > 0) renderSuburbList(suburbs);
-  if (distData.length > 0) renderDist(distData);
-  if (gems.length > 0) renderGems(gems);
-  renderPriceInsights(suburbs, gems, avgPrice, pricesCollected);
   // Use individual cafe markers if available, fall back to suburb averages
   const cafeMarkers = gems.filter(g => g.lat != null && g.lng != null);
   const mapData = cafeMarkers.length > 0 ? cafeMarkers : suburbs.filter(s => s.lat != null && s.lng != null);
@@ -2500,43 +2486,15 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
 
     if (pricesCollected > 0) {
       const liveAvg = (raw.avg_price || 5.80).toFixed(2);
+      const subCount = suburbs.length;
       document.getElementById('heroLede').innerHTML =
-        `The average flat white in Sydney costs <strong>$${liveAvg}</strong>. Coffee prices Sydney-wide collected by direct phone call to ${called.toLocaleString()} independent cafes — live data, updated as calls come in.`;
-
-      // Show findings section, hide how-it-works
-      document.getElementById('findingsSection').style.display = '';
-      document.getElementById('howItWorksSection').style.display = 'none';
-
-      // Show hero insight with real gap
-      if (suburbs.length >= 2) {
-        const sorted = [...suburbs].sort((a, b) => a.price - b.price);
-        const gap = Math.round((sorted[sorted.length - 1].price / sorted[0].price - 1) * 100);
-        document.getElementById('insightNumber').textContent = gap + '%';
-        document.getElementById('insightText').textContent = 'price gap between Sydney\'s cheapest and dearest suburbs';
-        document.getElementById('heroInsight').style.display = '';
-      }
-
-      // Populate findings from real data
-      const findingsGrid = document.getElementById('findingsGrid');
-      if (findingsGrid && suburbs.length >= 2) {
-        const sorted = [...suburbs].sort((a, b) => a.price - b.price);
-        const cheapestS = sorted[0];
-        const dearestS = sorted[sorted.length - 1];
-        const saving = (dearestS.price - cheapestS.price).toFixed(2);
-        findingsGrid.innerHTML = `
-          <div class="finding"><div class="finding-icon">📍</div>
-            <div class="finding-text"><strong>Your suburb sets the price.</strong> ${esc(cheapestS.name)} averages $${cheapestS.price.toFixed(2)} while ${esc(dearestS.name)} averages $${dearestS.price.toFixed(2)} — a $${saving} gap.</div></div>
-          <div class="finding"><div class="finding-icon">📊</div>
-            <div class="finding-text"><strong>${pricesCollected} prices collected</strong> across ${suburbs.length} suburbs so far. More calls going out daily.</div></div>
-        `;
-      }
+        `We rang every independent cafe in <strong>${subCount} Sydney suburbs</strong> and asked the same question: how much for a regular flat white? <strong>${called.toLocaleString()} cafes</strong> answered. The average is <strong>$${liveAvg}</strong>.`;
     } else {
       document.getElementById('heroLede').innerHTML =
         `We've discovered <strong>${discovered.toLocaleString()}</strong> cafés across Sydney for the upcoming coffee prices Sydney survey. Calls starting soon — average flat white price will appear here live.`;
     }
 
     document.getElementById('cafesCalled').textContent = called.toLocaleString();
-    document.getElementById('statPrices').textContent = pricesCollected.toLocaleString();
     const subEl = document.getElementById('cafesCalledSub');
     if (subEl && discovered > 0) subEl.textContent = `of ${discovered.toLocaleString()} found`;
 
@@ -2559,15 +2517,12 @@ function renderAll(suburbs, gems, distData, totalCafes, pricesCollected, avgPric
       document.getElementById('statCheapestName').textContent = 'awaiting calls';
       document.getElementById('statDearestPrice').textContent = '—';
       document.getElementById('statDearestName').textContent = 'awaiting calls';
-      const el = document.getElementById('statAnswerRate');
-      if (el) el.textContent = 'awaiting calls';
     }
   }
-  const callsTotal = raw?.calls_total || 0;
-  if (callsTotal > 0 && pricesCollected > 0) {
-    const rate = Math.round(pricesCollected / callsTotal * 100);
-    const el = document.getElementById('statAnswerRate');
-    if (el) el.textContent = rate + '% answer rate';
+  const _avg = raw?.avg_price;
+  const _statAvgEl = document.getElementById('statAvg');
+  if (_statAvgEl && _avg) {
+    _statAvgEl.setAttribute('aria-label', `Sydney average flat white price ${_avg.toFixed(2)} dollars`);
   }
   populateCompareDropdowns();
 }
@@ -2630,15 +2585,19 @@ function subscribeEmail(e) {
     return r.json();
   })
   .then(() => {
-    document.getElementById('newsletterSuccess').style.display = 'block';
-    document.querySelector('.newsletter-form').style.display = 'none';
+    const successEl = document.getElementById('newsletterSuccess');
+    if (successEl) successEl.style.display = 'block';
+    const form = e.target;
+    if (form) form.style.display = 'none';
   })
   .catch(err => {
     console.error('Subscribe error:', err);
     const el = document.getElementById('newsletterSuccess');
-    el.textContent = 'Something went wrong — try again later.';
-    el.style.color = 'var(--premium)';
-    el.style.display = 'block';
+    if (el) {
+      el.textContent = 'Something went wrong — try again later.';
+      el.style.color = 'var(--premium)';
+      el.style.display = 'block';
+    }
   });
 }
 
