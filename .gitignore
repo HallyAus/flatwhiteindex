@@ -56,3 +56,5 @@ _seo/
 # Local dev conveniences
 .superpowers/
 launch.cmd
+
+.vercel
