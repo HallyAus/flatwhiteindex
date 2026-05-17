@@ -5,54 +5,49 @@
 
 ## Last Updated
 
-- **Date:** 2026-04-27
+- **Date:** 2026-05-17
 - **Branch:** master
-- **Focus:** Audit + new SEO/GEO landing page (v5), strike-distance keyword targeting
+- **Focus:** Vercel migration scaffold (everything-on-Vercel + retire LXC). Earlier in the session: full audit + P0 fixes + newsroom landing overhaul.
 
-## Accomplished (this session — uncommitted)
+## Accomplished (this session — all committed + pushed)
 
-- **New v5 landing page** — `public/index-v5.html` (35KB, content-first, FAQ-rich) served at `/v5`. Distinct visual language from broadsheet (`/`) and teal (`/v4`). Schema: Article + FAQPage (7 Q&As) + BreadcrumbList + Dataset (CC BY 4.0) + speakable selectors. `noindex,follow` + robots Disallow during preview.
-- **Live `index.html` SEO rewrite** — title now `Sydney Flat White Price: $5.80 Average — Live Cost by Suburb 2026` (number-in-title for CTR); meta description leads with the answer; OG/Twitter synced.
-- **Strike-distance keyword targeting** — added SEO answer block after hero (H3 "What is the average coffee price in Sydney?" + answer paragraph + "also searched as" line including misspelling `average coffe price`). Hero copy + JS branches now lead with `$5.80` and use `coffee prices Sydney`.
-- **FAQPage schema extended** — 3 new Q&As exact-matching `average coffee price sydney`, `coffee prices sydney 2026`, `coffee price in sydney`.
-- **Wiring** — `webhook.js` loads + serves `/v5`; `robots.txt` blocks `/v5`; `sitemap.xml` lastmod refreshed to 2026-04-27 with home `changefreq` lifted to weekly.
-- **All 49 tests pass.**
+**Audit + P0 fixes:** Repaired ElevenLabs transcript persistence (field name mismatch dropped every transcript), WebAuthn login wiring (broke all passkey logins), axios CVE pin (override was ineffective). Strengthened SEO: H1 keyword extension, `<aside>` → `<section>`, llms.txt numbers, sitemap dates, masthead animations stripped, contrast token darkened to AA-pass, PostHog `maskAllInputs:true`. Hardened: jsonForScript XSS escape, ADMIN_SECRET bearer restricted to localhost, ElevenLabs HMAC verification + 24h webhook idempotency, CSP `frame-ancestors 'self'`. Deleted v2/v3/v4 landing files, reference/ dir, Dockerfile/compose, root mock-data.json. v5 renamed to `public/sydney-coffee-price-report-2026.html` and promoted to a real keyword URL with FAQ wording differentiated from `/`. README rewritten.
+
+**Newsroom landing overhaul:** Full restructure of `public/index.html` into a Pudding/FT-style data piece. 15-section choreography: masthead → hero → 4-up stat band → distribution histogram (7 bars from `__LIVE_DATA__.distribution`, modal bar in --ink) → pull quote → cheapest/dearest leaderboard pair → for-you widget (find-near-me + compare suburbs in one card) → merged region cards → pull quote → map → salary calculator → Sydney in Coffees (22 cards: 1 featured median-house + 4 cost + 4 transport + 5 experiences + 4 money + 4 aussie) → methodology → dark newsletter band → footer. Identity preserved (cream + bronze + Playfair + DM Sans). All interactive widgets working; ~320 lines of dead CSS removed.
+
+**Vercel migration scaffold:** New project `danieljhall-mecoms-projects/flatwhiteindex` linked + GitHub auto-deploy connected. `api/` directory with serverless functions for dashboard, subscribe/unsubscribe/submit-price, ElevenLabs webhook (HMAC + idempotency + raw-body), cron dispatch (300s timeout, every 15min during AEST business hours), health. `lib/` with Supabase client, jsonForScript, rate-limit (Supabase-backed), webhook-verify, extract-prices, dispatch-runner (replaces the old `child_process spawn node index.js`). Supabase migration 007 applied: rate_limit_hits, processed_webhooks, hidden_suburbs, dispatch_jobs, webauthn_challenges. vercel.json with syd1 region, cron schedule, security headers, /v2-/v5 → / redirects.
 
 ## In Progress
 
-- Cloudflare redirect rule needed: non-www → www (301) — *unchanged from prior session, still the real fix for GSC "/" cannibalisation warnings*
-- **v5 needs user review** before promoting to `index.html` (or deciding to keep current broadsheet + just absorb the SEO edits). v4 likely deletable.
-- Admin dashboard conversation history (ElevenLabs logs in admin UI)
-- **Deploy pending** — uncommitted local changes; prior 2 commits also still not yet deployed to production LXC 700
+- **Vercel deploy blocked on env vars.** 6 of 11 env vars pushed (SUPABASE_URL, WEBHOOK_BASE_URL, WEBHOOK_SECRET, ADMIN_SECRET, CALL_PROVIDER, WEBAUTHN_RP_ID — last two are freshly generated for Vercel, not the LXC values). Still missing: **SUPABASE_SERVICE_KEY, ELEVENLABS_API_KEY, ELEVENLABS_AGENT_ID, ELEVENLABS_PHONE_NUMBER_ID, GOOGLE_PLACES_API_KEY**. Optional: RESEND_API_KEY, ELEVENLABS_WEBHOOK_SECRET.
+- **Admin endpoints not yet ported.** Phase 2 of the Vercel migration. Need to translate ~25 admin endpoints (auth/me, status, calls, cafes, review, submissions, subscribers, system, hidden-suburbs, suburb-progress, reprocess, calls/:id/retry, bulk-retry, dispatch). Auth flow needs the WebAuthn challenge store moved from in-memory Map to the new `webauthn_challenges` Supabase table.
 
 ## Blocked
 
-- Resend domain verification (need DNS records in Cloudflare)
+- Vercel deploy waiting on 5 secrets from user (see In Progress).
+- Resend domain verification (pre-existing, needs DNS records in Cloudflare).
 
 ## Next Steps
 
-1. **Commit current changes** — title/meta/SEO block on index.html, new index-v5.html, /v5 route, robots.txt, sitemap, HANDOFF
-2. **Deploy to production** — `cd /opt/flatwhiteindex && git pull origin master && npm install && systemctl restart flatwhite-webhook`
-3. **Set Cloudflare redirect** — non-www → www 301 redirect rule (unblocks GSC false-positive cannibalisation)
-4. **Resubmit sitemap** — in Google Search Console after deploy
-5. **Review /v5** — preview at /v5; if approved, copy contents into index.html and delete v2/v3/v4/v5 files + their routes
-5. **Update .env on server** — `ELEVENLABS_PHONE_NUMBER_ID=phnum_8201knnhpqv3evh89y0h9c8vxhcf`
-6. **Run live batch** — Chippendale failed due to old phone ID, retry after .env fix
-7. **Admin conversation history** — show ElevenLabs call transcripts in admin dashboard
-8. **Call more suburbs** — 80+ suburbs available
-9. **Scheduled auto-dispatch** — cron job for business hours calling
-10. **Price history tracking** — re-call cafes monthly, show trends
-11. **Set up Resend** — DNS records in Cloudflare
-12. **Monitor SEO** — check Search Console in 2 weeks for cannibalisation resolution and CTR improvement
+1. **Get secrets from user**, push to Vercel: `vercel env add KEY production` for each. Then `vercel --prod` for first deploy (or push any commit — auto-deploy from GitHub is wired up).
+2. **Smoke-test preview URL** — verify `/` static, `/api/dashboard` returns JSON, `/api/health` returns ok, the existing dashboard JS hydrates correctly from `/api/dashboard`.
+3. **DNS swap** — once preview verified: add `www.flatwhiteindex.com.au` as a custom domain in Vercel, update Cloudflare DNS CNAME to point at Vercel, add Cloudflare apex → www 301 redirect rule.
+4. **Port admin endpoints** (Phase 2). Highest priority: auth flow (`/api/admin/auth/*`) so admin login works on Vercel.
+5. **Configure ELEVENLABS_WEBHOOK_SECRET** in ElevenLabs dashboard webhook config, also in Vercel env → enables HMAC verification (currently falls back to shared-secret).
+6. **Retire LXC 700** once Vercel is verified live and stable for ~48h.
+7. **Resubmit sitemap** in Google Search Console after DNS swap.
 
 ## Gotchas
 
-- Supabase key must be service_role (sb_secret_*), not anon
-- specs/ is gitignored — use `git add -f`
-- Migrations 001-006 all run in Supabase
-- Hidden suburbs: right-click in admin, persists to hidden-suburbs.json
-- ElevenLabs phone number IDs expire/disappear — `ensurePhoneNumber()` in setup script handles reimport
-- Old phone ID `phnum_5501*` is dead — must use `phnum_8201knnhpqv3evh89y0h9c8vxhcf`
-- WebAuthn RP_ID must be set in .env: `WEBAUTHN_RP_ID=flatwhiteindex.com.au`
-- `cookie-parser` npm package required — run `npm install` after pull
-- npm overrides in package.json for axios (^1.15.0) and follow-redirects (>=1.15.12) — transitive deps of twilio
+- Supabase key must be `service_role` (sb_secret_*), not anon.
+- `specs/` is gitignored — use `git add -f`. Also `docs/superpowers/` is gitignored.
+- Migrations 001-007 all applied (007 added rate_limit_hits, processed_webhooks, hidden_suburbs, dispatch_jobs, webauthn_challenges).
+- Old phone ID `phnum_5501*` is dead — must use `phnum_8201knnhpqv3evh89y0h9c8vxhcf`.
+- WebAuthn RP_ID is `flatwhiteindex.com.au` (not www).
+- npm overrides for axios (`^1.15.2`) + follow-redirects (`>=1.15.12`) — must stay; transitive deps of twilio.
+- **Vercel CLI quirk:** `vercel env add KEY production preview development` fails with "Invalid number of arguments" — must add one env at a time.
+- **Twilio caller dropped on Vercel** — caller-twilio.js exists in repo but is unreachable from serverless (needs WebSocket). ElevenLabs is webhook-based and ports cleanly. CALL_PROVIDER is hard-set to `elevenlabs` in Vercel env.
+- **In-memory state replaced on Vercel:** rate limit Map → `rate_limit_hits` table, webhook idempotency Map → UNIQUE constraint on `processed_webhooks`, hidden-suburbs.json file → `hidden_suburbs` table, WebAuthn challenges Map → `webauthn_challenges` table (TODO: not yet wired, auth.js still uses Map).
+- **Vercel Cron schedule:** `*/15 23-5 * * 1-5` = every 15 min between 23:00 and 05:00 UTC weekdays = 9am-3pm AEST. Lives in vercel.json. Pro plan required.
+- Cloudflare apex → www 301 redirect still not set — pre-existing GSC cannibalisation issue.
+- The LXC's SSH was not reachable from this session (`Permission denied (publickey)` on 192.168.1.99/80; 192.168.1.23 timed out) — secrets can't be pulled automatically.
