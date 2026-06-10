@@ -11,7 +11,14 @@
 
 ## ⚠️ Serving-state reality check (verified 2026-06-11)
 
-Daniel believes the site "moved to Vercel a while ago", but `www.flatwhiteindex.com.au` still returns `X-Powered-By: Express` via Cloudflare and 404s on `/api/health` — **the domain still points at the old Express/LXC origin**. Pushes auto-deploy to the Vercel project but the custom domain cutover (Cloudflare DNS → Vercel) has not happened, so the public site won't show new commits until the LXC pulls (nobody is doing that) or DNS is swapped. Docs now describe Vercel as THE deploy path per Daniel's instruction; the DNS swap (+ remaining Vercel env secrets, see below) is the missing step that makes it true.
+Daniel believes the site "moved to Vercel a while ago". Reality found + partially fixed this session:
+
+- `www.flatwhiteindex.com.au` still returns `X-Powered-By: Express` via Cloudflare — **the domain still points at the old Express/LXC origin**. It serves the OLD newsroom design and will until DNS is cut over (nobody pulls on the LXC anymore).
+- The Vercel project had **zero deployments ever**. GitHub was connected, but every build aborted on an invalid vercel.json: cron `*/15 23-5 * * 1-5` (wrap-around range not allowed), an invalid header source regex, and a `functions` entry for `api/admin/dispatch.js` which doesn't exist. Fixed in 5a8d811.
+- **First production deploy now live:** https://flatwhiteindex-delta.vercel.app — new Tracker page renders, `/api/health` ok. `/api/dashboard` returns FUNCTION_INVOCATION_FAILED because the 5 secrets were never added (see Blocked). Daniel said he'll add them via the Vercel dashboard himself.
+- Watch: whether the GitHub-push auto-deploy for 5a8d811 actually produced a deployment (was being monitored at session end).
+
+**Remaining cutover runbook:** (1) Daniel adds SUPABASE_SERVICE_KEY (+ ELEVENLABS_API_KEY/AGENT_ID/PHONE_NUMBER_ID, GOOGLE_PLACES_API_KEY) in Vercel dashboard → redeploy → verify /api/dashboard returns JSON and the page hydrates. (2) Add www.flatwhiteindex.com.au as a Vercel domain (`vercel domains` or dashboard) + Cloudflare CNAME www → cname.vercel-dns.com, apex 301 → www. (3) Resubmit sitemap in GSC. (4) Power off LXC 700 after 48h stable. NOTE: admin portal (~25 endpoints) is NOT ported to Vercel yet (Phase 2) — admin breaks the moment DNS cuts over; the old admin lives only on the LXC.
 
 ## Accomplished (this session — all committed + pushed)
 
