@@ -18,7 +18,7 @@ AI voice agent that calls Sydney cafes to find out how much a flat white costs, 
 - **Supabase / PostgreSQL** — datastore
 - **WebAuthn (passkeys)** — admin authentication
 - **Static HTML** — public dashboard + SEO content report (no build step)
-- **Cloudflare** — DNS + CDN; **Proxmox LXC + systemd** — production runtime
+- **Vercel** — production runtime (static hosting + serverless `api/` functions, auto-deployed from GitHub); **Cloudflare** — DNS + CDN
 
 ## Quick start
 
@@ -76,19 +76,29 @@ The admin UI dispatches calls, reviews transcripts, manages cafes/suburbs/submis
 
 ## Deploy
 
-Production runs on a Proxmox LXC behind Cloudflare with a `flatwhite-webhook` systemd unit. See `deploy.sh --setup` for the one-shot installer, or for updates:
+Production runs on **Vercel** (project `flatwhiteindex`, region `syd1`), auto-deployed from GitHub:
 
 ```bash
-cd /opt/flatwhiteindex \
-  && git pull origin master \
-  && npm install \
-  && systemctl restart flatwhite-webhook
+git push origin master   # that's the whole deploy — Vercel builds and ships it
 ```
+
+Useful extras (Vercel CLI):
+
+```bash
+vercel logs --follow     # tail production logs
+vercel env ls            # check environment variables
+vercel --prod            # manual production deploy, if ever needed
+```
+
+Routing, cron (call dispatch during AEST business hours), security headers and redirects live in `vercel.json`. Serverless endpoints live in `api/` with shared helpers in `lib/`.
 
 ## Project layout
 
 ```
-webhook.js               Express server (serves /, /admin, webhooks, admin APIs)
+api/                     Vercel serverless functions (dashboard, subscribe, webhooks, cron)
+lib/                     Shared serverless helpers (Supabase, rate limit, HMAC verify)
+vercel.json              Vercel routing, cron schedule, headers, redirects
+webhook.js               Express server (local dev: serves /, /admin, webhooks, admin APIs)
 index.js                 Orchestrator (fetch cafes → dispatch → store results)
 caller.js                Provider router → caller-elevenlabs.js / caller-bland.js / caller-twilio.js
 db.js                    Supabase helpers

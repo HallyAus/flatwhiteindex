@@ -150,7 +150,7 @@ async function main() {
     };
     await dispatchCalls([testCafe], 1);
     console.log("\n✅ Test call dispatched. Check webhook logs for the result.");
-    console.log("   journalctl -u flatwhite-webhook -f");
+    console.log("   vercel logs --follow   (or the admin Logs panel)");
     return;
   }
 
@@ -188,7 +188,7 @@ async function main() {
   const remaining = uncalled.length - batch.length;
   console.log(`\n✅ Batch dispatched. Results will arrive via webhook.`);
   console.log(`   ${remaining} cafés remaining — run again for the next batch.`);
-  console.log("   Monitor: journalctl -u flatwhite-webhook -f");
+  console.log("   Monitor: vercel logs --follow   (or the admin Logs panel)");
 }
 
 import { resolve } from "node:path";

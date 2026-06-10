@@ -339,7 +339,7 @@ async function main() {
   if (phoneNumberId) {
     console.log(`ELEVENLABS_PHONE_NUMBER_ID=${phoneNumberId}`);
   }
-  console.log('\nThen restart: systemctl restart flatwhite-webhook');
+  console.log('\nThen add these to Vercel (one per call): vercel env add KEY production, and redeploy.');
   console.log('═══════════════════════════════════════\n');
 
   if (testMode && phoneNumberId) {

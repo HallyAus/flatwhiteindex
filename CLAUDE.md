@@ -11,12 +11,15 @@ APIs: Google Places (cafe discovery)
 ## Architecture
 
 ```
-webhook.js        Express server — serves frontend, receives call webhooks, admin portal
+api/              Vercel serverless functions (dashboard, subscribe, webhooks, cron dispatch)
+lib/              Shared serverless helpers (Supabase client, rate limit, HMAC verify)
+vercel.json       Vercel routing, cron schedule, security headers, redirects
+webhook.js        Express server — local dev only (serves frontend, webhooks, admin portal)
 caller.js         Voice call router (dispatches to caller-elevenlabs.js or caller-bland.js)
 db.js             Supabase helpers (upsert cafe, log price, update status)
 index.js          Orchestrator: fetch cafes -> dispatch calls -> store results
 cafes.js          Google Places API cafe fetcher
-public/index.html Live dashboard (broadsheet/editorial — map + suburbs + stats)
+public/index.html Live dashboard ("Tracker" data-product — hero stat, map, league table)
 public/sydney-coffee-price-report-2026.html  SEO content report (answer-led, FAQ-rich)
 suburb-regions.json  8 Sydney region mappings (inlined by server)
 ```
@@ -32,10 +35,7 @@ node index.js --suburb=sydney_cbd --batch-size=10  # live calls
 
 ## Deploy
 
-```bash
-# Production: Proxmox LXC 700, systemd flatwhite-webhook
-cd /opt/flatwhiteindex && git pull origin master && npm install && systemctl restart flatwhite-webhook
-```
+Production is **Vercel** (project `flatwhiteindex`, region `syd1`), auto-deployed from GitHub — pushing to `master` is the deploy. No servers to SSH into. Use `vercel logs --follow` for production logs and `vercel env ls` for env vars. The old Proxmox LXC runtime is retired.
 
 ## Key Rules
 

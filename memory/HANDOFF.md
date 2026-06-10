@@ -5,11 +5,19 @@
 
 ## Last Updated
 
-- **Date:** 2026-05-17
+- **Date:** 2026-06-11
 - **Branch:** master
-- **Focus:** Vercel migration scaffold (everything-on-Vercel + retire LXC). Earlier in the session: full audit + P0 fixes + newsroom landing overhaul.
+- **Focus:** Ground-up "Tracker" redesign of `public/index.html` (remote-control session; Daniel approved design interactively). Then: removed all LXC/Proxmox deployment references — deployment is now documented as GitHub push → Vercel auto-deploy.
+
+## ⚠️ Serving-state reality check (verified 2026-06-11)
+
+Daniel believes the site "moved to Vercel a while ago", but `www.flatwhiteindex.com.au` still returns `X-Powered-By: Express` via Cloudflare and 404s on `/api/health` — **the domain still points at the old Express/LXC origin**. Pushes auto-deploy to the Vercel project but the custom domain cutover (Cloudflare DNS → Vercel) has not happened, so the public site won't show new commits until the LXC pulls (nobody is doing that) or DNS is swapped. Docs now describe Vercel as THE deploy path per Daniel's instruction; the DNS swap (+ remaining Vercel env secrets, see below) is the missing step that makes it true.
 
 ## Accomplished (this session — all committed + pushed)
+
+**Tracker redesign (bd3a1b8):** Replaced the newsroom editorial landing with a modern data-product dashboard, per approved spec `docs/superpowers/specs/2026-06-11-tracker-redesign-design.md` (46117c6). Trigger: the newsroom page's hard-coded copy had drifted badly from live data (title said $5.80, hero $4.63, headline claimed "$5 and $6", histogram annotation "83 cafes (83%)" vs "494 cafes answered", "1 cafes" grammar). New structure: slim sticky header (live avg appears on scroll) → giant live hero number + 3 chips → histogram → Leaflet map (price-ramp pins) → collapsible suburb league table (top 12 + "show all", search, 3 sorts; replaces leaderboards/region cards/map sidebar) → salary calculator → 6 Sydney-in-Coffees cards → collapsible methodology → newsletter + contribute + footer. Dropped per Daniel: find-near-me widget, suburb-compare widget, region cards, pull quotes; Playfair dropped (DM Sans + tabular numerals). **Every number computed from live data** — document.title, meta description and FAQ JSON-LD are injected by JS post-hydration (static versions are number-free) because Vercel serves `/` statically with no injection; hydration order is `__LIVE_DATA__` (LXC injects) → `fetch('/api/dashboard')`. File went 2868 → ~1180 lines; mobile scroll ~¼ of old. Verified with local preview server (injected prod /api/dashboard data) + agent-browser: calculator, table expand, suburb-click→map zoom, hash routing, 49/49 tests.
+
+## Previous session (2026-05-17 — all committed + pushed)
 
 **Audit + P0 fixes:** Repaired ElevenLabs transcript persistence (field name mismatch dropped every transcript), WebAuthn login wiring (broke all passkey logins), axios CVE pin (override was ineffective). Strengthened SEO: H1 keyword extension, `<aside>` → `<section>`, llms.txt numbers, sitemap dates, masthead animations stripped, contrast token darkened to AA-pass, PostHog `maskAllInputs:true`. Hardened: jsonForScript XSS escape, ADMIN_SECRET bearer restricted to localhost, ElevenLabs HMAC verification + 24h webhook idempotency, CSP `frame-ancestors 'self'`. Deleted v2/v3/v4 landing files, reference/ dir, Dockerfile/compose, root mock-data.json. v5 renamed to `public/sydney-coffee-price-report-2026.html` and promoted to a real keyword URL with FAQ wording differentiated from `/`. README rewritten.
 
