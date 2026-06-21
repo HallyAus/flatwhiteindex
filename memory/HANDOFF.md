@@ -5,20 +5,19 @@
 
 ## Last Updated
 
-- **Date:** 2026-06-11
+- **Date:** 2026-06-22
 - **Branch:** master
-- **Focus:** Ground-up "Tracker" redesign of `public/index.html` (remote-control session; Daniel approved design interactively). Then: removed all LXC/Proxmox deployment references — deployment is now documented as GitHub push → Vercel auto-deploy.
+- **Focus:** Wrap-up / verification session. Confirmed Vercel prod is fully healthy (`/api/dashboard` now 200 with live data — secret was added since 2026-06-11). No code changes this session; working tree clean, 49/49 tests pass. Prior session (2026-06-11): Tracker redesign of `public/index.html` + removed LXC/Proxmox deploy references + fixed vercel.json so the project deployed for the first time ever.
 
-## ⚠️ Serving-state reality check (verified 2026-06-11)
+## ⚠️ Serving-state reality check (Vercel build first fixed 2026-06-11; dashboard re-verified working 2026-06-22)
 
-Daniel believes the site "moved to Vercel a while ago". Reality found + partially fixed this session:
+Daniel believes the site "moved to Vercel a while ago". Reality found + fixed across sessions:
 
-- `www.flatwhiteindex.com.au` still returns `X-Powered-By: Express` via Cloudflare — **the domain still points at the old Express/LXC origin**. It serves the OLD newsroom design and will until DNS is cut over (nobody pulls on the LXC anymore).
-- The Vercel project had **zero deployments ever**. GitHub was connected, but every build aborted on an invalid vercel.json: cron `*/15 23-5 * * 1-5` (wrap-around range not allowed), an invalid header source regex, and a `functions` entry for `api/admin/dispatch.js` which doesn't exist. Fixed in 5a8d811.
-- **First production deploy now live:** https://flatwhiteindex-delta.vercel.app — new Tracker page renders, `/api/health` ok. `/api/dashboard` returns FUNCTION_INVOCATION_FAILED because the 5 secrets were never added (see Blocked). Daniel said he'll add them via the Vercel dashboard himself.
-- Watch: whether the GitHub-push auto-deploy for 5a8d811 actually produced a deployment (was being monitored at session end).
+- `www.flatwhiteindex.com.au` STILL returns `X-Powered-By: Express` via Cloudflare — **the public domain still points at the old Express/LXC origin** and serves the OLD newsroom design. DNS cutover has NOT happened. This is the one remaining blocker to the new design being publicly live.
+- The Vercel project had **zero deployments ever** (May scaffold never built). GitHub was connected, but every build aborted on an invalid vercel.json: cron `*/15 23-5 * * 1-5` (wrap-around range not allowed), an invalid header source regex, and a `functions` entry for `api/admin/dispatch.js` which doesn't exist. Fixed in 5a8d811.
+- **Vercel production is now fully working** at https://flatwhiteindex-delta.vercel.app — homepage 200, `/api/health` ok, and (re-checked 2026-06-22) **`/api/dashboard` now returns 200 with real data** (avg $4.63, 100 prices, 61 suburbs, 100 gems). The FUNCTION_INVOCATION_FAILED from 2026-06-11 is resolved → SUPABASE_SERVICE_KEY (and likely the rest) was added to Vercel env in the interim. GitHub push → auto-deploy confirmed working (commits 5a8d811 + f0c588d both built READY).
 
-**Remaining cutover runbook:** (1) Daniel adds SUPABASE_SERVICE_KEY (+ ELEVENLABS_API_KEY/AGENT_ID/PHONE_NUMBER_ID, GOOGLE_PLACES_API_KEY) in Vercel dashboard → redeploy → verify /api/dashboard returns JSON and the page hydrates. (2) Add www.flatwhiteindex.com.au as a Vercel domain (`vercel domains` or dashboard) + Cloudflare CNAME www → cname.vercel-dns.com, apex 301 → www. (3) Resubmit sitemap in GSC. (4) Power off LXC 700 after 48h stable. NOTE: admin portal (~25 endpoints) is NOT ported to Vercel yet (Phase 2) — admin breaks the moment DNS cuts over; the old admin lives only on the LXC.
+**Remaining cutover runbook:** (1) ~~Add secrets~~ DONE (dashboard live). (2) Add www.flatwhiteindex.com.au as a Vercel domain (`vercel domains` or dashboard) + Cloudflare CNAME www → cname.vercel-dns.com, apex 301 → www. **This is the single step that flips the public site to the new design.** (3) Resubmit sitemap in GSC. (4) Power off LXC 700 after 48h stable. **⚠ BLOCKER for cutover:** admin portal (~25 endpoints) is NOT ported to Vercel yet (Phase 2) — `/admin` breaks the moment DNS cuts over; the old admin lives only on the LXC. Either port admin first, or accept admin-only-via-LXC-IP during the interim.
 
 ## Accomplished (this session — all committed + pushed)
 
