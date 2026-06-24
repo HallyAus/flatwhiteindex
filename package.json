@@ -30,7 +30,7 @@
     "express": "^4.21.0",
     "resend": "^6.10.0",
     "twilio": "^5.4.0",
-    "ws": "^8.18.0"
+    "ws": "^8.21.0"
   },
   "devDependencies": {
     "sharp": "^0.34.5"
